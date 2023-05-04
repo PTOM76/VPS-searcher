@@ -11,6 +11,13 @@ if (isset($_GET[getenv('PASS')])) {
   addPlaylist("PLdKTS7WkYMJFj8REOW1mRE_hEK0QY9FrM", "material", false, true);
 }
 
+if (isset($_GET["update2_" . getenv('PASS')])) {
+        $playlists = json_decode(file_get_contents("data/playlists.json"), true);
+        foreach($playlists as $id => $data) {
+            addPlaylist($id, $data['type'], false, false, true);
+        }
+}
+
 if (file_exists("time.txt")) {
     $time = (int) file_get_contents("time.txt");
     if ($time + 86400 < time() || isset($_GET['update_' . getenv('PASS')])) {
@@ -201,7 +208,7 @@ global $notice;
         return $string ? implode(', ', $string) . $lang['ago'] : $lang['justnow']; // ago, just now
     }
 
-    function addPlaylist($playlist_id, $type, $nextPageToken = false, $only = false) {
+    function addPlaylist($playlist_id, $type, $nextPageToken = false, $only = false, $nextWithOnly = false) {
         static $c = 0;
         ++$c;
         $api_url = "https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&key=" . API_KEY . "&order=date&playlistId=" . $playlist_id;
@@ -261,7 +268,7 @@ global $notice;
         
         file_put_contents("data/index.json", json_encode($index, JSON_UNESCAPED_UNICODE));
 
-        if ($only == false && isset($output->nextPageToken)) {
+        if (($only == false || $nextWithOnly == true) && isset($output->nextPageToken)) {
             addPlaylist($playlist_id, $type, $output->nextPageToken);
         }
         
