@@ -6,9 +6,14 @@ define("MAX_VIEW", 50);
 error_reporting(E_ALL & ~E_DEPRECATED & ~E_STRICT);
 ini_set('display_errors', 0);
 
+if (isset($_GET[getenv('PASS')])) {
+  addPlaylist("PLdKTS7WkYMJErsSEK6C0VAQin9N8zfVr5", "vps", false, true);
+  addPlaylist("PLdKTS7WkYMJFj8REOW1mRE_hEK0QY9FrM", "material", false, true);
+}
+
 if (file_exists("time.txt")) {
     $time = (int) file_get_contents("time.txt");
-    if ($time + 86400 < time() || isset($_GET['update_314078'])) {
+    if ($time + 86400 < time() || isset($_GET['update_' . getenv('PASS')])) {
         file_put_contents("time.txt", time());
         $playlists = json_decode(file_get_contents("data/playlists.json"), true);
 
@@ -196,7 +201,7 @@ global $notice;
         return $string ? implode(', ', $string) . $lang['ago'] : $lang['justnow']; // ago, just now
     }
 
-    function addPlaylist($playlist_id, $type, $nextPageToken = false) {
+    function addPlaylist($playlist_id, $type, $nextPageToken = false, $only = false) {
         static $c = 0;
         ++$c;
         $api_url = "https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&key=" . API_KEY . "&order=date&playlistId=" . $playlist_id;
@@ -225,6 +230,9 @@ global $notice;
         foreach ($output->items as $item) {
             $snippet = $item->snippet;
             $videoId = $snippet->resourceId->videoId;
+            if ($only) {
+              if (isset($index[$videoId])) continue;
+            }
 
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
@@ -253,7 +261,7 @@ global $notice;
         
         file_put_contents("data/index.json", json_encode($index, JSON_UNESCAPED_UNICODE));
 
-        if (isset($output->nextPageToken)) {
+        if ($only == false && isset($output->nextPageToken)) {
             addPlaylist($playlist_id, $type, $output->nextPageToken);
         }
         
@@ -266,7 +274,7 @@ global $notice;
 
             $notice .= $lang['sended_pl'];
         }
-        if ($_POST['do'] == "post_314078") {
+        if ($_POST['do'] == "post_" . getenv('PASS')) {
             $playlist_id = preg_replace('/.*?&list\=(.*?)/u', '$1', $_POST['url']);
 
             $array = [];
@@ -419,11 +427,11 @@ if (isset($_GET['post'])) {
             <input type="submit" />
         </form>
     <?php
-} else if (isset($_GET['post_314078'])) {
+} else if (isset($_GET['post_' . getenv('PASS')])) {
     ?>
         <form action="./" method="POST">
             <input type="text" name ="url" />
-            <input type="hidden" name="do" value="post_314078" placeholder="Playlist URL" />
+            <input type="hidden" name="do" value="post_<?php echo getenv('PASS'); ?>" placeholder="Playlist URL" />
             <input type="radio" name="t" value="vps"><?php echo $lang['vps_radio']; ?></input>
             <input type="radio" name="t" value="material"><?php echo $lang['material_radio']; ?></input>
             <input type="submit" />
@@ -574,7 +582,7 @@ if (isset($_GET['post'])) {
                 <a href="javascript:onClickThumb('{$id}');"><img id="{$id}" src="https://i.ytimg.com/vi/{$id}/hqdefault.jpg" style="width:320px;height:180px;object-fit:cover;" /></a>
             </div>
             <div>
-                <span style="font-size:18px;"><a class="plain" href="https://youtu.be/{$id}">{$data['title']}</a></span><br />
+                <span style="font-size:18px;"><a target="_blank" class="plain" href="https://youtu.be/{$id}">{$data['title']}</a></span><br />
                 <span style="font-size:11px;">{$view_str} {$lang['view']}・{$ago}</span>
                 <br />
                 <span style="font-size:15px;"><a class="plain" href="https://www.youtube.com/channel/{$data['channelId']}">{$data['channelTitle']}</a></span>
@@ -592,7 +600,7 @@ if (isset($_GET['post'])) {
 }
 ?>
 <br />
-<span style="font-size:12px;">Languages: <a href="./" >日本語</a>, <a href="./en.php" >English</a>, <a href="./zh.php" >中国语</a>, <a href="./ko.php" >한국인</a><br /><br />※当サイトのデータは再生リストから取得したものです。<br />Copyright 2023 © Pitan.</span>
+<span style="font-size:12px;">Languages: <a href="./" >日本語</a>, <a href="./en.php" >English</a>, <a href="./zh.php" >中国语</a>, <a href="./ko.php" >한국인</a><br /><br />※当サイトのデータは再生リストから取得したものです。<br />ソース: <a href="https://github.com/PTOM76/VPS-searcher">Gitリポジトリ</a><br />Copyright 2023 © Pitan.</span>
 </div>
 </body>
 </html>
