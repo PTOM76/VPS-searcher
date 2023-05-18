@@ -1,4 +1,10 @@
 <?php
+if (isset($_GET['q'])) {
+  $analytics = "./data/analytics/" . date("Y-m-d") . ".txt";
+  $data = file_get_contents($analytics);
+  file_put_contents($analytics, $data . "DATE: " . date("Y-m-d_H:i:s") . "\n" . "URI: " . $_SERVER['REQUEST_URI'] . "\nWORD: " . $_GET['q'] . "\n----------------\n");
+}
+
 set_time_limit(600);
 date_default_timezone_set('UTC');
 define("API_KEY", getenv("API_KEY"));
@@ -63,8 +69,10 @@ $_lang['ja'] = [
     'prev' => '前へ',
     'sended_pl' => 'プレイリストを送信しました。',
     'added_pl' => 'プレイリストを追加しました。',
+    'sended_vd' => '動画を送信しました。',
+    'added_vd' => '動画を追加しました。',
     'reported_video' => '動画を報告しました。',
-    'send_pl' => '再生リスト送信',
+    'send_pl' => 'データ送信',
     'view' => '回視聴',
     'report' => '報告',
     'download' => 'ダウンロード',
@@ -96,8 +104,10 @@ $_lang['en'] = [
     'prev' => 'Prev',
     'sended_pl' => 'Sended playlist',
     'added_pl' => 'Added playlist',
+    'sended_vd' => 'Sended video',
+    'added_vd' => 'Added video',
     'reported_video' => 'Reported video',
-    'send_pl' => 'Send Playlist',
+    'send_pl' => 'Data Sending',
     'view' => 'views',
     'report' => 'Report',
     'download' => 'Download',
@@ -129,8 +139,10 @@ $_lang['zh'] = [
 'prev' => '上一页',
 'sended_pl' => '已发送播放列表。',
 'added_pl' => '已添加到播放列表。',
+'sended_vd' => '已发送播视频。',
+'added_vd' => '已添加到播视频。',
 'reported_video' => '已举报视频。',
-'send_pl' => '发送播放列表',
+'send_pl' => '数据传输',
 'view' => '次观看',
 'report' => '举报',
 'download' => '下载',
@@ -162,8 +174,10 @@ $_lang['ko'] = [
 'prev' => '이전',
 'sended_pl' => '재생 목록을 전송했습니다.',
 'added_pl' => '재생 목록에 추가했습니다.',
+'sended_vd' => '동영상 전송했습니다.',
+'added_vd' => '동영상 추가했습니다.',
 'reported_video' => '동영상을 신고했습니다.',
-'send_pl' => '재생 목록 전송',
+'send_pl' => '데이터 전송',
 'view' => '회 시청',
 'report' => '신고',
 'download' => '다운로드',
@@ -173,6 +187,22 @@ $_lang['ko'] = [
 $lang = $_lang[$useLang];
 
 global $notice;
+
+
+function kan2num($str) {
+    $str = str_replace("一", "1", $str);
+    $str = str_replace("二", "2", $str);
+    $str = str_replace("三", "3", $str);
+    $str = str_replace("四", "4", $str);
+    $str = str_replace("五", "5", $str);
+    $str = str_replace("六", "6", $str);
+    $str = str_replace("七", "7", $str);
+    $str = str_replace("八", "8", $str);
+    $str = str_replace("九", "9", $str);
+    $str = str_replace("！", "!", $str);
+    $str = str_replace("？", "?", $str);
+  return $str;
+}
 
     function time_elapsed_string($datetime, $full = false) {
         global $lang, $useLang;
@@ -206,6 +236,39 @@ global $notice;
     
         if (!$full) $string = array_slice($string, 0, 1);
         return $string ? implode(', ', $string) . $lang['ago'] : $lang['justnow']; // ago, just now
+    }
+
+    function addNicovideo($video_id, $type) {
+      $api_url = "https://ext.nicovideo.jp/api/getthumbinfo/" . $video_id;
+      $xml = file_get_contents($api_url);
+      $array = json_decode(json_encode(simplexml_load_string($xml)), true);
+
+      $index = [];
+      if (file_exists("data/index.json"))
+        $index = json_decode(file_get_contents("data/index.json"), true);
+      
+      
+      $thumb = $array['thumb'];
+
+      $index[$video_id] = [
+          'is_nicovideo' => true,
+          'title' => $thumb['title'],
+          'description' => $thumb['description'],
+          'channelId' => $thumb['user_id'],
+          'channelTitle' => $thumb['user_nickname'],
+          'publishedAt' => strtotime($thumb['first_retrieve']),
+          'view' => $thumb['view_counter'],
+          'tags' => array_values($thumb['tags']),
+          'type' => $type,
+      ];
+
+      file_put_contents("cache/thumb/" . $video_id . ".jpg", file_get_contents($thumb['thumbnail_url']));
+
+      $index = ((array) $index);
+      array_multisort(array_column($index, 'publishedAt'), SORT_DESC, $index);
+        
+      file_put_contents("data/index.json", json_encode($index, JSON_UNESCAPED_UNICODE));
+      return;
     }
 
     function addPlaylist($playlist_id, $type, $nextPageToken = false, $only = false, $nextWithOnly = false) {
@@ -274,15 +337,54 @@ global $notice;
         
     }
     if (isset($_POST['do'])) {
+        $url = $_POST['url'];
+
+        $url_type = "none";
+        if (false !== strpos($url, 'list=') || str_starts_with($url, 'PL')) {
+          $url_type = "playlist";
+        } else if (false !== strpos($url, 'watch/sm') || str_starts_with($url, 'sm')) {
+          $url_type = "nicovideo";
+        } else {
+          $url_type = "youtube";
+        }
+      
         if ($_POST['do'] == "post") {
-            $playlist_id = preg_replace('/.*?&list\=(.*?)/u', '$1', $_POST['url']);
+
+          // 再生リスト
+          if ($url_type == "playlist") {
+            $playlist_id = preg_replace('/.*?&list\=(.*?)/u', '$1', $url);
             if (!file_exists("queue/")) mkdir("queue");
-            file_put_contents("queue/" . $playlist_id . ".txt", "ID: {$playlist_id}\nURL: " . $_POST['url'] . "\nType: " . $_POST['t']);
+            file_put_contents("queue/pl_" . $playlist_id . ".txt", "ID: {$playlist_id}\nURL: " . $_POST['url'] . "\nType: " . $_POST['t']);
 
             $notice .= $lang['sended_pl'];
+          }
+
+          // ニコニコ動画
+          if ($url_type == "nicovideo") {
+            $video_id = preg_replace('/.*?(sm.*?)/u', '$1', $url);
+            if (!file_exists("queue/")) mkdir("queue");
+            file_put_contents("queue/nc_" . $video_id . ".txt", "ID: {$video_id}\nURL: " . $_POST['url'] . "\nType: " . $_POST['t']);
+
+            $notice .= $lang['sended_vd'];
+            
+          }
+
+          // YouTube動画
+          if ($url_type == "youtube") {
+            $video_id = preg_replace('/.*?watch\?v\=(.*?)/u', '$1', $url);
+            if (!file_exists("queue/")) mkdir("queue");
+            file_put_contents("queue/yt_" . $video_id . ".txt", "ID: {$video_id}\nURL: " . $_POST['url'] . "\nType: " . $_POST['t']);
+
+            $notice .= $lang['sended_vd'];
+            
+          }
+          
         }
         if ($_POST['do'] == "post_" . getenv('PASS')) {
-            $playlist_id = preg_replace('/.*?&list\=(.*?)/u', '$1', $_POST['url']);
+          
+          // 再生リスト
+          if ($url_type == "playlist") {
+            $playlist_id = preg_replace('/.*?&list\=(.*?)/u', '$1', $url);
 
             $array = [];
             if (file_exists("data/playlists.json"))
@@ -294,6 +396,40 @@ global $notice;
 
             addPlaylist($playlist_id, $_POST['t']);
             $notice .= $lang['added_pl'];
+          }
+
+          // ニコニコ動画
+          if ($url_type == "nicovideo") {
+            $video_id = preg_replace('/.*?(sm.*?)/u', '$1', $url);
+
+            $array = [];
+            if (file_exists("data/nc_videos.json"))
+                $array = json_decode(file_get_contents("data/nc_videos.json"), true);
+            $array[$video_id] = [
+                "type" => $_POST['t']
+            ];
+            file_put_contents("data/nc_videos.json", json_encode($array));
+
+            addNicovideo($video_id, $_POST['t']);
+            $notice .= $lang['added_vd'];
+          }
+
+          // YouTube動画
+          if ($url_type == "youtube") {
+            $video_id = preg_replace('/.*?watch\?v\=(.*?)/u', '$1', $url);
+
+            $array = [];
+            if (file_exists("data/yt_videos.json"))
+                $array = json_decode(file_get_contents("data/yt_videos.json"), true);
+            $array[$video_id] = [
+                "type" => $_POST['t']
+            ];
+            file_put_contents("data/yt_videos.json", json_encode($array));
+
+            //addPlaylist($playlist_id, $_POST['t']);
+            $notice .= $lang['added_vd'];
+          }
+          
         }
         
         if ($_POST['do'] == "report") {
@@ -314,7 +450,15 @@ global $notice;
     <link rel="icon" type="image/png" href="/favicon.png" />
     <script>
         function onClickThumb($id) {
-            document.getElementById("content_" + $id).innerHTML = '<iframe width="320" height="180" src="https://www.youtube.com/embed/' + $id + '" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>'
+            document.getElementById("content_" + $id).innerHTML = '<iframe width="320" height="180" src="https://www.youtube.com/embed/' + $id + '" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>';
+        }
+      
+        function onClickThumbNC($id) {
+            var $script = document.createElement('script');
+            $script.setAttribute("type", "application/javascript");
+            $script.setAttribute("src", "https://embed.nicovideo.jp/watch/" + $id + "/script?w=320&h=180");
+            document.getElementById("content_" + $id).innerHTML = '';
+            document.getElementById("content_" + $id).appendChild($script);
         }
     </script>
     <style>
@@ -425,7 +569,7 @@ a:hover {
 <?php
 if (isset($_GET['post'])) {
     ?>
-    <p>ボイパ対決、素材の動画情報を当ツールへ追加するための再生リストを送信できます<br />再生リストに入っているものがボイパ対決・素材であるかこちらで審査します。<br />比較動画などに関しては今のところ採用しません。<br /><br />YouTubeの再生リストのURL</p>
+    <p>ボイパ対決、素材の動画情報を当ツールへ追加するための再生リストを送信できます<br />再生リストに入っているものがボイパ対決・素材であるかこちらで審査します。<br />比較動画などに関しては今のところ採用しません。<br /><br />YouTubeの動画・再生リストのURLかニコニコ動画のURL</p>
         <form action="./" method="POST">
             <input type="text" name ="url" />
             <input type="hidden" name="do" value="post" placeholder="Playlist URL" />
@@ -541,7 +685,7 @@ if (isset($_GET['post'])) {
         foreach ($words as $word) {
             if (!isset($_GET['method']) || $_GET['method'] == "and")
                 if (
-                       (!isset($_GET['title']) || !$_GET['title'] == "1" || false === strpos(mb_strtolower($data['title']), mb_strtolower($word)))
+                       (!isset($_GET['title']) || !$_GET['title'] == "1" || false === strpos(mb_strtolower(mb_convert_kana(kan2num($data['title']), "Hc")), mb_strtolower(mb_convert_kana(kan2num($word), "Hc"))))
                     && (!isset($_GET['expl']) || !$_GET['expl'] == "1" || false === strpos(mb_strtolower($data['description']), mb_strtolower($word)))
                     && (!isset($_GET['author']) || !$_GET['author'] == "1" || false === strpos(mb_strtolower($data['channelTitle']), mb_strtolower($word))) 
                     && (!isset($_GET['tag']) || !$_GET['tag'] == "1" || false === strpos(mb_strtolower(implode(",", $data['tags'])), mb_strtolower($word)))
@@ -551,7 +695,7 @@ if (isset($_GET['post'])) {
                 }
             if (isset($_GET['method']) && $_GET['method'] == "or")
                 if (
-                       (!isset($_GET['title']) || !$_GET['title'] == "1" || false === strpos(mb_strtolower($data['title']), mb_strtolower($word)))
+                       (!isset($_GET['title']) || !$_GET['title'] == "1" || false === strpos(mb_strtolower(mb_convert_kana(kan2num($data['title']), "Hc")), mb_strtolower(mb_convert_kana(kan2num($word), "Hc"))))
                     && (!isset($_GET['expl']) || !$_GET['expl'] == "1" || false === strpos(mb_strtolower($data['description']), mb_strtolower($word)))
                     && (!isset($_GET['author']) || !$_GET['author'] == "1" || false === strpos(mb_strtolower($data['channelTitle']), mb_strtolower($word)))
                     && (!isset($_GET['tag']) || !$_GET['tag'] == "1" || false === strpos(mb_strtolower(implode(",", $data['tags'])), mb_strtolower($word)))
@@ -582,7 +726,30 @@ if (isset($_GET['post'])) {
             $ago = time_elapsed_string($data['publishedAt']);
 
         $view_str = number_format($data['view']);
+        if (isset($data['is_nicovideo']) && $data['is_nicovideo'] == true) {
+          // ニコニコ
+        echo <<<EOD
+        <div style="clear:both;">
+            <div id="content_{$id}" style="float:left;margin-right:8px;">
+                <a href="javascript:onClickThumbNC('{$id}');"><img id="{$id}" src="./cache/thumb/{$id}.jpg" style="width:320px;height:180px;object-fit:cover;" /></a>
+            </div>
+            <div>
+                <span style="font-size:18px;"><a target="_blank" class="plain" href="https://www.nicovideo.jp/watch/{$id}">{$data['title']}</a></span><br />
+                <span style="font-size:11px;">{$view_str} {$lang['view']}・{$ago}</span>
+                <br />
+                <span style="font-size:15px;"><a class="plain" href="https://www.nicovideo.jp/user/{$data['channelId']}">{$data['channelTitle']}</a></span>
+                <br />
+                <span style="font-size:11px;">{$description}</span>
+                <br />
+                <span style="font-size:12px;"><a href="./?report&id={$id}&is_nicovideo=true">{$lang['report']}</a> |
+                <a href="javascript:navigator.clipboard.writeText('https://www.nicovideo.jp/watch/{$id}');">URL{$lang['copy']}</a></span>
+            </div>
 
+        </div>
+        EOD;
+          
+        } else {
+          // youtube
         echo <<<EOD
         <div style="clear:both;">
             <div id="content_{$id}" style="float:left;margin-right:8px;">
@@ -602,6 +769,7 @@ if (isset($_GET['post'])) {
 
         </div>
         EOD;
+        }
     }
     echo "\n<br />\n<div style=\"clear:both;\"><hr /></div>\n" . $page_switch_html;
 }
