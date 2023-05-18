@@ -606,7 +606,6 @@ if (isset($_GET['post'])) {
         </form>
     EOD;
 } else {
-    $page_switch_html = '';
 
     $q = isset($_GET['q']) ? $_GET['q'] : '';
     $method = isset($_GET['method']) ? $_GET['method'] : 'and';
@@ -618,28 +617,6 @@ if (isset($_GET['post'])) {
     $page = 1;
     if (isset($_GET['page']))
         $page = (int) $_GET['page'];
-
-    $page_switch_html .= '<div style="clear:both;">';
-    if ($page !== 1)
-        $page_switch_html .= '<a href="?q=' . $q . '&method=' . $method . '&title=' . $title . '&expl=' . $expl . '&author=' . $author . '&t=' . $t . '&page=' . ($page - 50) . '"><strong>' . $lang['prev'] . '</strong></a> | ';
-    $move_n = round(9 / 2);
-    $page_count = 0;
-
-    if (file_exists("data/index.json"))
-        $page_count = count(json_decode(file_get_contents("data/index.json"), true));
-
-    $num_op_tag = '';
-    for ($c = 1;$c <= 9; ++$c) {	
-        $n = round(($page + MAX_VIEW) / MAX_VIEW);
-        $disp_num = $c;
-        if ($n > $move_n) $disp_num = $c + $n - $move_n;
-        $f = $disp_num * MAX_VIEW - MAX_VIEW + 1;
-        if ($f > $page_count) break;
-        $num_op_tag .= '<' . ($f == $page ? 'span' : 'a' ) . ' href="?q=' . $q . '&method=' . $method . '&title=' . $title . '&expl=' . $expl . '&author=' . $author . '&t=' . $t . '&page=' . ($f) . '"><strong>' . $disp_num . '</strong></' . ($f == $page ? 'span' : 'a' ) . '> | ';
-    }
-    $page_switch_html .= $num_op_tag;
-    $page_switch_html .= '<a href="?q=' . $q . '&method=' . $method . '&title=' . $title . '&expl=' . $expl . '&author=' . $author . '&t=' . $t . '&page=' . ($page + 50) . '"><strong>' . $lang['next'] . '</strong></a>';
-    $page_switch_html .= '</div>';
 
     ?>
     <form method="GET">
@@ -665,8 +642,8 @@ if (isset($_GET['post'])) {
     <br />
     <?php
 
-    echo $page_switch_html . "\n<hr />";
-
+    $video_contents_html = '';
+      
     $index = [];
     $c = $view_c = 0;
     if (file_exists("data/index.json")) {
@@ -728,7 +705,7 @@ if (isset($_GET['post'])) {
         $view_str = number_format($data['view']);
         if (isset($data['is_nicovideo']) && $data['is_nicovideo'] == true) {
           // ニコニコ
-        echo <<<EOD
+        $video_contents_html .= <<<EOD
         <div style="clear:both;">
             <div id="content_{$id}" style="float:left;margin-right:8px;">
                 <a href="javascript:onClickThumbNC('{$id}');"><img id="{$id}" src="./cache/thumb/{$id}.jpg" style="width:320px;height:180px;object-fit:cover;" /></a>
@@ -750,7 +727,7 @@ if (isset($_GET['post'])) {
           
         } else {
           // youtube
-        echo <<<EOD
+        $video_contents_html .= <<<EOD
         <div style="clear:both;">
             <div id="content_{$id}" style="float:left;margin-right:8px;">
                 <a href="javascript:onClickThumb('{$id}');"><img id="{$id}" src="https://i.ytimg.com/vi/{$id}/hqdefault.jpg" style="width:320px;height:180px;object-fit:cover;" /></a>
@@ -771,7 +748,37 @@ if (isset($_GET['post'])) {
         EOD;
         }
     }
-    echo "\n<br />\n<div style=\"clear:both;\"><hr /></div>\n" . $page_switch_html;
+  
+    $page_switch_html = '';
+
+    $page_switch_html .= '<div style="clear:both;">';
+    if ($page !== 1)
+        $page_switch_html .= '<a href="?q=' . $q . '&method=' . $method . '&title=' . $title . '&expl=' . $expl . '&author=' . $author . '&t=' . $t . '&page=' . ($page - 50) . '"><strong>' . $lang['prev'] . '</strong></a> | ';
+    $move_n = round(9 / 2);
+    $page_count = 0;
+
+    if (file_exists("data/index.json"))
+        $page_count = count(json_decode(file_get_contents("data/index.json"), true));
+
+    $num_op_tag = '';
+    for ($c = 1;$c <= 9; ++$c) {	
+        $n = round(($page + MAX_VIEW) / MAX_VIEW);
+        $disp_num = $c;
+        if ($n > $move_n) $disp_num = $c + $n - $move_n;
+        $f = $disp_num * MAX_VIEW - MAX_VIEW + 1;
+        if ($f > $page_count) break;
+        $num_op_tag .= '<' . ($f == $page ? 'span' : 'a' ) . ' href="?q=' . $q . '&method=' . $method . '&title=' . $title . '&expl=' . $expl . '&author=' . $author . '&t=' . $t . '&page=' . ($f) . '"><strong>' . $disp_num . '</strong></' . ($f == $page ? 'span' : 'a' ) . '> | ';
+        if ($f == $page && $view_c < MAX_VIEW) break;
+    }
+    $page_switch_html .= $num_op_tag;
+    if ($view_c >= MAX_VIEW) {
+      $page_switch_html .= '<a href="?q=' . $q . '&method=' . $method . '&title=' . $title . '&expl=' . $expl . '&author=' . $author . '&t=' . $t . '&page=' . ($page + 50) . '"><strong>' . $lang['next'] . '</strong></a>';
+    } else {
+      $page_switch_html .= '<strong>...</strong>';
+    }
+    $page_switch_html .= '</div>';
+
+    echo $page_switch_html . "\n<hr />" . $video_contents_html . "\n<br />\n<div style=\"clear:both;\"><hr /></div>\n" . $page_switch_html;
 }
 ?>
 <br />
