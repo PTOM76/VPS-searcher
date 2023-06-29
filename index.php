@@ -1,7 +1,9 @@
 <?php
 if (isset($_GET['q'])) {
   $analytics = "./data/analytics/" . date("Y-m-d") . ".txt";
-  $data = file_get_contents($analytics);
+  $data = '';
+  if (file_exists($analytics))
+    $data = file_get_contents($analytics);
   file_put_contents($analytics, $data . "DATE: " . date("Y-m-d_H:i:s") . "\n" . "URI: " . $_SERVER['REQUEST_URI'] . "\nWORD: " . $_GET['q'] . "\n----------------\n");
 }
 

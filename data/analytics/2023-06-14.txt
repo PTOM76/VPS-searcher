@@ -1,0 +1,12 @@
+DATE: 2023-06-14_04:14:21
+URI: /?q=%E3%82%AA%E3%82%B0%E3%83%AA%E3%82%AD%E3%83%A3%E3%83%83%E3%83%97&method=and&title=1&t=all
+WORD: オグリキャップ
+----------------
+DATE: 2023-06-14_04:14:29
+URI: /?q=%E3%83%9E%E3%82%AD%E3%83%9E&method=and&title=1&t=all
+WORD: マキマ
+----------------
+DATE: 2023-06-14_11:34:18
+URI: /?q=&method=and&title=1&expl=0&author=0&t=all&page=1
+WORD: 
+----------------
