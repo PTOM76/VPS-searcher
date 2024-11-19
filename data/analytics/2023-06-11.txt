@@ -1,8 +1,0 @@
-DATE: 2023-06-11_05:22:30
-URI: /?q=&method=and&title=1&expl=0&author=0&t=all&page=1
-WORD: 
-----------------
-DATE: 2023-06-11_13:35:56
-URI: /?q=&method=and&title=1&expl=0&author=0&t=all&page=601
-WORD: 
-----------------

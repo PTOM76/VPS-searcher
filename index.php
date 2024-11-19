@@ -9,14 +9,29 @@ if (isset($_GET['q'])) {
 
 set_time_limit(600);
 date_default_timezone_set('UTC');
-define("API_KEY", getenv("API_KEY"));
+//define("API_KEY", getenv("API_KEY"));
+define("API_KEY", "");
 define("MAX_VIEW", 50);
-error_reporting(E_ALL & ~E_DEPRECATED & ~E_STRICT);
+//error_reporting(E_ALL & ~E_DEPRECATED & ~E_STRICT);
 ini_set('display_errors', 0);
-
+putenv("PASS=");
 if (isset($_GET[getenv('PASS')])) {
   addPlaylist("PLdKTS7WkYMJErsSEK6C0VAQin9N8zfVr5", "vps", false, true);
   addPlaylist("PLdKTS7WkYMJFj8REOW1mRE_hEK0QY9FrM", "material", false, true);
+}
+if (isset($_GET['replace_' . getenv('PASS')])) {
+
+    if (isset($_GET['vps_nexttoken'])) 
+        $next = addPlaylist("PLdKTS7WkYMJErsSEK6C0VAQin9N8zfVr5", "vps", $_GET['vps_nexttoken'], false);
+    else 
+        $next = addPlaylist("PLdKTS7WkYMJErsSEK6C0VAQin9N8zfVr5", "vps", false, false);
+    if (isset($_GET['material_nexttoken'])) 
+        $next2 = addPlaylist("PLdKTS7WkYMJFj8REOW1mRE_hEK0QY9FrM", "material", $_GET['material_nexttoken'], false);
+    else 
+        $next2 = addPlaylist("PLdKTS7WkYMJFj8REOW1mRE_hEK0QY9FrM", "material", false, false);
+  echo 'vps_nexttoken: ' . $next . ' , ';
+  echo 'material_nexttoken: ' . $next2;
+  exit;
 }
 
 if (isset($_GET["update2_" . getenv('PASS')])) {
@@ -46,145 +61,8 @@ if (file_exists("time.txt")) {
 }
 if (!isset($useLang))
     $useLang = "ja";
-$_lang['ja'] = [
-    'year' => '年',
-    'month' => 'ヶ月',
-    'week' => '週',
-    'day' => '日',
-    'hour' => '時',
-    'minu' => '分',
-    'sec' => '秒',
-    'ago' => '前',
-    'justnow' => '直前',
-    'title' => 'ボ対専用検索ツール',
-    'search' => '検索',
-    'and_search' => 'AND検索',
-    'or_search' => 'OR検索',
-    'title_checkbox' => 'タイトル',
-    'overview_checkbox' => '概要欄',
-    'author_checkbox' => '投稿者',
-    'tag_checkbox' => 'タグ',
-    'all_radio' => 'すべて',
-    'vps_radio' => 'ボイパ対決',
-    'material_radio' => '素材',
-    'next' => '次へ',
-    'prev' => '前へ',
-    'sended_pl' => 'プレイリストを送信しました。',
-    'added_pl' => 'プレイリストを追加しました。',
-    'sended_vd' => '動画を送信しました。',
-    'added_vd' => '動画を追加しました。',
-    'reported_video' => '動画を報告しました。',
-    'send_pl' => 'データ送信',
-    'view' => '回視聴',
-    'report' => '報告',
-    'download' => 'ダウンロード',
-    'copy' => 'コピー',
-];
 
-$_lang['en'] = [
-    'year' => 'year',
-    'month' => 'month',
-    'week' => 'week',
-    'day' => 'day',
-    'hour' => 'hour',
-    'minu' => 'minute',
-    'sec' => 'second',
-    'ago' => 'ago',
-    'justnow' => 'just now',
-    'title' => 'VPS Search Tool',
-    'search' => 'Search',
-    'and_search' => 'AND',
-    'or_search' => 'OR',
-    'title_checkbox' => 'Title',
-    'overview_checkbox' => 'Description',
-    'author_checkbox' => 'Author',
-    'tag_checkbox' => 'Tag',
-    'all_radio' => 'All',
-    'vps_radio' => 'VPS',
-    'material_radio' => 'Material',
-    'next' => 'Next',
-    'prev' => 'Prev',
-    'sended_pl' => 'Sended playlist',
-    'added_pl' => 'Added playlist',
-    'sended_vd' => 'Sended video',
-    'added_vd' => 'Added video',
-    'reported_video' => 'Reported video',
-    'send_pl' => 'Data Sending',
-    'view' => 'views',
-    'report' => 'Report',
-    'download' => 'Download',
-    'copy' => 'Copy',
-];
-
-$_lang['zh'] = [
-'year' => '年',
-'month' => '个月',
-'week' => '周',
-'day' => '天',
-'hour' => '小时',
-'minu' => '分钟',
-'sec' => '秒',
-'ago' => '前',
-'justnow' => '刚刚',
-'title' => '口技対決专用搜索工具',
-'search' => '搜索',
-'and_search' => 'AND搜索',
-'or_search' => 'OR搜索',
-'title_checkbox' => '标题',
-'overview_checkbox' => '概述',
-'author_checkbox' => '投稿者',
-'tag_checkbox' => '标签',
-'all_radio' => '全部',
-'vps_radio' => '语音对决',
-'material_radio' => '素材',
-'next' => '下一页',
-'prev' => '上一页',
-'sended_pl' => '已发送播放列表。',
-'added_pl' => '已添加到播放列表。',
-'sended_vd' => '已发送播视频。',
-'added_vd' => '已添加到播视频。',
-'reported_video' => '已举报视频。',
-'send_pl' => '数据传输',
-'view' => '次观看',
-'report' => '举报',
-'download' => '下载',
-'copy' => '复制',
-];
-
-$_lang['ko'] = [
-'year' => '년',
-'month' => '개월',
-'week' => '주',
-'day' => '일',
-'hour' => '시간',
-'minu' => '분',
-'sec' => '초',
-'ago' => '전',
-'justnow' => '방금',
-'title' => '보이파대결 전용 검색 도구',
-'search' => '검색',
-'and_search' => 'AND 검색',
-'or_search' => 'OR 검색',
-'title_checkbox' => '제목',
-'overview_checkbox' => '개요',
-'author_checkbox' => '게시자',
-'tag_checkbox' => '태그',
-'all_radio' => '모두',
-'vps_radio' => '보이스피싱 대결',
-'material_radio' => '소재',
-'next' => '다음',
-'prev' => '이전',
-'sended_pl' => '재생 목록을 전송했습니다.',
-'added_pl' => '재생 목록에 추가했습니다.',
-'sended_vd' => '동영상 전송했습니다.',
-'added_vd' => '동영상 추가했습니다.',
-'reported_video' => '동영상을 신고했습니다.',
-'send_pl' => '데이터 전송',
-'view' => '회 시청',
-'report' => '신고',
-'download' => '다운로드',
-'copy' => '복사',
-];
+require_once "lang.ini.php";
 
 $lang = $_lang[$useLang];
 
@@ -204,6 +82,18 @@ function kan2num($str) {
     $str = str_replace("！", "!", $str);
     $str = str_replace("？", "?", $str);
   return $str;
+}
+
+function make_param(array $params) : string {
+    $param = "";
+    foreach ($params as $key => $value) {
+        if ($value === null || empty($value)) continue;
+        $param .= $key . "=" . $value . "&";
+    }
+    if (!empty($param)) {
+        $param = "?" . substr($param, 0, -1);
+    }
+    return $param;
 }
 
     function time_elapsed_string($datetime, $full = false) {
@@ -230,7 +120,7 @@ function kan2num($str) {
         foreach ($string as $k => &$v) {
             if ($diff->$k) {
                 // $v = $diff->$k . ' ' . $v . ($diff->$k > 1 ? 's' : '');
-                $v = $diff->$k . '' . $v . ($diff->$k > 1 ? ($useLang == "en" ? 's ' : '') : '');
+                $v = $diff->$k . '' . $v . ($diff->$k > 1 ? ($useLang === "en" ? 's ' : '') : '');
             } else {
                 unset($string[$k]);
             }
@@ -273,11 +163,26 @@ function kan2num($str) {
       return;
     }
 
+    $blacklist = json_decode(file_get_contents("blacklist.json"), true);
+
+    // index.json から blacklist の動画を削除
+    /*
+    $index = json_decode(file_get_contents("data/index.json"), true);
+    foreach ($index as $id => $data) {
+        if (in_array($id, $blacklist)) {
+            unset($index[$id]);
+        }
+    }
+    file_put_contents("data/index.json", json_encode($index, JSON_UNESCAPED_UNICODE));
+    */
+
     function addPlaylist($playlist_id, $type, $nextPageToken = false, $only = false, $nextWithOnly = false) {
+        global $blacklist;
+
         static $c = 0;
         ++$c;
         $api_url = "https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&key=" . API_KEY . "&order=date&playlistId=" . $playlist_id;
-        $video_api_url = "https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&key=" . API_KEY;
+        $video_api_url = "https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics,status&key=" . API_KEY;
 
         if ($nextPageToken !== false) {
             $api_url .= "&pageToken=" . $nextPageToken;
@@ -301,10 +206,12 @@ function kan2num($str) {
 
         foreach ($output->items as $item) {
             $snippet = $item->snippet;
+
             $videoId = $snippet->resourceId->videoId;
             if ($only) {
               if (isset($index[$videoId])) continue;
             }
+            if (in_array($videoId, $blacklist)) continue;
 
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
@@ -314,6 +221,9 @@ function kan2num($str) {
             curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
             $video_output = json_decode(curl_exec($ch));
             curl_close($ch);
+
+            // 削除、非公開の動画の場合はスキップ (publishedAtがない場合)
+            if (!isset($video_output->items[0]->snippet->publishedAt)) continue;
 
             $index[$videoId] = [
                 'title' => $snippet->title,
@@ -325,6 +235,7 @@ function kan2num($str) {
                 'like' => $video_output->items[0]->statistics->likeCount,
                 'tags' => (array) $video_output->items[0]->snippet->tags,
                 'type' => $type,
+                'status' => $video_output->items[0]->status->privacyStatus,
             ];
         }
 
@@ -333,8 +244,10 @@ function kan2num($str) {
         
         file_put_contents("data/index.json", json_encode($index, JSON_UNESCAPED_UNICODE));
 
-        if (($only == false || $nextWithOnly == true) && isset($output->nextPageToken)) {
+        if ((!$only || $nextWithOnly) && isset($output->nextPageToken)) {
             addPlaylist($playlist_id, $type, $output->nextPageToken);
+        } else if (isset($output->nextPageToken)) {
+            return $output->nextPageToken;
         }
         
     }
@@ -350,10 +263,10 @@ function kan2num($str) {
           $url_type = "youtube";
         }
       
-        if ($_POST['do'] == "post") {
+        if ($_POST['do'] === "post") {
 
           // 再生リスト
-          if ($url_type == "playlist") {
+          if ($url_type === "playlist") {
             $playlist_id = preg_replace('/.*?&list\=(.*?)/u', '$1', $url);
             if (!file_exists("queue/")) mkdir("queue");
             file_put_contents("queue/pl_" . $playlist_id . ".txt", "ID: {$playlist_id}\nURL: " . $_POST['url'] . "\nType: " . $_POST['t']);
@@ -362,7 +275,7 @@ function kan2num($str) {
           }
 
           // ニコニコ動画
-          if ($url_type == "nicovideo") {
+          if ($url_type === "nicovideo") {
             $video_id = preg_replace('/.*?(sm.*?)/u', '$1', $url);
             if (!file_exists("queue/")) mkdir("queue");
             file_put_contents("queue/nc_" . $video_id . ".txt", "ID: {$video_id}\nURL: " . $_POST['url'] . "\nType: " . $_POST['t']);
@@ -372,7 +285,7 @@ function kan2num($str) {
           }
 
           // YouTube動画
-          if ($url_type == "youtube") {
+          if ($url_type === "youtube") {
             $video_id = preg_replace('/.*?watch\?v\=(.*?)/u', '$1', $url);
             if (!file_exists("queue/")) mkdir("queue");
             file_put_contents("queue/yt_" . $video_id . ".txt", "ID: {$video_id}\nURL: " . $_POST['url'] . "\nType: " . $_POST['t']);
@@ -382,10 +295,10 @@ function kan2num($str) {
           }
           
         }
-        if ($_POST['do'] == "post_" . getenv('PASS')) {
+        if ($_POST['do'] === "post_" . getenv('PASS')) {
           
           // 再生リスト
-          if ($url_type == "playlist") {
+          if ($url_type === "playlist") {
             $playlist_id = preg_replace('/.*?&list\=(.*?)/u', '$1', $url);
 
             $array = [];
@@ -401,7 +314,7 @@ function kan2num($str) {
           }
 
           // ニコニコ動画
-          if ($url_type == "nicovideo") {
+          if ($url_type === "nicovideo") {
             $video_id = preg_replace('/.*?(sm.*?)/u', '$1', $url);
 
             $array = [];
@@ -417,7 +330,7 @@ function kan2num($str) {
           }
 
           // YouTube動画
-          if ($url_type == "youtube") {
+          if ($url_type === "youtube") {
             $video_id = preg_replace('/.*?watch\?v\=(.*?)/u', '$1', $url);
 
             $array = [];
@@ -434,7 +347,7 @@ function kan2num($str) {
           
         }
         
-        if ($_POST['do'] == "report") {
+        if ($_POST['do'] === "report") {
             if (!file_exists("report/")) mkdir("report");
             $id = $_POST['id'];
             file_put_contents("report/" . $_POST['id'] . "-" . time() . ".txt", "ID: {$id}\nURL: https://youtu.be/{$id}\nType: " . $_POST['t'] . "\nReason: " . (isset($_POST['reason']) ? $_POST['reason'] : 'none'));
@@ -462,106 +375,61 @@ function kan2num($str) {
             document.getElementById("content_" + $id).innerHTML = '';
             document.getElementById("content_" + $id).appendChild($script);
         }
-    </script>
-    <style>
-        body {
-            margin:0;
-            font-family: verdana, arial, helvetica, Sans-Serif;
-        }
-        div#contents {
-            margin-left:8px;
-            margin-right:8px;
-        }
-        h3 a {
-            color:black;
-            text-decoration:none;
-            font-weight:normal;
-        }
-        a.plain {
-            color:black;
-            text-decoration:none;
-            font-weight:normal;
-        }
-        div#navi {
-            width:100%;
-            height:35px;
-            background-color:black;
-            box-sizing:border-box;
-            margin:0;
-            position:fixed;
-            top:0;
-            left:0;
-            opacity:0.85;
-            
-        }
-        div#navi li+ li {
-            border-left:1px solid #555;
-        }
-        div#navi ul {
-            display: flex;
-            margin-left:-40px;
-        }
-        div#navi li {
-            list-style:none;
-            margin-top:-10px;
-        }
-        div#navi a {
-            display:block;
-            text-decoration:none;
-            color:white;
-            margin-right:10px;
-            margin-left:10px;
-        }
-        div#navi a:hover {
-            color:#77aaff;
-        }
 
-input[type='submit'] {
-    height:24px;
-    background:#EBEBEB;
-    text-align:center;
-    border:1px solid #AFAFAF;
-    color:#444444;
-    font-size:15px;
-    border-radius:3px;
-    -webkit-border-radius:3px;
-    -moz-border-radius:3px;
-    transition: all 0.5s ease;
-    margin-top:-1px;
-}
-input[type='submit']:hover{
-    background:#EBFBFF;
-    color:#444444;
-    margin-left:0px;
-    margin-top:-1px;
-    border:1px solid #AFCFFF;
-}
-input[type='text'] {
-    height:20px;
-    border:1px solid #AFAFAF;
-    color:#444444;
-    font-size:15px;
-    border-radius:3px;
-    -webkit-border-radius:3px;
-    -moz-border-radius:3px;
-    transition: all 0.5s ease;
-}
-a {
-    text-decoration:none;
-    color:#0066ff;
-}
-a:hover {
-    text-decoration:none;
-    color:#0044dd;
-}
-    </style>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Dropdown
+            var dropdown = document.getElementsByClassName("dropdown");
+            var i;
+
+            for (i = 0; i < dropdown.length; i++) {
+                dropdown[i].addEventListener("mouseover", function() {
+                    this.getElementsByClassName("dropdown-content")[0].style.display = "block";
+                });
+                dropdown[i].addEventListener("mouseout", function() {
+                    this.getElementsByClassName("dropdown-content")[0].style.display = "none";
+                });
+            }
+            // Lazy Load
+
+            const lazyImages = document.querySelectorAll('img[data-src]');
+            const imageObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        img.src = img.dataset.src;
+                        img.onload = () => img.classList.add('loaded');
+                        observer.unobserve(img);
+                    }
+                });
+            });
+            lazyImages.forEach(img => {
+                imageObserver.observe(img);
+            });
+        });
+    </script>
+    <script src="darkmode.js"></script>
+    <link rel="stylesheet" type="text/css" href="main.css" />
 </head>
 <body>
     <div id="navi">
         <ul>
-            <li><a href="<?php echo $useLang == "ja" ? "./" : "./" . $useLang . ".php"; ?>"><?php echo $lang['title']; ?></a></li>
-            <li><a href="?post"><?php echo $lang['send_pl']; ?></a></li>
-            <li><a href="<?php echo $useLang == "ja" ? "./en.php" : "./"; ?>"><?php echo $useLang == "ja" ? "English" : "日本語"; ?></a></li>
+            <li><a href="<?php echo $useLang === "ja" ? "./" : "./" . $useLang . ".php"; ?>"><?php echo $lang['title']; ?></a></li>
+            <li class="pc"><a href="?info"><?php echo $lang['info']; ?></a></li>
+            <li class="pc"><a href="?post"><?php echo $lang['send_pl']; ?></a></li>
+            <li class="dropdown pc">
+                <a href="javascript:void(0)" class="dropbtn">Language</a>
+                <div class="dropdown-content">
+                    <a href="./<?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>"><img src="./image/japanese.png" /> 日本語</a>
+                    <a href="./en.php<?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>"><img src="./image/english.png" /> English</a>
+                    <a href="./zh.php<?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>"><img src="./image/chinese.png" /> 中国语</a>
+                    <a href="./ko.php<?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>"><img src="./image/korean.png" /> 한국인</a>
+                </div>
+            </li>
+
+            <li><a href="./matrix/<?php echo $useLang === "ja" ? "" : $useLang . ".php"; ?><?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>"><img src="image/matrix.png" /></a></li>
+            <li><a href="javascript:toggleDarkMode();"><img id="darkmode" src="image/darkmode.png" /></a></li>
+
+            <li class="sp noborder" id="menu"><a href="javascript:void(0)"><img src="image/menu.png" /></a></li>
         </ul>
     </div>
     <br /><br />
@@ -607,6 +475,93 @@ if (isset($_GET['post'])) {
             <input type="submit" />
         </form>
     EOD;
+} else if (isset($_GET['info'])) {
+    ?>
+
+    <div id="badapple">
+        <!-- メニューにはめ込む -->
+        <img src="image/badapple.gif" style="width: 25%; text-align: center; opacity: 75%; position: absolute; top: 0; left: 50%; transform: translate(-50%, 0%);" />
+        <script>
+            var img = document.querySelector("#badapple img");
+            img.onload = function() {
+                setTimeout(function() {
+                    document.querySelector("#badapple").remove();
+                }, 3100);
+            }
+        </script>
+
+    </div>
+
+    <h2>Information</h2>
+
+    <p id="next_birth">
+        <?php
+
+        $date = new DateTime("2014-05-05");
+        $now = new DateTime();
+        $interval = $date->diff($now);
+        $year = $interval->y;
+        $day = $interval->days;
+        $next = $year + 1;
+        $next_date = new DateTime("2014-05-05");
+        $next_date->add(new DateInterval("P" . $next . "Y"));
+        $next_interval = $now->diff($next_date);
+        $next_day = $next_interval->days;
+        echo sprintf($lang['next_birth'], $next, $next_day);
+        ?>
+    </p>
+
+    <h3>Description</h3>
+    <p>
+        このサイトはボイパ対決という音MADに特化した検索ツールです。<br />
+        The site is a search tool specialized in sound MAD called "Vocal Percussion Showdown".<br />
+        本サイトはYouTube APIを使用しています。<br />
+        This site uses the YouTube API.<br />
+        <br />
+        サイト名: HIKAKINボイパ対決シリーズ専用検索ツール / Vocal Percussion Showdown Search Tool<br />
+        サイトURL: <a href="https://vps-search.pitan76.net/">https://vps-search.pitan76.net/</a><br />
+        開発者: Pitan<br />
+        開発言語: PHP, JavaScript (HTML, CSS)<br />
+        ソースコード: <a href="https://github.com/PTOM76/VPS-searcher" target="_blank">GitHub</a><br />
+    </p>
+
+    <h3>Related Links</h3>
+    <ul>
+        <li><a href="https://dic.nicovideo.jp/a/hikakin%E3%83%9C%E3%82%A4%E3%83%91%E5%AF%BE%E6%B1%BA%E3%82%B7%E3%83%AA%E3%83%BC%E3%82%BA" target="_blank">HIKAKINボイパ対決シリーズとは - ニコニコ大百科</a></li>
+        <li><a href="https://w.atwiki.jp/vpsseries/" target="_blank">HIKAKINボイパ対決シリーズWiki</a></li>
+        <li><a href="https://w.atwiki.jp/voicepercussionhkkn/" target="_blank">HIKAKIN Wiki - Vocal Percussion Showdown</a></li>
+
+    </ul>
+
+    <h3>Data Count</h3>
+    <p>
+        <?php
+        $vps = $material = 0;
+
+        if (file_exists("cache/info.json") && filemtime("cache/info.json") + 86400 > time()) {
+            $info = json_decode(file_get_contents("cache/info.json"), true);
+            $vps = $info['vps'];
+            $material = $info['material'];
+        } else {
+            $index = json_decode(file_get_contents("data/index.json"), true);
+            foreach ($index as $id => $data) {
+                if ($data['type'] === "vps") ++$vps;
+                if ($data['type'] === "material") ++$material;
+            }
+            file_put_contents("cache/info.json", json_encode(['vps' => $vps, 'material' => $material]));
+        }
+
+        echo $lang['total'] . ": " . number_format($vps + $material) . "<br />";
+        
+        echo $lang['vps_radio'] . ": " . number_format($vps) . "<br />";
+        echo $lang['material_radio'] . ": " . number_format($material) . "<br />";
+        ?>
+
+    </p>
+
+    <hr />
+
+    <?php
 } else {
 
     $q = isset($_GET['q']) ? $_GET['q'] : '';
@@ -622,24 +577,41 @@ if (isset($_GET['post'])) {
 
     ?>
     <form method="GET">
+        <select name="sort">
+            <option value="recent" <?php echo isset($_GET['sort']) && $_GET['sort'] === "recent" ? " selected" : ""; ?>><?php echo $lang['sort_recent']; ?></option>
+            <option value="ancient" <?php echo isset($_GET['sort']) && $_GET['sort'] === "ancient" ? " selected" : ""; ?>><?php echo $lang['sort_ancient']; ?></option>
+            <option value="most_view" <?php echo isset($_GET['sort']) && $_GET['sort'] === "most_view" ? " selected" : ""; ?>><?php echo $lang['sort_most_view']; ?></option>
+            <option value="worst_view" <?php echo isset($_GET['sort']) && $_GET['sort'] === "worst_view" ? " selected" : ""; ?>><?php echo $lang['sort_worst_view']; ?></option>
+            <option value="most_like" <?php echo isset($_GET['sort']) && $_GET['sort'] === "most_like" ? " selected" : ""; ?>><?php echo $lang['sort_most_like']; ?></option>
+            <option value="word" <?php echo isset($_GET['sort']) && $_GET['sort'] === "word" ? " selected" : ""; ?>><?php echo $lang['sort_word']; ?></option>
+            <option value="word_desc" <?php echo isset($_GET['sort']) && $_GET['sort'] === "word_desc" ? " selected" : ""; ?>><?php echo $lang['sort_word_desc']; ?></option>
+        </select>
+
         <input type="text" name ="q" value="<?php echo isset($_GET['q']) ? $_GET['q'] : '' ?>" />
         <input type="submit" value="<?php echo $lang['search']; ?>" />
         
-        <input type="radio" name="method" value="and"<?php echo isset($_GET['method']) && $_GET['method'] == "and" || !isset($_GET['method']) ? " checked" : ""; ?>><?php echo $lang['and_search']; ?></input>
-        <input type="radio" name="method" value="or"<?php echo isset($_GET['method']) && $_GET['method'] == "or" ? " checked" : ""; ?>><?php echo $lang['or_search']; ?></input>
+        <input type="radio" name="method" value="and"<?php echo isset($_GET['method']) && $_GET['method'] === "and" || !isset($_GET['method']) ? " checked" : ""; ?>><?php echo $lang['and_search']; ?></input>
+        <input type="radio" name="method" value="or"<?php echo isset($_GET['method']) && $_GET['method'] === "or" ? " checked" : ""; ?>><?php echo $lang['or_search']; ?></input>
         <br />
-        <input type="checkbox" id="q_title" name="title" value="1" <?php echo isset($_GET['title']) && $_GET['title'] == "1" || !isset($_GET['q']) ? "checked " : ""; ?>/>
+        <input type="checkbox" id="q_title" name="title" value="1" <?php echo isset($_GET['title']) && $_GET['title'] === "1" || !isset($_GET['q']) ? "checked " : ""; ?>/>
         <label for="q_title"><?php echo $lang['title_checkbox']; ?></label>
-        <input type="checkbox" id="q_tag" name="tag" value="1" <?php echo isset($_GET['tag']) && $_GET['tag'] == "1" ? "checked " : ""; ?>/>
+        <input type="checkbox" id="q_tag" name="tag" value="1" <?php echo isset($_GET['tag']) && $_GET['tag'] === "1" ? "checked " : ""; ?>/>
         <label for="q_tag"><?php echo $lang['tag_checkbox']; ?></label>
-        <input type="checkbox" id="q_expl" name="expl" value="1" <?php echo isset($_GET['expl']) && $_GET['expl'] == "1" ? "checked " : ""; ?>/>
+        <input type="checkbox" id="q_expl" name="expl" value="1" <?php echo isset($_GET['expl']) && $_GET['expl'] === "1" ? "checked " : ""; ?>/>
         <label for="q_expl"><?php echo $lang['overview_checkbox']; ?></label>
-        <input type="checkbox" id="q_author" name="author" value="1" <?php echo isset($_GET['author']) && $_GET['author'] == "1" ? "checked " : ""; ?>/>
+        <input type="checkbox" id="q_author" name="author" value="1" <?php echo isset($_GET['author']) && $_GET['author'] === "1" ? "checked " : ""; ?>/>
         <label for="q_author"><?php echo $lang['author_checkbox']; ?></label>
+
+        |
+
+        <input type="checkbox" id="q_unlisted" name="status" value="unlisted" <?php echo isset($_GET['status']) && $_GET['status'] === "unlisted" ? "checked " : ""; ?>/>
+        <label for="q_unlisted"><?php echo $lang['unlisted_checkbox']; ?></label>
   
-        <input type="radio" name="t" value="all"<?php echo isset($_GET['t']) && $_GET['t'] == "all" || !isset($_GET['t']) ? " checked" : ""; ?>><?php echo $lang['all_radio']; ?></input>
-        <input type="radio" name="t" value="vps"<?php echo isset($_GET['t']) && $_GET['t'] == "vps" ? " checked" : ""; ?>><?php echo $lang['vps_radio']; ?></input>
-        <input type="radio" name="t" value="material"<?php echo isset($_GET['t']) && $_GET['t'] == "material" ? " checked" : ""; ?>><?php echo $lang['material_radio']; ?></input>
+        |
+
+        <input type="radio" name="t" value="all"<?php echo isset($_GET['t']) && $_GET['t'] === "all" || !isset($_GET['t']) ? " checked" : ""; ?>><?php echo $lang['all_radio']; ?></input>
+        <input type="radio" name="t" value="vps"<?php echo isset($_GET['t']) && $_GET['t'] === "vps" ? " checked" : ""; ?>><?php echo $lang['vps_radio']; ?></input>
+        <input type="radio" name="t" value="material"<?php echo isset($_GET['t']) && $_GET['t'] === "material" ? " checked" : ""; ?>><?php echo $lang['material_radio']; ?></input>
     </form>
     <br />
     <?php
@@ -657,30 +629,63 @@ if (isset($_GET['post'])) {
         $page = (int) $_GET['page'];
 
     $words = [];
-    if (isset($_GET['q']))
+    if (!empty($_GET['q']))
         $words = explode(" ", $_GET['q']);
+
+    // publishedAtがfalseでタイトルが"Deleted video"の場合は削除された動画として表示しない
+    foreach ($index as $id => $data) {
+        if ($data['publishedAt'] === false && 
+            ($data['title'] === "Deleted video" || $data['title'] === "Private video")
+        ) {
+            unset($index[$id]);
+        }
+    }
+
+    // 並び替え
+    $sort = isset($_GET['sort']) ? $_GET['sort'] : 'recent';
+    if ($sort != 'recent') {
+        $sort_array = [];
+        foreach ($index as $id => $data) {
+            if (!isset($data['like'])) $index[$id]['like'] = 0;
+            $sort_array[$id] = $data['publishedAt'];
+        }
+        if ($sort === 'ancient') {
+            array_multisort($sort_array, SORT_ASC, $index);
+        } else if ($sort === 'most_view') {
+            array_multisort(array_column($index, 'view'), SORT_DESC, $index);
+        } else if ($sort === 'worst_view') {
+            array_multisort(array_column($index, 'view'), SORT_ASC, $index);
+        } else if ($sort === 'most_like') {
+            array_multisort(array_column($index, 'like'), SORT_DESC, $index);
+        } else if ($sort === 'word') {
+            array_multisort(array_column($index, 'title'), SORT_ASC, $index);
+        } else if ($sort === 'word_desc') {
+            array_multisort(array_column($index, 'title'), SORT_DESC, $index);
+        }
+    }
+
     foreach ($index as $id => $data) {
         $continue = false;
         foreach ($words as $word) {
-            if (!isset($_GET['method']) || $_GET['method'] == "and")
+            if (!isset($_GET['method']) || $_GET['method'] === "and")
                 if (
-                       (!isset($_GET['title']) || !$_GET['title'] == "1" || false === strpos(mb_strtolower(mb_convert_kana(kan2num($data['title']), "Hc")), mb_strtolower(mb_convert_kana(kan2num($word), "Hc"))))
-                    && (!isset($_GET['expl']) || !$_GET['expl'] == "1" || false === strpos(mb_strtolower($data['description']), mb_strtolower($word)))
-                    && (!isset($_GET['author']) || !$_GET['author'] == "1" || false === strpos(mb_strtolower($data['channelTitle']), mb_strtolower($word))) 
-                    && (!isset($_GET['tag']) || !$_GET['tag'] == "1" || false === strpos(mb_strtolower(implode(",", $data['tags'])), mb_strtolower($word)))
+                       (!isset($_GET['title']) || !$_GET['title'] === "1" || false === strpos(mb_strtolower(mb_convert_kana(kan2num($data['title']), "Hc")), mb_strtolower(mb_convert_kana(kan2num($word), "Hc"))))
+                    && (!isset($_GET['expl']) || !$_GET['expl'] === "1" || false === strpos(mb_strtolower($data['description']), mb_strtolower($word)))
+                    && (!isset($_GET['author']) || !$_GET['author'] === "1" || false === strpos(mb_strtolower($data['channelTitle']), mb_strtolower($word))) 
+                    && (!isset($_GET['tag']) || !$_GET['tag'] === "1" || false === strpos(mb_strtolower(implode(",", $data['tags'])), mb_strtolower($word)))
                     )
                 {
                     $continue = true;
                 }
-            if (isset($_GET['method']) && $_GET['method'] == "or")
+            if (isset($_GET['method']) && $_GET['method'] === "or")
                 if (
-                       (!isset($_GET['title']) || !$_GET['title'] == "1" || false === strpos(mb_strtolower(mb_convert_kana(kan2num($data['title']), "Hc")), mb_strtolower(mb_convert_kana(kan2num($word), "Hc"))))
-                    && (!isset($_GET['expl']) || !$_GET['expl'] == "1" || false === strpos(mb_strtolower($data['description']), mb_strtolower($word)))
-                    && (!isset($_GET['author']) || !$_GET['author'] == "1" || false === strpos(mb_strtolower($data['channelTitle']), mb_strtolower($word)))
-                    && (!isset($_GET['tag']) || !$_GET['tag'] == "1" || false === strpos(mb_strtolower(implode(",", $data['tags'])), mb_strtolower($word)))
+                       (!isset($_GET['title']) || !$_GET['title'] === "1" || false === strpos(mb_strtolower(mb_convert_kana(kan2num($data['title']), "Hc")), mb_strtolower(mb_convert_kana(kan2num($word), "Hc"))))
+                    && (!isset($_GET['expl']) || !$_GET['expl'] === "1" || false === strpos(mb_strtolower($data['description']), mb_strtolower($word)))
+                    && (!isset($_GET['author']) || !$_GET['author'] === "1" || false === strpos(mb_strtolower($data['channelTitle']), mb_strtolower($word)))
+                    && (!isset($_GET['tag']) || !$_GET['tag'] === "1" || false === strpos(mb_strtolower(implode(",", $data['tags'])), mb_strtolower($word)))
                     ) 
                 {
-                    if ($continue == false) $continue = 0;
+                    if ($continue === false) $continue = 0;
                     ++$continue;
                 }
         }
@@ -688,29 +693,39 @@ if (isset($_GET['post'])) {
         if (isset($_GET['t']) && $_GET['t'] !== "all") {
             if ($_GET['t'] != $data['type']) continue;
         }
+        if (isset($_GET['status']) && $_GET['status'] !== "public") {
+            if (!isset($data['status'])) continue;
+            if ($_GET['status'] != $data['status']) continue;
+        }
         if ($continue === true || count($words) > 0 && $continue >= count($words)) continue;
         
         ++$c;
-        if ($c < $page - 1) continue;
+        if ($c < $page) continue;
 
-        ++$view_c;
         if ($view_c >= MAX_VIEW) break;
+        ++$view_c;
+
         $description = mb_substr($data['description'], 0, 100, "UTF-8");
         if (mb_strlen($data['description']) > 100) {
             $description .= "...";
         }
+
+        // htmlエスケープ
+        $data['title'] = htmlspecialchars($data['title'], ENT_QUOTES);
+        $data['channelTitle'] = htmlspecialchars($data['channelTitle'], ENT_QUOTES);
+        $data['description'] = htmlspecialchars($data['description'], ENT_QUOTES);
 
         $ago = "";
         if (isset($data['publishedAt']))
             $ago = time_elapsed_string($data['publishedAt']);
 
         $view_str = number_format($data['view']);
-        if (isset($data['is_nicovideo']) && $data['is_nicovideo'] == true) {
+        if (isset($data['is_nicovideo']) && $data['is_nicovideo'] === true) {
           // ニコニコ
         $video_contents_html .= <<<EOD
         <div style="clear:both;">
             <div id="content_{$id}" style="float:left;margin-right:8px;">
-                <a href="javascript:onClickThumbNC('{$id}');"><img id="{$id}" src="./cache/thumb/{$id}.jpg" style="width:320px;height:180px;object-fit:cover;" /></a>
+                <a href="javascript:onClickThumbNC('{$id}');"><img id="{$id}" loading="lazy" data-src="./cache/thumb/{$id}.jpg" width="320px" height="180px" style="width:320px;height:180px;object-fit:cover;" /></a>
             </div>
             <div>
                 <span style="font-size:18px;"><a target="_blank" class="plain" href="https://www.nicovideo.jp/watch/{$id}">{$data['title']}</a></span><br />
@@ -732,7 +747,7 @@ if (isset($_GET['post'])) {
         $video_contents_html .= <<<EOD
         <div style="clear:both;">
             <div id="content_{$id}" style="float:left;margin-right:8px;">
-                <a href="javascript:onClickThumb('{$id}');"><img id="{$id}" src="https://i.ytimg.com/vi/{$id}/hqdefault.jpg" style="width:320px;height:180px;object-fit:cover;" /></a>
+                <a href="javascript:onClickThumb('{$id}');"><img id="{$id}" loading="lazy" data-src="https://i.ytimg.com/vi/{$id}/hqdefault.jpg" width="320px" height="180px" style="width:320px;height:180px;object-fit:cover;" /></a>
             </div>
             <div>
                 <span style="font-size:18px;"><a target="_blank" class="plain" href="https://youtu.be/{$id}">{$data['title']}</a></span><br />
@@ -754,8 +769,21 @@ if (isset($_GET['post'])) {
     $page_switch_html = '';
 
     $page_switch_html .= '<div style="clear:both;">';
-    if ($page !== 1)
-        $page_switch_html .= '<a href="?q=' . $q . '&method=' . $method . '&title=' . $title . '&expl=' . $expl . '&author=' . $author . '&t=' . $t . '&page=' . ($page - 50) . '"><strong>' . $lang['prev'] . '</strong></a> | ';
+    if ($page !== 1) {
+        $param_array = [
+            'q' => $q,
+            'method' => $method,
+            'title' => $title,
+            'expl' => $expl,
+            'author' => $author,
+            't' => $t,
+            'sort' => $sort
+        ];
+        $param_array['page'] = $page - 50;
+        if (isset($_GET['status'])) $param_array['status'] = $_GET['status'];
+        $page_switch_html .= '<a href="' . make_param($param_array) . '"><strong>' . $lang['prev'] . '</strong></a> | ';
+    }
+        //$page_switch_html .= '<a href="?q=' . $q . '&method=' . $method . '&title=' . $title . '&expl=' . $expl . '&author=' . $author . (isset($_GET['status']) ? '&status=' . $_GET['status'] : '') . '&t=' . $t . '&page=' . ($page - 50) . '"><strong>' . $lang['prev'] . '</strong></a> | ';
     $move_n = round(9 / 2);
     $page_count = 0;
 
@@ -763,28 +791,59 @@ if (isset($_GET['post'])) {
         $page_count = count(json_decode(file_get_contents("data/index.json"), true));
 
     $num_op_tag = '';
-    for ($c = 1;$c <= 9; ++$c) {	
+    $c = 1;
+    while ($c <= 9) {
         $n = round(($page + MAX_VIEW) / MAX_VIEW);
         $disp_num = $c;
         if ($n > $move_n) $disp_num = $c + $n - $move_n;
         $f = $disp_num * MAX_VIEW - MAX_VIEW + 1;
         if ($f > $page_count) break;
-        $num_op_tag .= '<' . ($f == $page ? 'span' : 'a' ) . ' href="?q=' . $q . '&method=' . $method . '&title=' . $title . '&expl=' . $expl . '&author=' . $author . '&t=' . $t . '&page=' . ($f) . '"><strong>' . $disp_num . '</strong></' . ($f == $page ? 'span' : 'a' ) . '> | ';
-        if ($f == $page && $view_c < MAX_VIEW) break;
+
+        $param_array = [
+            'q' => $q,
+            'method' => $method,
+            'title' => $title,
+            'expl' => $expl,
+            'author' => $author,
+            't' => $t,
+            'sort' => $sort
+        ];
+        $param_array['page'] = $f;
+        if (isset($_GET['status'])) $param_array['status'] = $_GET['status'];
+        $num_op_tag .= '<' . ($f == $page ? 'span' : 'a' ) . ' href="' . make_param($param_array) . '"><strong>' . $disp_num . '</strong></' . ($f == $page ? 'span' : 'a' ) . '> | ';
+
+        //$num_op_tag .= '<' . ($f == $page ? 'span' : 'a' ) . ' href="?q=' . $q . '&method=' . $method . '&title=' . $title . '&expl=' . $expl . '&author=' . $author . (isset($_GET['status']) ? '&status=' . $_GET['status'] : '') . '&t=' . $t . '&page=' . ($f) . '"><strong>' . $disp_num . '</strong></' . ($f == $page ? 'span' : 'a' ) . '> | ';
+        if ($f === $page && $view_c < MAX_VIEW) break;
+        ++$c;
     }
     $page_switch_html .= $num_op_tag;
     if ($view_c >= MAX_VIEW) {
-      $page_switch_html .= '<a href="?q=' . $q . '&method=' . $method . '&title=' . $title . '&expl=' . $expl . '&author=' . $author . '&t=' . $t . '&page=' . ($page + 50) . '"><strong>' . $lang['next'] . '</strong></a>';
+        $param_array = [
+            'q' => $q,
+            'method' => $method,
+            'title' => $title,
+            'expl' => $expl,
+            'author' => $author,
+            't' => $t,
+            'sort' => $sort
+        ];
+        $param_array['page'] = $page + 50;
+        if (isset($_GET['status'])) $param_array['status'] = $_GET['status'];
+        $page_switch_html .= '<a href="' . make_param($param_array) . '"><strong>' . $lang['next'] . '</strong></a>';
+        //$page_switch_html .= '<a href="?q=' . $q . '&method=' . $method . '&title=' . $title . '&expl=' . $expl . '&author=' . $author . (isset($_GET['status']) ? '&status=' . $_GET['status'] : '') . '&t=' . $t . '&page=' . ($page + 50) . '"><strong>' . $lang['next'] . '</strong></a>';
     } else {
       $page_switch_html .= '<strong>...</strong>';
     }
     $page_switch_html .= '</div>';
 
-    echo $page_switch_html . "\n<hr />" . $video_contents_html . "\n<br />\n<div style=\"clear:both;\"><hr /></div>\n" . $page_switch_html;
+    echo $page_switch_html , "\n<hr />" , $video_contents_html , "\n<br />\n<div style=\"clear:both;\"><hr /></div>\n" , $page_switch_html;
 }
 ?>
 <br />
-<span style="font-size:12px;">Languages: <a href="./" >日本語</a>, <a href="./en.php" >English</a>, <a href="./zh.php" >中国语</a>, <a href="./ko.php" >한국인</a><br /><br />※当サイトのデータは再生リストから取得したものです。<br />ソース: <a href="https://github.com/PTOM76/VPS-searcher">Gitリポジトリ</a><br />Copyright 2023 © Pitan.</span>
+<span style="font-size:12px;">Languages: <a href="./" >日本語</a>, <a href="./en.php" >English</a>, <a href="./zh.php" >中国语</a>, <a href="./ko.php" >한국인</a><br /><br />
+※当サイトのデータは再生リストから取得したものです。<br />
+ソース: <a href="https://github.com/PTOM76/VPS-searcher">Gitリポジトリ</a><br />
+Copyright 2023-2024 © Pitan.</span>
 </div>
 </body>
 </html>
