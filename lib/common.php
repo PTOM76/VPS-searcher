@@ -99,7 +99,7 @@ function renderHtmlHead($title, $useLang = "ja", $isMatrix = false) {
 // ナビゲーションバーの出力
 function renderNavigation($lang, $useLang, $currentUser, $isMatrix = false) {
     $pathPrefix = $isMatrix ? '../' : '';
-    $matrixPath = $isMatrix ? './' : './matrix/';
+    $matrixPath = $isMatrix ? '../' : './matrix/';
     $matrixImage = $isMatrix ? 'vertical' : 'matrix';
     ?>
     <div id="navi">
@@ -107,9 +107,6 @@ function renderNavigation($lang, $useLang, $currentUser, $isMatrix = false) {
             <li><a href="<?php echo $useLang === "ja" ? "./" : "./" . $useLang . ".php"; ?>"><?php echo $lang['title']; ?></a></li>
             <li class="pc"><a href="<?php echo $pathPrefix; ?>?info"><?php echo $lang['info']; ?></a></li>
             <li class="pc"><a href="<?php echo $pathPrefix; ?>?post"><?php echo $lang['send_pl']; ?></a></li>
-            <?php if ($currentUser): ?>
-                <li class="pc"><a href="<?php echo $pathPrefix; ?>favorites.php<?php echo $useLang !== "ja" ? "?lang=" . $useLang : ""; ?>"><?php echo $lang['favorites']; ?></a></li>
-            <?php endif; ?>
             <li class="dropdown pc">
                 <a href="javascript:void(0)" class="dropbtn">Language</a>
                 <div class="dropdown-content">
@@ -124,16 +121,16 @@ function renderNavigation($lang, $useLang, $currentUser, $isMatrix = false) {
             <li><a href="javascript:toggleDarkMode();"><img id="darkmode" src="<?php echo $pathPrefix; ?>image/darkmode.png" /></a></li>
 
             <!-- 右寄せ要素用のスペーサー -->
-            <li class="nav-spacer pc"></li>
+            <li class="nav-spacer noborder"></li>
             
             <?php if ($currentUser): ?>
-                <li class="pc nav-right"><a href="<?php echo $pathPrefix; ?>account.php<?php echo $useLang !== "ja" ? "?lang=" . $useLang : ""; ?>"><?php echo htmlspecialchars($currentUser['username']); ?></a></li>
+                <li class="pc noborder nav-right"><a href="<?php echo $pathPrefix; ?>account.php<?php echo $useLang !== "ja" ? "?lang=" . $useLang : ""; ?>"><?php echo htmlspecialchars($currentUser['username']); ?></a></li>
                 <li class="pc nav-right"><a href="<?php echo $pathPrefix; ?>login.php?logout"><?php echo $lang['logout']; ?></a></li>
             <?php else: ?>
-                <li class="pc nav-right"><a href="<?php echo $pathPrefix; ?>login.php<?php echo $useLang !== "ja" ? "?lang=" . $useLang : ""; ?>"><?php echo $lang['login']; ?></a></li>
+                <li class="pc noborder nav-right"><a href="<?php echo $pathPrefix; ?>login.php<?php echo $useLang !== "ja" ? "?lang=" . $useLang : ""; ?>"><?php echo $lang['login']; ?></a></li>
             <?php endif; ?>
 
-            <li class="sp noborder" id="menu"><a href="javascript:openSpMenu()"><img src="<?php echo $pathPrefix; ?>image/menu.png" /></a></li>
+            <li class="sp noborder nav-right" id="menu"><a href="javascript:openSpMenu()"><img src="<?php echo $pathPrefix; ?>image/menu.png" /></a></li>
         </ul>
     </div>
     <?php

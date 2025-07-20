@@ -1,5 +1,6 @@
 <?php
 require_once './lib/auth.php';
+require_once './lib/common.php';
 require_once "lang.ini.php";
 
 if (!isset($useLang))
@@ -22,174 +23,22 @@ if (isset($_POST['remove_favorite'])) {
     $videoId = $_POST['video_id'] ?? '';
     if (!empty($videoId)) {
         $result = Auth::removeFromFavorites($user['id'], $videoId);
-        $message = $result['message'];
+        $message = $result['message'] ?? '';
         $messageType = $result['success'] ? 'success' : 'error';
     }
 }
 
 // お気に入り一覧を取得
 $favorites = Auth::getFavorites($user['id']);
+
+renderHtmlHead($lang['title'], $useLang);
+renderNavigation($lang, $useLang, $currentUser);
+renderMobileMenu($lang, $useLang, $currentUser);
 ?>
-
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset='utf-8'>
-    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
-    <title>お気に入り - <?php echo $lang['title']; ?></title>
-    <meta name='viewport' content='width=device-width, initial-scale=1'>
-    <link rel="icon" type="image/png" href="/favicon.png" />
-    <link rel="stylesheet" type="text/css" href="main.css" />
-    <script src="darkmode.js"></script>
-    <style>
-        .favorites-container {
-            max-width: 1200px;
-            margin: 20px auto;
-            padding: 20px;
-        }
-        .favorites-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid var(--border-color);
-        }
-        .favorites-header h1 {
-            color: var(--text-color);
-            margin: 0;
-        }
-        .back-link {
-            color: #007cba;
-            text-decoration: none;
-            padding: 8px 16px;
-            border: 1px solid #007cba;
-            border-radius: 4px;
-            transition: all 0.3s;
-        }
-        .back-link:hover {
-            background: #007cba;
-            color: white;
-        }
-        .message {
-            padding: 10px;
-            border-radius: 4px;
-            margin-bottom: 15px;
-        }
-        .message.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        .message.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        .favorites-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-        }
-        .favorite-item {
-            background: var(--bg-color);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 15px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            transition: transform 0.2s;
-        }
-        .favorite-item:hover {
-            transform: translateY(-2px);
-        }
-        .favorite-thumbnail {
-            width: 100%;
-            height: 180px;
-            object-fit: cover;
-            border-radius: 4px;
-            margin-bottom: 10px;
-        }
-        .favorite-title {
-            font-weight: bold;
-            margin-bottom: 8px;
-            color: var(--text-color);
-        }
-        .favorite-description {
-            font-size: 14px;
-            color: var(--text-color-secondary);
-            margin-bottom: 10px;
-            max-height: 60px;
-            overflow: hidden;
-        }
-        .favorite-date {
-            font-size: 12px;
-            color: var(--text-color-secondary);
-            margin-bottom: 10px;
-        }
-        .favorite-actions {
-            display: flex;
-            gap: 10px;
-        }
-        .btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            text-decoration: none;
-            text-align: center;
-            font-size: 14px;
-            transition: background 0.3s;
-        }
-        .btn-primary {
-            background: #007cba;
-            color: white;
-        }
-        .btn-primary:hover {
-            background: #005a87;
-        }
-        .btn-danger {
-            background: #dc3545;
-            color: white;
-        }
-        .btn-danger:hover {
-            background: #c82333;
-        }
-        .empty-message {
-            text-align: center;
-            padding: 50px;
-            color: var(--text-color-secondary);
-        }
-        .empty-message h3 {
-            margin-bottom: 10px;
-        }
-    </style>
-</head>
-<body>
-    <div id="navi">
-        <ul>
-            <li><a href="<?php echo $useLang === "ja" ? "./" : "./" . $useLang . ".php"; ?>"><?php echo $lang['title']; ?></a></li>
-            <li class="pc"><a href="?info"><?php echo $lang['info']; ?></a></li>
-            <li class="pc"><a href="?post"><?php echo $lang['send_pl']; ?></a></li>
-            <li class="dropdown pc">
-                <a href="javascript:void(0)" class="dropbtn">Language</a>
-                <div class="dropdown-content">
-                    <a href="./favorites.php"><img src="./image/japanese.png" /> 日本語</a>
-                    <a href="./favorites.php?lang=en"><img src="./image/english.png" /> English</a>
-                    <a href="./favorites.php?lang=zh"><img src="./image/chinese.png" /> 中国语</a>
-                    <a href="./favorites.php?lang=ko"><img src="./image/korean.png" /> 한국인</a>
-                </div>
-            </li>
-            <li><a href="./matrix/<?php echo $useLang === "ja" ? "" : $useLang . ".php"; ?>"><img src="image/matrix.png" /></a></li>
-            <li><a href="javascript:toggleDarkMode();"><img id="darkmode" src="image/darkmode.png" /></a></li>
-            <li class="pc"><span style="color: var(--text-color);">ようこそ、<?php echo htmlspecialchars($user['username']); ?>さん</span></li>
-            <li class="pc"><a href="login.php?logout">ログアウト</a></li>
-        </ul>
-    </div>
-
     <div class="favorites-container">
         <div class="favorites-header">
-            <h1>お気に入り動画</h1>
-            <a href="<?php echo $useLang === "ja" ? "./" : "./" . $useLang . ".php"; ?>" class="back-link">戻る</a>
+            <h1><?php echo $lang['favorites'] ?? 'お気に入り動画'; ?></h1>
+            <a href="<?php echo $useLang === "ja" ? "./" : "./" . $useLang . ".php"; ?>" class="plain"><?php echo $lang['back'] ?? '戻る'; ?></a>
         </div>
 
         <?php if (!empty($message)): ?>
@@ -200,15 +49,21 @@ $favorites = Auth::getFavorites($user['id']);
 
         <?php if (empty($favorites)): ?>
             <div class="empty-message">
-                <h3>お気に入りがありません</h3>
-                <p>動画をお気に入りに追加すると、ここに表示されます。</p>
+                <h3><?php echo $lang['no_favorites'] ?? 'お気に入りがありません'; ?></h3>
+                <p><?php echo $lang['no_favorites_desc'] ?? '動画をお気に入りに追加すると、ここに表示されます。'; ?></p>
             </div>
         <?php else: ?>
             <div class="favorites-grid">
                 <?php foreach ($favorites as $favorite): ?>
                     <div class="favorite-item">
                         <?php if (!empty($favorite['thumbnail'])): ?>
-                            <img src="<?php echo htmlspecialchars($favorite['thumbnail']); ?>" alt="Thumbnail" class="favorite-thumbnail">
+                            <img src="<?php echo htmlspecialchars($favorite['thumbnail']); ?>" 
+                                 alt="Thumbnail" 
+                                 width="320"
+                                 height="180"
+                                 style="width:320px;height:180px;object-fit:cover;"
+                                 data-video-id="<?php echo htmlspecialchars($favorite['video_id']); ?>"
+                                 onclick="playVideoInPlace(this, '<?php echo htmlspecialchars($favorite['video_id']); ?>')">
                         <?php endif; ?>
                         
                         <div class="favorite-title">
@@ -217,20 +72,20 @@ $favorites = Auth::getFavorites($user['id']);
                         
                         <?php if (!empty($favorite['description'])): ?>
                             <div class="favorite-description">
-                                <?php echo htmlspecialchars(substr($favorite['description'], 0, 150)); ?>
-                                <?php if (strlen($favorite['description']) > 150): ?>...<?php endif; ?>
+                                <?php echo htmlspecialchars(substr($favorite['description'], 0, 100)); ?>
+                                <?php if (strlen($favorite['description']) > 100): ?>...<?php endif; ?>
                             </div>
                         <?php endif; ?>
                         
                         <div class="favorite-date">
-                            追加日: <?php echo htmlspecialchars($favorite['added_at']); ?>
+                            <?php echo $lang['added_date'] ?? '追加日'; ?>: <?php echo htmlspecialchars($favorite['added_at']); ?>
                         </div>
                         
                         <div class="favorite-actions">
-                            <a href="<?php echo $useLang === "ja" ? "./" : "./" . $useLang . ".php"; ?>?q=<?php echo urlencode($favorite['title']); ?>" class="btn btn-primary">検索で見る</a>
-                            <form method="POST" style="display: inline;">
+                            <a href="<?php echo $useLang === "ja" ? "./" : "./" . $useLang . ".php"; ?>?title=1&q=<?php echo urlencode($favorite['title']); ?>"><?php echo $lang['search_view'] ?? '検索で見る'; ?></a>
+                            <form method="POST">
                                 <input type="hidden" name="video_id" value="<?php echo htmlspecialchars($favorite['video_id']); ?>">
-                                <button type="submit" name="remove_favorite" class="btn btn-danger" onclick="return confirm('お気に入りから削除しますか？')">削除</button>
+                                <input type="submit" name="remove_favorite" value="<?php echo $lang['remove'] ?? '削除'; ?>" onclick="return confirm('<?php echo $lang['confirm_remove'] ?? 'お気に入りから削除しますか？'; ?>')">
                             </form>
                         </div>
                     </div>
@@ -240,6 +95,48 @@ $favorites = Auth::getFavorites($user['id']);
     </div>
 
     <script>
+        function playVideoInPlace(imgElement, videoId) {
+            // YouTube形式のIDかチェック
+            if (videoId.match(/^[a-zA-Z0-9_-]{11}$/)) {
+                // YouTube埋め込みiframeを作成
+                const iframe = document.createElement('iframe');
+                iframe.src = 'https://www.youtube.com/embed/' + videoId + '?autoplay=1';
+                iframe.width = 320;
+                iframe.height = 180;
+                iframe.frameBorder = '0';
+                iframe.allowFullscreen = true;
+                iframe.allow = 'autoplay; encrypted-media';
+                
+                // 画像をiframeに置き換え
+                imgElement.parentNode.replaceChild(iframe, imgElement);
+                
+            } else if (videoId.startsWith('sm') || videoId.startsWith('so') || videoId.startsWith('nm')) {
+                // ニコニコ動画埋め込み
+                const iframe = document.createElement('iframe');
+                iframe.src = 'https://embed.nicovideo.jp/watch/' + videoId;
+                iframe.width = imgElement.width || 320;
+                iframe.height = (imgElement.height || 180);
+                iframe.frameBorder = '0';
+                iframe.allowFullscreen = true;
+                iframe.className = 'favorite-';
+                
+                // 画像をiframeに置き換え
+                imgElement.parentNode.replaceChild(iframe, imgElement);
+                
+            } else {
+                // その他の場合はニコニコ動画として試行
+                const iframe = document.createElement('iframe');
+                iframe.src = 'https://embed.nicovideo.jp/watch/' + videoId;
+                iframe.width = imgElement.width || 320;
+                iframe.height = (imgElement.height || 180);
+                iframe.frameBorder = '0';
+                iframe.allowFullscreen = true;
+                
+                // 画像をiframeに置き換え
+                imgElement.parentNode.replaceChild(iframe, imgElement);
+            }
+        }
+
         document.addEventListener("DOMContentLoaded", function() {
             // Dropdown
             var dropdown = document.getElementsByClassName("dropdown");

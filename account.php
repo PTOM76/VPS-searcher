@@ -97,27 +97,18 @@ if (isset($_POST['action'])) {
             break;
     }
 }
-?>
 
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset='utf-8'>
-    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
-    <title><?php echo $lang['account_settings']; ?> - <?php echo $lang['title']; ?></title>
-    <meta name='viewport' content='width=device-width, initial-scale=1'>
-    <link rel="icon" type="image/png" href="/favicon.png" />
-    <link rel="stylesheet" type="text/css" href="main.css" />
-    <script src="darkmode.js"></script>
-</head>
-<body>
-    <?php
-    renderNavigation($lang, $useLang, $currentUser);
-    renderMobileMenu($lang, $useLang, $currentUser);
-    ?>
-    
+renderHtmlHead($lang['title'], $useLang);
+renderNavigation($lang, $useLang, $currentUser);
+renderMobileMenu($lang, $useLang, $currentUser);
+?>  
     <div class="auth-container">
-        <br />
+        <div class="account-section">
+            <h2><?php echo $lang['favorites']; ?></h2>
+            お気に入りに入れたものは以下のリンクから確認できます。
+            <p><a href="favorites.php<?php echo $useLang !== "ja" ? "?lang=" . $useLang : ""; ?>"><?php echo $lang['favorites']; ?></a></p>
+        </div>
+
         <div class="auth-header">
             <h1><?php echo $lang['account_settings']; ?></h1>
         </div>
@@ -174,11 +165,6 @@ if (isset($_POST['action'])) {
                 </div>
                 <input type="submit" value="<?php echo $lang['update']; ?>">
             </form>
-        </div>
-
-        <div class="account-section">
-            <h2><?php echo $lang['favorites']; ?></h2>
-            <p><a href="favorites.php<?php echo $useLang !== "ja" ? "?lang=" . $useLang : ""; ?>"><?php echo $lang['favorites']; ?></a></p>
         </div>
 
         <div class="account-section danger">

@@ -1,6 +1,7 @@
-<Files ~ "secret.ini.php">
-  deny from all
-</Files>
-<Directory "./data">
-  deny from all
-</Directory>
+<FilesMatch "secret\.ini\.php$">
+  Require all denied
+</FilesMatch>
+
+<If "%{REQUEST_URI} =~ m#^/data/#">
+  Require all denied
+</If>
