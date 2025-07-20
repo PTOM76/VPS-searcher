@@ -212,7 +212,7 @@ if (isset($_POST['do'])) {
 }
 
 // HTMLヘッダーを出力
-renderHtmlHead($lang['title'], $useLang);
+renderHtmlHead($lang['title'], $useLang, false);
 
 // ナビゲーションバーを出力
 renderNavigation($lang, $useLang, $currentUser);

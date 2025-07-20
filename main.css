@@ -126,6 +126,7 @@ div#navi ul {
 /* スペーサー（右寄せ用） */
 div#navi .nav-spacer {
 	flex: 1;
+	list-style: none;
 }
 
 /* 右寄せ要素のスタイル */
@@ -300,6 +301,15 @@ p#next_birth {
 
 	div#contents span {
 		word-break: break-all;
+	}
+
+	/* スマホ版でのナビゲーション調整 */
+	div#navi ul {
+		justify-content: space-between;
+	}
+
+	div#navi .nav-spacer {
+		display: none;
 	}
 
 }

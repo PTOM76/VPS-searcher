@@ -124,7 +124,7 @@ function renderNavigation($lang, $useLang, $currentUser, $isMatrix = false) {
             <li><a href="javascript:toggleDarkMode();"><img id="darkmode" src="<?php echo $pathPrefix; ?>image/darkmode.png" /></a></li>
 
             <!-- 右寄せ要素用のスペーサー -->
-            <li class="nav-spacer"></li>
+            <li class="nav-spacer pc"></li>
             
             <?php if ($currentUser): ?>
                 <li class="pc nav-right"><a href="<?php echo $pathPrefix; ?>account.php<?php echo $useLang !== "ja" ? "?lang=" . $useLang : ""; ?>"><?php echo htmlspecialchars($currentUser['username']); ?></a></li>
