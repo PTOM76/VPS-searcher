@@ -97,25 +97,11 @@ if (isset($_POST['action'])) {
             break;
     }
 }
-?>
 
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset='utf-8'>
-    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
-    <title><?php echo $lang['account_settings']; ?> - <?php echo $lang['title']; ?></title>
-    <meta name='viewport' content='width=device-width, initial-scale=1'>
-    <link rel="icon" type="image/png" href="/favicon.png" />
-    <link rel="stylesheet" type="text/css" href="main.css" />
-    <script src="darkmode.js"></script>
-</head>
-<body>
-    <?php
-    renderNavigation($lang, $useLang, $currentUser);
-    renderMobileMenu($lang, $useLang, $currentUser);
-    ?>
-    
+renderHtmlHead($lang['title'], $useLang);
+renderNavigation($lang, $useLang, $currentUser);
+renderMobileMenu($lang, $useLang, $currentUser);
+?>  
     <div class="auth-container">
         <br />
         <div class="auth-header">
