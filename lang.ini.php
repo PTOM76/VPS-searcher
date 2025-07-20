@@ -46,16 +46,81 @@ $_lang['ja'] = [
     'sort_worst_view' => '再生数が少ない順',
     'sort_most_like' => '高評価が多い順',
     'sort_word' => 'タイトル昇順',
-    'sort_word_desc' => 'タイトル降順',
+        'sort_word_desc' => 'タイトル降順',
 
-    'total' => '合計',
-    'next_birth' => 'ボイパ対決%d周年まであと%d日',
+    'total' => '総計',
+    'next_birth' => 'HIKAKINボイパ対決シリーズ%d周年まで%d日',
 
-    'listview' => '一覧表示モード',
-    'matrixview' => '行列表示モード',
+    'listview' => 'リスト表示モード',
+    'matrixview' => 'マトリックス表示モード',
 
     'lightmode' => 'ライトモード',
     'darkmode' => 'ダークモード',
+
+    // 認証関連
+    'login' => 'ログイン',
+    'logout' => 'ログアウト',
+    'register' => '新規登録',
+    'username' => 'ユーザー名',
+    'password' => 'パスワード',
+    'email' => 'メールアドレス',
+    'login_required' => 'ログインが必要です',
+
+    // お気に入り関連
+    'favorites' => 'お気に入り',
+    'add_to_favorites' => 'お気に入りに追加',
+    'remove_from_favorites' => 'お気に入りから削除',
+    'added_to_favorites' => 'お気に入りに追加しました',
+    'removed_from_favorites' => 'お気に入りから削除しました',
+    'error_occurred' => 'エラーが発生しました',
+    
+    // 認証エラーメッセージ
+    'username_already_exists' => 'ユーザー名が既に使用されています',
+    'email_already_exists' => 'メールアドレスが既に使用されています',
+    'account_created' => 'アカウントが作成されました',
+    'login_success' => 'ログインしました',
+    'invalid_credentials' => 'ユーザー名またはパスワードが間違っています',
+    'logout_success' => 'ログアウトしました',
+    'username_password_required' => 'ユーザー名とパスワードを入力してください',
+    
+    // 登録フォーム関連
+    'register_title' => '新規登録',
+    'register_button' => '登録',
+    'confirm_password' => 'パスワード確認',
+    'redirect_to_login' => 'ログインページに移動してください。',
+    'valid_email_required' => '有効なメールアドレスを入力してください',
+    'password_min_length' => 'パスワードは6文字以上で入力してください',
+    'password_mismatch' => 'パスワードが一致しません',
+    'all_fields_required' => 'すべての項目を入力してください',
+    'already_have_account' => '既にアカウントをお持ちの方は',
+    
+    // アカウント設定関連
+    'account_settings' => 'アカウント設定',
+    'change_username' => 'ユーザー名変更',
+    'change_password' => 'パスワード変更',
+    'change_email' => 'メールアドレス変更',
+    'delete_account' => 'アカウント削除',
+    'new_username' => '新しいユーザー名',
+    'current_password' => '現在のパスワード',
+    'new_password' => '新しいパスワード',
+    'new_email' => '新しいメールアドレス',
+    'confirm_delete' => '本当にアカウントを削除しますか？',
+    'delete_confirmation' => 'アカウントを削除するには「削除」と入力してください',
+    'username_updated' => 'ユーザー名が更新されました',
+    'password_updated' => 'パスワードが更新されました',
+    'email_updated' => 'メールアドレスが更新されました',
+    'account_deleted' => 'アカウントが削除されました',
+    'current_password_incorrect' => '現在のパスワードが間違っています',
+    'delete_text_incorrect' => '削除確認テキストが間違っています',
+    'update' => '更新',
+    'delete' => '削除',
+    'current' => '現在',
+    
+    // フッター
+    'languages' => 'Languages',
+    'data_note' => '※当サイトのデータは再生リストから取得したものです。',
+    'source' => 'ソース',
+    'git_repository' => 'Gitリポジトリ',
 ];
 
 $_lang['en'] = [
@@ -113,6 +178,71 @@ $_lang['en'] = [
 
     'lightmode' => 'Light Mode',
     'darkmode' => 'Dark Mode',
+
+    // 認証関連
+    'login' => 'Login',
+    'logout' => 'Logout',
+    'register' => 'Register',
+    'username' => 'Username',
+    'password' => 'Password',
+    'email' => 'Email',
+    'login_required' => 'Login required',
+
+    // お気に入り関連
+    'favorites' => 'Favorites',
+    'add_to_favorites' => 'Add to favorites',
+    'remove_from_favorites' => 'Remove from favorites',
+    'added_to_favorites' => 'Added to favorites',
+    'removed_from_favorites' => 'Removed from favorites',
+    'error_occurred' => 'An error occurred',
+    
+    // 認証エラーメッセージ
+    'username_already_exists' => 'Username already exists',
+    'email_already_exists' => 'Email already exists',
+    'account_created' => 'Account created successfully',
+    'login_success' => 'Login successful',
+    'invalid_credentials' => 'Invalid username or password',
+    'logout_success' => 'Logout successful',
+    'username_password_required' => 'Please enter username and password',
+    
+    // 登録フォーム関連
+    'register_title' => 'Register',
+    'register_button' => 'Register',
+    'confirm_password' => 'Confirm Password',
+    'redirect_to_login' => 'Please go to the login page.',
+    'valid_email_required' => 'Please enter a valid email address',
+    'password_min_length' => 'Password must be at least 6 characters',
+    'password_mismatch' => 'Passwords do not match',
+    'all_fields_required' => 'Please fill in all fields',
+    'already_have_account' => 'Already have an account?',
+    
+    // アカウント設定関連
+    'account_settings' => 'Account Settings',
+    'change_username' => 'Change Username',
+    'change_password' => 'Change Password',
+    'change_email' => 'Change Email',
+    'delete_account' => 'Delete Account',
+    'new_username' => 'New Username',
+    'current_password' => 'Current Password',
+    'new_password' => 'New Password',
+    'new_email' => 'New Email',
+    'confirm_delete' => 'Are you sure you want to delete your account?',
+    'delete_confirmation' => 'Type "DELETE" to confirm account deletion',
+    'username_updated' => 'Username updated successfully',
+    'password_updated' => 'Password updated successfully',
+    'email_updated' => 'Email updated successfully',
+    'account_deleted' => 'Account deleted successfully',
+    'current_password_incorrect' => 'Current password is incorrect',
+    'delete_text_incorrect' => 'Delete confirmation text is incorrect',
+    'update' => 'Update',
+    'delete' => 'Delete',
+    'current' => 'Current',
+    
+    // Footer
+    'languages' => 'Languages',
+    'data_note' => '※The data on this site is obtained from playlists.',
+    'source' => 'Source',
+    'git_repository' => 'Git Repository',
 ];
 
 $_lang['zh'] = [
@@ -170,9 +300,72 @@ $_lang['zh'] = [
 
 'lightmode' => '明亮模式',
 'darkmode' => '黑暗模式',
-];
 
-$_lang['ko'] = [
+// 认证相关
+'login' => '登录',
+'logout' => '登出',
+'register' => '注册',
+'username' => '用户名',
+'password' => '密码',
+'email' => '邮箱',
+'login_required' => '需要登录',
+
+// 收藏相关
+'favorites' => '收藏',
+'add_to_favorites' => '添加到收藏',
+'remove_from_favorites' => '从收藏中删除',
+'added_to_favorites' => '已添加到收藏',
+'removed_from_favorites' => '已从收藏中删除',
+'error_occurred' => '发生错误',
+
+// 认证错误信息
+'username_already_exists' => '用户名已存在',
+'email_already_exists' => '邮箱已存在',
+'account_created' => '账户创建成功',
+'login_success' => '登录成功',
+'invalid_credentials' => '用户名或密码错误',
+'logout_success' => '退出登录成功',
+'username_password_required' => '请输入用户名和密码',
+
+// 注册表单相关
+'register_title' => '注册',
+'register_button' => '注册',
+'confirm_password' => '确认密码',
+'redirect_to_login' => '请前往登录页面。',
+'valid_email_required' => '请输入有效的邮箱地址',
+'password_min_length' => '密码至少需要6个字符',
+'password_mismatch' => '密码不匹配',
+'all_fields_required' => '请填写所有字段',
+'already_have_account' => '已有账户？',
+
+// 账户设置相关
+'account_settings' => '账户设置',
+'change_username' => '更改用户名',
+'change_password' => '更改密码',
+'change_email' => '更改邮箱',
+'delete_account' => '删除账户',
+'new_username' => '新用户名',
+'current_password' => '当前密码',
+'new_password' => '新密码',
+'new_email' => '新邮箱',
+'confirm_delete' => '确定要删除账户吗？',
+'delete_confirmation' => '输入"删除"确认删除账户',
+'username_updated' => '用户名更新成功',
+'password_updated' => '密码更新成功',
+'email_updated' => '邮箱更新成功',
+'account_deleted' => '账户删除成功',
+'current_password_incorrect' => '当前密码错误',
+'delete_text_incorrect' => '删除确认文本错误',
+    'update' => '更新',
+    'delete' => '删除',
+    'current' => '当前',
+    
+    // 页脚
+    'languages' => 'Languages',
+    'data_note' => '※本站数据来自播放列表。',
+    'source' => '来源',
+    'git_repository' => 'Git 仓库',
+];$_lang['ko'] = [
 'year' => '년',
 'month' => '개월',
 'week' => '주',
@@ -227,4 +420,71 @@ $_lang['ko'] = [
 
 'lightmode' => '라이트 모드',
 'darkmode' => '다크 모드',
+
+// 인증 관련
+'login' => '로그인',
+'logout' => '로그아웃',
+'register' => '회원가입',
+'username' => '사용자명',
+'password' => '비밀번호',
+'email' => '이메일',
+'login_required' => '로그인이 필요합니다',
+
+// 즐겨찾기 관련
+'favorites' => '즐겨찾기',
+'add_to_favorites' => '즐겨찾기에 추가',
+'remove_from_favorites' => '즐겨찾기에서 삭제',
+'added_to_favorites' => '즐겨찾기에 추가되었습니다',
+'removed_from_favorites' => '즐겨찾기에서 삭제되었습니다',
+'error_occurred' => '오류가 발생했습니다',
+
+// 인증 오류 메시지
+'username_already_exists' => '사용자명이 이미 존재합니다',
+'email_already_exists' => '이메일이 이미 존재합니다',
+'account_created' => '계정이 생성되었습니다',
+'login_success' => '로그인되었습니다',
+'invalid_credentials' => '사용자명 또는 비밀번호가 잘못되었습니다',
+'logout_success' => '로그아웃되었습니다',
+'username_password_required' => '사용자명과 비밀번호를 입력하세요',
+
+// 등록 양식 관련
+'register_title' => '회원가입',
+'register_button' => '등록',
+'confirm_password' => '비밀번호 확인',
+'redirect_to_login' => '로그인 페이지로 이동해주세요.',
+'valid_email_required' => '유효한 이메일 주소를 입력해주세요',
+'password_min_length' => '비밀번호는 최소 6자 이상이어야 합니다',
+'password_mismatch' => '비밀번호가 일치하지 않습니다',
+'all_fields_required' => '모든 항목을 입력해주세요',
+'already_have_account' => '이미 계정이 있으신가요?',
+
+// 계정 설정 관련
+'account_settings' => '계정 설정',
+'change_username' => '사용자명 변경',
+'change_password' => '비밀번호 변경',
+'change_email' => '이메일 변경',
+'delete_account' => '계정 삭제',
+'new_username' => '새 사용자명',
+'current_password' => '현재 비밀번호',
+'new_password' => '새 비밀번호',
+'new_email' => '새 이메일',
+'confirm_delete' => '정말로 계정을 삭제하시겠습니까？',
+'delete_confirmation' => '계정 삭제를 확인하려면 "삭제"를 입력하세요',
+'username_updated' => '사용자명이 업데이트되었습니다',
+'password_updated' => '비밀번호가 업데이트되었습니다',
+'email_updated' => '이메일이 업데이트되었습니다',
+'account_deleted' => '계정이 삭제되었습니다',
+'current_password_incorrect' => '현재 비밀번호가 틀렸습니다',
+'delete_text_incorrect' => '삭제 확인 텍스트가 틀렸습니다',
+'update' => '업데이트',
+'delete' => '삭제',
+'current' => '현재',
+
+// 푸터
+'languages' => 'Languages',
+'data_note' => '※이 사이트의 데이터는 재생목록에서 가져왔습니다.',
+'source' => '소스',
+'git_repository' => 'Git 저장소',
 ];
+
+?>

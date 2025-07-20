@@ -1,0 +1,6 @@
+<Files ~ "secret.ini.php">
+  deny from all
+</Files>
+<Directory "./data">
+  deny from all
+</Directory>

@@ -3,9 +3,10 @@ require_once './lib/auth.php';
 require_once "lang.ini.php";
 
 if (!isset($useLang))
-    $useLang = "ja";
+    $useLang = $_GET['lang'] ?? $_POST['lang'] ?? ($_SESSION['lang'] ?? 'ja');
 
 $lang = $_lang[$useLang];
+Auth::setLanguage($lang);
 
 $message = '';
 $messageType = '';
@@ -23,26 +24,26 @@ if (isset($_POST['register'])) {
                 if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
                     $result = Auth::register($username, $password, $email);
                     if ($result['success']) {
-                        $message = $result['message'] . ' ログインページに移動してください。';
+                        $message = $result['message'] . ' ' . $lang['redirect_to_login'];
                         $messageType = 'success';
                     } else {
                         $message = $result['message'];
                         $messageType = 'error';
                     }
                 } else {
-                    $message = '有効なメールアドレスを入力してください';
+                    $message = $lang['valid_email_required'];
                     $messageType = 'error';
                 }
             } else {
-                $message = 'パスワードは6文字以上で入力してください';
+                $message = $lang['password_min_length'];
                 $messageType = 'error';
             }
         } else {
-            $message = 'パスワードが一致しません';
+            $message = $lang['password_mismatch'];
             $messageType = 'error';
         }
     } else {
-        $message = 'すべての項目を入力してください';
+        $message = $lang['all_fields_required'];
         $messageType = 'error';
     }
 }
@@ -59,7 +60,7 @@ if (Auth::isLoggedIn()) {
 <head>
     <meta charset='utf-8'>
     <meta http-equiv='X-UA-Compatible' content='IE=edge'>
-    <title>新規登録 - <?php echo $lang['title']; ?></title>
+    <title><?php echo $lang['register_title']; ?> - <?php echo $lang['title']; ?></title>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="stylesheet" type="text/css" href="main.css" />
@@ -75,7 +76,7 @@ if (Auth::isLoggedIn()) {
     <div class="auth-container">
     	<br />
         <div class="auth-header">
-            <h1>新規登録</h1>
+            <h1><?php echo $lang['register_title']; ?></h1>
         </div>
 
         <?php if (!empty($message)): ?>
@@ -86,32 +87,32 @@ if (Auth::isLoggedIn()) {
 
         <form method="POST" class="auth-form">
             <div class="form-group">
-                <label for="username">ユーザー名</label><br />
+                <label for="username"><?php echo $lang['username']; ?></label><br />
                 <input type="text" id="username" name="username" value="<?php echo isset($_POST['username']) ? htmlspecialchars($_POST['username']) : ''; ?>" required>
             </div>
             
             <div class="form-group">
-                <label for="email">メールアドレス</label><br />
+                <label for="email"><?php echo $lang['email']; ?></label><br />
                 <input type="email" id="email" name="email" value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>" required>
             </div>
             
             <div class="form-group">
-                <label for="password">パスワード</label><br />
+                <label for="password"><?php echo $lang['password']; ?></label><br />
                 <input type="password" id="password" name="password" required>
             </div>
             
             <div class="form-group">
-                <label for="confirm_password">パスワード確認</label><br />
+                <label for="confirm_password"><?php echo $lang['confirm_password']; ?></label><br />
                 <input type="password" id="confirm_password" name="confirm_password" required>
             </div>
             
-            <input type="submit" name="register" value="登録">
+            <input type="submit" name="register" value="<?php echo $lang['register_button']; ?>">
         </form>
 
         <div class="auth-links">
             <p>
-            	既にアカウントをお持ちの方は
-            	<a href="login.php<?php echo $useLang !== "ja" ? "?lang=" . $useLang : ""; ?>">ログイン</a>
+            	<?php echo $lang['already_have_account']; ?>
+            	<a href="login.php<?php echo $useLang !== "ja" ? "?lang=" . $useLang : ""; ?>"><?php echo $lang['login']; ?></a>
             </p>
         </div>
     </div>

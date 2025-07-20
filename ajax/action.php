@@ -1,11 +1,18 @@
 <?php
 require_once '../lib/auth.php';
+require_once '../lang.ini.php';
 
 header('Content-Type: application/json');
 
+if (!isset($useLang))
+    $useLang = $_GET['lang'] ?? $_POST['lang'] ?? ($_SESSION['lang'] ?? 'ja');
+
+$lang = $_lang[$useLang] ?? $_lang['ja'];
+Auth::setLanguage($lang);
+
 // ログインチェック
 if (!Auth::isLoggedIn()) {
-    echo json_encode(['success' => false, 'message' => 'ログインが必要です']);
+    echo json_encode(['success' => false, 'message' => $lang['login_required']]);
     exit;
 }
 
@@ -21,9 +28,12 @@ switch ($action) {
         
         if (!empty($videoId) && !empty($title)) {
             $result = Auth::addToFavorites($user['id'], $videoId, $title, $description, $thumbnail);
+            if ($result['success']) {
+                $result['message'] = $lang['added_to_favorites'];
+            }
             echo json_encode($result);
         } else {
-            echo json_encode(['success' => false, 'message' => '必要な情報が不足しています']);
+            echo json_encode(['success' => false, 'message' => $lang['error_occurred']]);
         }
         break;
         
@@ -32,9 +42,12 @@ switch ($action) {
         
         if (!empty($videoId)) {
             $result = Auth::removeFromFavorites($user['id'], $videoId);
+            if ($result['success']) {
+                $result['message'] = $lang['removed_from_favorites'];
+            }
             echo json_encode($result);
         } else {
-            echo json_encode(['success' => false, 'message' => '動画IDが必要です']);
+            echo json_encode(['success' => false, 'message' => $lang['error_occurred']]);
         }
         break;
         
@@ -45,12 +58,12 @@ switch ($action) {
             $isFavorite = Auth::isFavorite($user['id'], $videoId);
             echo json_encode(['success' => true, 'is_favorite' => $isFavorite]);
         } else {
-            echo json_encode(['success' => false, 'message' => '動画IDが必要です']);
+            echo json_encode(['success' => false, 'message' => $lang['error_occurred']]);
         }
         break;
         
     default:
-        echo json_encode(['success' => false, 'message' => '無効なアクションです']);
+        echo json_encode(['success' => false, 'message' => $lang['error_occurred']]);
         break;
 }
 ?>

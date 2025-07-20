@@ -3,9 +3,10 @@ require_once './lib/auth.php';
 require_once "lang.ini.php";
 
 if (!isset($useLang))
-    $useLang = "ja";
+    $useLang = $_GET['lang'] ?? $_POST['lang'] ?? ($_SESSION['lang'] ?? 'ja');
 
 $lang = $_lang[$useLang];
+Auth::setLanguage($lang);
 
 $message = '';
 $messageType = '';
@@ -25,7 +26,7 @@ if (isset($_POST['login'])) {
             $messageType = 'error';
         }
     } else {
-        $message = 'ユーザー名とパスワードを入力してください';
+        $message = $lang['username_password_required'];
         $messageType = 'error';
     }
 }

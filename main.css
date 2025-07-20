@@ -101,7 +101,7 @@ div#navi {
 	left: 0;
 	opacity: 0.85;
 	z-index: 50;
-
+	line-height: 35px;
 }
 
 div#navi li+li {
@@ -114,12 +114,21 @@ div #navi li+li.noborder {
 
 div#navi ul {
 	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	height: 35px;
+	margin: 0;
+	padding: 0;
 	margin-left: -40px;
 }
 
 div#navi li {
 	list-style: none;
 	margin-top: -10px;
+	height: 35px;
+	line-height: 35px;
+	display: flex;
+	align-items: center;
 }
 
 div#navi a {
@@ -128,6 +137,8 @@ div#navi a {
 	color: white;
 	margin-right: 10px;
 	margin-left: 10px;
+	line-height: 35px;
+	font-size: 14px;
 }
 
 div#navi a:hover {
@@ -137,6 +148,14 @@ div#navi a:hover {
 div#navi img {
 	width: 22px;
 	height: 22px;
+	vertical-align: middle;
+}
+
+/* ユーザー情報とログアウトボタンの右寄せ */
+div#navi ul .user-info,
+div#navi ul li:has(a[href*="login.php?logout"]),
+div#navi ul li:has(a[href*="login.php"]):not(.user-info) {
+    margin-left: auto;
 }
 
 input[type='submit'] {
@@ -551,4 +570,40 @@ div#menu_sp a {
 
 .favorite-message.show {
     opacity: 1;
+}
+
+/* アカウント設定ページのスタイル */
+.account-section {
+    margin: 30px 0;
+    padding: 20px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--background-color);
+}
+
+.account-section h2 {
+    margin-top: 0;
+    color: var(--text-color);
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
+}
+
+.account-section.danger {
+    border-color: #dc3545;
+}
+
+.account-section.danger h2 {
+    color: #dc3545;
+    border-bottom-color: #dc3545;
+}
+
+.delete-button {
+    background-color: #dc3545 !important;
+    color: white !important;
+    border-color: #dc3545 !important;
+}
+
+.delete-button:hover {
+    background-color: #c82333 !important;
+    border-color: #bd2130 !important;
 }

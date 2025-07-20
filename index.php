@@ -1,10 +1,9 @@
 <?php
-require_once "./secret.ini.php";
+require_once "secret.ini.php";
+require_once "config.ini.php";
+require_once "lang.ini.php";
 require_once './lib/auth.php';
 require_once './lib/common.php';
-
-//error_reporting(E_ALL & ~E_DEPRECATED & ~E_STRICT);
-ini_set('display_errors', 0);
 
 if (isset($_GET['q'])) {
   $analytics = "./data/analytics/" . date("Y-m-d") . ".txt";
@@ -14,15 +13,11 @@ if (isset($_GET['q'])) {
   file_put_contents($analytics, $data . "DATE: " . date("Y-m-d_H:i:s") . "\n" . "URI: " . $_SERVER['REQUEST_URI'] . "\nWORD: " . $_GET['q'] . "\n----------------\n");
 }
 
-set_time_limit(600);
-date_default_timezone_set('UTC');
-//define("API_KEY", getenv("API_KEY"));
-define("MAX_VIEW", 50);
-
 if (isset($_GET[getSecretValue('PASS')])) {
   addPlaylist("PLdKTS7WkYMJErsSEK6C0VAQin9N8zfVr5", "vps", false, true);
   addPlaylist("PLdKTS7WkYMJFj8REOW1mRE_hEK0QY9FrM", "material", false, true);
 }
+
 if (isset($_GET['replace_' . getSecretValue('PASS')])) {
 
     if (isset($_GET['vps_nexttoken'])) 
@@ -63,58 +58,20 @@ if (file_exists("time.txt")) {
         addPlaylist($id, $data['type']);
     }
 }
-if (!isset($useLang)) {
-    if (isset($_GET['lang'])) {
-        $useLang = $_GET['lang'];
-    } else {
-        $useLang = "ja";
-    }
-}
 
-require_once "lang.ini.php";
+if (!isset($useLang))
+    $useLang = $_GET['lang'] ?? $_POST['lang'] ?? ($_SESSION['lang'] ?? 'ja');
 
 $lang = $_lang[$useLang];
+Auth::setLanguage($lang);
 
 // ユーザー情報を取得
 $currentUser = Auth::getCurrentUser();
 
 global $notice;
 
-    function addNicovideo($video_id, $type) {
-      $api_url = "https://ext.nicovideo.jp/api/getthumbinfo/" . $video_id;
-      $xml = file_get_contents($api_url);
-      $array = json_decode(json_encode(simplexml_load_string($xml)), true);
-
-      $index = [];
-      if (file_exists("data/index.json"))
-        $index = json_decode(file_get_contents("data/index.json"), true);
-      
-      
-      $thumb = $array['thumb'];
-
-      $index[$video_id] = [
-          'is_nicovideo' => true,
-          'title' => $thumb['title'],
-          'description' => $thumb['description'],
-          'channelId' => $thumb['user_id'],
-          'channelTitle' => $thumb['user_nickname'],
-          'publishedAt' => strtotime($thumb['first_retrieve']),
-          'view' => $thumb['view_counter'],
-          'tags' => array_values($thumb['tags']),
-          'type' => $type,
-      ];
-
-      file_put_contents("cache/thumb/" . $video_id . ".jpg", file_get_contents($thumb['thumbnail_url']));
-
-      $index = ((array) $index);
-      array_multisort(array_column($index, 'publishedAt'), SORT_DESC, $index);
-        
-      file_put_contents("data/index.json", json_encode($index, JSON_UNESCAPED_UNICODE));
-      return;
-    }
-
-    if (!isset($blacklist))
-        $blacklist = json_decode(file_get_contents("blacklist.json"), true);
+if (!isset($blacklist))
+    $blacklist = json_decode(file_get_contents("blacklist.json"), true);
 
     // index.json から blacklist の動画を削除
     /*
@@ -150,201 +107,110 @@ global $notice;
     //     }
     // }
 
-    function addPlaylist($playlist_id, $type, $nextPageToken = false, $only = false, $nextWithOnly = false) {
-        global $blacklist;
+if (isset($_POST['do'])) {
+    $url = $_POST['url'];
 
-        if (!isset($blacklist)) {
-            $blacklist = json_decode(file_get_contents("blacklist.json"), true);
+    $url_type = "none";
+    if (false !== strpos($url, 'list=') || str_starts_with($url, 'PL')) {
+        $url_type = "playlist";
+    } else if (false !== strpos($url, 'watch/sm') || str_starts_with($url, 'sm')) {
+        $url_type = "nicovideo";
+    } else {
+        $url_type = "youtube";
+    }
+    
+    if ($_POST['do'] === "post") {
+
+        // 再生リスト
+        if ($url_type === "playlist") {
+        $playlist_id = preg_replace('/.*?&list\=(.*?)/u', '$1', $url);
+        if (!file_exists("queue/")) mkdir("queue");
+        file_put_contents("queue/pl_" . $playlist_id . ".txt", "ID: {$playlist_id}\nURL: " . $_POST['url'] . "\nType: " . $_POST['t']);
+
+        $notice .= $lang['sended_pl'];
         }
 
-        static $c = 0;
-        ++$c;
-        $api_url = "https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&key=" . API_KEY . "&order=date&playlistId=" . $playlist_id;
-        $video_api_url = "https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics,status&key=" . API_KEY;
+        // ニコニコ動画
+        if ($url_type === "nicovideo") {
+        $video_id = preg_replace('/.*?(sm.*?)/u', '$1', $url);
+        if (!file_exists("queue/")) mkdir("queue");
+        file_put_contents("queue/nc_" . $video_id . ".txt", "ID: {$video_id}\nURL: " . $_POST['url'] . "\nType: " . $_POST['t']);
 
-        if ($nextPageToken !== false) {
-            $api_url .= "&pageToken=" . $nextPageToken;
-        }
-
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
-        curl_setopt($ch, CURLOPT_URL, $api_url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE); 
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
-        $output = json_decode(curl_exec($ch));
-        curl_close($ch);
-
-        $index = [];
-        file_put_contents("data/" . $c . "-" . $playlist_id . ".json", json_encode($output, JSON_UNESCAPED_UNICODE));
-
-        if (file_exists("data/index.json")) {
-            $index = json_decode(file_get_contents("data/index.json"), true);
-        }
-
-        foreach ($output->items as $item) {
-            $snippet = $item->snippet;
-
-            $videoId = $snippet->resourceId->videoId;
-            if ($only) {
-                if (isset($index[$videoId])) continue;
-            }
-            
-            if (in_array($videoId, $blacklist)) continue;
-
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
-            curl_setopt($ch, CURLOPT_URL, $video_api_url . "&id=" . $videoId);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE); 
-            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
-            $video_output = json_decode(curl_exec($ch));
-            curl_close($ch);
-
-            // 削除、非公開の動画の場合はスキップ (publishedAtがない場合)
-            if (!isset($video_output->items[0]->snippet->publishedAt)) {
-                if (isset($index[$videoId])) {
-                    if (isset($video_output->items[0]->status->privacyStatus)) {
-                        $index[$videoId]['status'] = $video_output->items[0]->status->privacyStatus;
-                        $index[$videoId]['error'] = $index[$videoId]['status'];
-                    } else {                    
-                        $index[$videoId]['error'] = "deleted";
-                    }
-                }
-                continue;
-            }
-
-            $index[$videoId] = [
-                'title' => $snippet->title,
-                'description' => $snippet->description,
-                'channelId' => $snippet->videoOwnerChannelId,
-                'channelTitle' => $snippet->videoOwnerChannelTitle,
-                'publishedAt' => strtotime($video_output->items[0]->snippet->publishedAt),
-                'view' => $video_output->items[0]->statistics->viewCount,
-                'like' => $video_output->items[0]->statistics->likeCount,
-                'tags' => (array) $video_output->items[0]->snippet->tags,
-                'type' => $type,
-                'status' => $video_output->items[0]->status->privacyStatus,
-            ];
-        }
-
-        $index = ((array) $index);
-        array_multisort(array_column($index, 'publishedAt'), SORT_DESC, $index);
+        $notice .= $lang['sended_vd'];
         
-        file_put_contents("data/index.json", json_encode($index, JSON_UNESCAPED_UNICODE));
+        }
 
-        if ((!$only || $nextWithOnly) && isset($output->nextPageToken)) {
-            addPlaylist($playlist_id, $type, $output->nextPageToken);
-        } else if (isset($output->nextPageToken)) {
-            return $output->nextPageToken;
+        // YouTube動画
+        if ($url_type === "youtube") {
+        $video_id = preg_replace('/.*?watch\?v\=(.*?)/u', '$1', $url);
+        if (!file_exists("queue/")) mkdir("queue");
+        file_put_contents("queue/yt_" . $video_id . ".txt", "ID: {$video_id}\nURL: " . $_POST['url'] . "\nType: " . $_POST['t']);
+
+        $notice .= $lang['sended_vd'];
+        
         }
         
     }
-    if (isset($_POST['do'])) {
-        $url = $_POST['url'];
+    if ($_POST['do'] === "post_" . getenv('PASS')) {
+        
+        // 再生リスト
+        if ($url_type === "playlist") {
+        $playlist_id = preg_replace('/.*?&list\=(.*?)/u', '$1', $url);
 
-        $url_type = "none";
-        if (false !== strpos($url, 'list=') || str_starts_with($url, 'PL')) {
-          $url_type = "playlist";
-        } else if (false !== strpos($url, 'watch/sm') || str_starts_with($url, 'sm')) {
-          $url_type = "nicovideo";
-        } else {
-          $url_type = "youtube";
+        $array = [];
+        if (file_exists("data/playlists.json"))
+            $array = json_decode(file_get_contents("data/playlists.json"), true);
+        $array[$playlist_id] = [
+            "type" => $_POST['t']
+        ];
+        file_put_contents("data/playlists.json", json_encode($array));
+
+        addPlaylist($playlist_id, $_POST['t']);
+        $notice .= $lang['added_pl'];
         }
-      
-        if ($_POST['do'] === "post") {
 
-          // 再生リスト
-          if ($url_type === "playlist") {
-            $playlist_id = preg_replace('/.*?&list\=(.*?)/u', '$1', $url);
-            if (!file_exists("queue/")) mkdir("queue");
-            file_put_contents("queue/pl_" . $playlist_id . ".txt", "ID: {$playlist_id}\nURL: " . $_POST['url'] . "\nType: " . $_POST['t']);
+        // ニコニコ動画
+        if ($url_type === "nicovideo") {
+        $video_id = preg_replace('/.*?(sm.*?)/u', '$1', $url);
 
-            $notice .= $lang['sended_pl'];
-          }
+        $array = [];
+        if (file_exists("data/nc_videos.json"))
+            $array = json_decode(file_get_contents("data/nc_videos.json"), true);
+        $array[$video_id] = [
+            "type" => $_POST['t']
+        ];
+        file_put_contents("data/nc_videos.json", json_encode($array));
 
-          // ニコニコ動画
-          if ($url_type === "nicovideo") {
-            $video_id = preg_replace('/.*?(sm.*?)/u', '$1', $url);
-            if (!file_exists("queue/")) mkdir("queue");
-            file_put_contents("queue/nc_" . $video_id . ".txt", "ID: {$video_id}\nURL: " . $_POST['url'] . "\nType: " . $_POST['t']);
-
-            $notice .= $lang['sended_vd'];
-            
-          }
-
-          // YouTube動画
-          if ($url_type === "youtube") {
-            $video_id = preg_replace('/.*?watch\?v\=(.*?)/u', '$1', $url);
-            if (!file_exists("queue/")) mkdir("queue");
-            file_put_contents("queue/yt_" . $video_id . ".txt", "ID: {$video_id}\nURL: " . $_POST['url'] . "\nType: " . $_POST['t']);
-
-            $notice .= $lang['sended_vd'];
-            
-          }
-          
+        addNicovideo($video_id, $_POST['t']);
+        $notice .= $lang['added_vd'];
         }
-        if ($_POST['do'] === "post_" . getenv('PASS')) {
-          
-          // 再生リスト
-          if ($url_type === "playlist") {
-            $playlist_id = preg_replace('/.*?&list\=(.*?)/u', '$1', $url);
 
-            $array = [];
-            if (file_exists("data/playlists.json"))
-                $array = json_decode(file_get_contents("data/playlists.json"), true);
-            $array[$playlist_id] = [
-                "type" => $_POST['t']
-            ];
-            file_put_contents("data/playlists.json", json_encode($array));
+        // YouTube動画
+        if ($url_type === "youtube") {
+        $video_id = preg_replace('/.*?watch\?v\=(.*?)/u', '$1', $url);
 
-            addPlaylist($playlist_id, $_POST['t']);
-            $notice .= $lang['added_pl'];
-          }
+        $array = [];
+        if (file_exists("data/yt_videos.json"))
+            $array = json_decode(file_get_contents("data/yt_videos.json"), true);
+        $array[$video_id] = [
+            "type" => $_POST['t']
+        ];
+        file_put_contents("data/yt_videos.json", json_encode($array));
 
-          // ニコニコ動画
-          if ($url_type === "nicovideo") {
-            $video_id = preg_replace('/.*?(sm.*?)/u', '$1', $url);
-
-            $array = [];
-            if (file_exists("data/nc_videos.json"))
-                $array = json_decode(file_get_contents("data/nc_videos.json"), true);
-            $array[$video_id] = [
-                "type" => $_POST['t']
-            ];
-            file_put_contents("data/nc_videos.json", json_encode($array));
-
-            addNicovideo($video_id, $_POST['t']);
-            $notice .= $lang['added_vd'];
-          }
-
-          // YouTube動画
-          if ($url_type === "youtube") {
-            $video_id = preg_replace('/.*?watch\?v\=(.*?)/u', '$1', $url);
-
-            $array = [];
-            if (file_exists("data/yt_videos.json"))
-                $array = json_decode(file_get_contents("data/yt_videos.json"), true);
-            $array[$video_id] = [
-                "type" => $_POST['t']
-            ];
-            file_put_contents("data/yt_videos.json", json_encode($array));
-
-            //addPlaylist($playlist_id, $_POST['t']);
-            $notice .= $lang['added_vd'];
-          }
-          
+        //addPlaylist($playlist_id, $_POST['t']);
+        $notice .= $lang['added_vd'];
         }
         
-        if ($_POST['do'] === "report") {
-            if (!file_exists("report/")) mkdir("report");
-            $id = $_POST['id'];
-            file_put_contents("report/" . $_POST['id'] . "-" . time() . ".txt", "ID: {$id}\nURL: https://youtu.be/{$id}\nType: " . $_POST['t'] . "\nReason: " . (isset($_POST['reason']) ? $_POST['reason'] : 'none'));
-            $notice .= $lang['reported_video'];
-        }
     }
-?>
-<?php
+    
+    if ($_POST['do'] === "report") {
+        if (!file_exists("report/")) mkdir("report");
+        $id = $_POST['id'];
+        file_put_contents("report/" . $_POST['id'] . "-" . time() . ".txt", "ID: {$id}\nURL: https://youtu.be/{$id}\nType: " . $_POST['t'] . "\nReason: " . (isset($_POST['reason']) ? $_POST['reason'] : 'none'));
+        $notice .= $lang['reported_video'];
+    }
+}
+
 // HTMLヘッダーを出力
 renderHtmlHead($lang['title'], $useLang);
 
@@ -369,7 +235,8 @@ if (isset($_GET['post'])) {
             <input type="submit" />
         </form>
     <?php
-} else if (isset($_GET['post_' . getenv('PASS')])) {
+}
+if (isset($_GET['post_' . getenv('PASS')])) {
     ?>
         <form action="./" method="POST">
             <input type="text" name ="url" />
@@ -541,7 +408,6 @@ if (isset($_GET['post'])) {
     </form>
     <br />
     <?php
-
     $video_contents_html = '';
       
     $index = [];
@@ -726,11 +592,7 @@ if (isset($_GET['post'])) {
 }
 ?>
 <br />
-<span style="font-size:12px;">Languages: <a href="./" >日本語</a>, <a href="./en.php" >English</a>, <a href="./zh.php" >中国语</a>, <a href="./ko.php" >한국인</a><br /><br />
-※当サイトのデータは再生リストから取得したものです。<br />
-ソース: <a href="https://github.com/PTOM76/VPS-searcher">Gitリポジトリ</a><br />
-Copyright 2023-2025 © Pitan.</span>
+<?php renderFooter($lang, $useLang, false); ?>
 </div>
 </body>
 </html>
-<?php

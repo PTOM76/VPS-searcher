@@ -25,7 +25,7 @@ function openSpMenu() {
 // お気に入り機能
 function toggleFavorite(videoId, title, thumbnail) {
     if (!window.isLoggedIn) {
-        showMessage('ログインが必要です', 'error');
+        showMessage(window.translations.login_required, 'error');
         return;
     }
     
@@ -49,11 +49,11 @@ function toggleFavorite(videoId, title, thumbnail) {
             if (isFavorited) {
                 favoriteBtn.classList.remove('favorited');
                 favoriteBtn.textContent = '☆';
-                favoriteBtn.title = 'お気に入りに追加';
+                favoriteBtn.title = window.translations.add_to_favorites;
             } else {
                 favoriteBtn.classList.add('favorited');
                 favoriteBtn.textContent = '★';
-                favoriteBtn.title = 'お気に入りから削除';
+                favoriteBtn.title = window.translations.remove_from_favorites;
             }
             showMessage(data.message, 'success');
         } else {
@@ -61,7 +61,7 @@ function toggleFavorite(videoId, title, thumbnail) {
         }
     })
     .catch(error => {
-        showMessage('エラーが発生しました', 'error');
+        showMessage(window.translations.error_occurred, 'error');
     });
 }
 

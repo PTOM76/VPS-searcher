@@ -1,4 +1,6 @@
 <?php
+require_once "../config.ini.php";
+require_once "../lang.ini.php";
 require_once "../lib/auth.php";
 require_once "../lib/common.php";
 
@@ -10,87 +12,28 @@ if (isset($_GET['q'])) {
   file_put_contents($analytics, $data . "DATE: " . date("Y-m-d_H:i:s") . "\n" . "URI: " . $_SERVER['REQUEST_URI'] . "\nWORD: " . $_GET['q'] . "\n----------------\n");
 }
 
-set_time_limit(600);
-date_default_timezone_set('UTC');
-
-define("MAX_VIEW", 50);
-ini_set('display_errors', 0);
-
-if (!isset($useLang)) {
-    if (isset($_GET['lang'])) {
-        $useLang = $_GET['lang'];
-    } else {
-        $useLang = "ja";
-    }
-}
-
-require_once "../lang.ini.php";
+if (!isset($useLang))
+    $useLang = $_GET['lang'] ?? $_POST['lang'] ?? ($_SESSION['lang'] ?? 'ja');
 
 $lang = $_lang[$useLang];
+Auth::setLanguage($lang);
 
 // ユーザー情報を取得
 $currentUser = Auth::getCurrentUser();
 
 global $notice;
 
-function make_param(array $params) : string {
-    $param = "";
-    foreach ($params as $key => $value) {
-        if ($value === null || empty($value)) continue;
-        $param .= $key . "=" . $value . "&";
+if (isset($_POST['do'])) {
+    $url = $_POST['url'];
+
+    $url_type = "none";
+    if (false !== strpos($url, 'list=') || str_starts_with($url, 'PL')) {
+        $url_type = "playlist";
+    } else if (false !== strpos($url, 'watch/sm') || str_starts_with($url, 'sm')) {
+        $url_type = "nicovideo";
     }
-    if (!empty($param)) {
-        $param = "?" . substr($param, 0, -1);
-    }
-    return $param;
 }
 
-    function time_elapsed_string($datetime, $full = false) {
-        global $lang, $useLang;
-
-        $now = new DateTime;
-        $ago = new DateTime;
-        $ago->setTimestamp($datetime);
-        $diff = $now->diff($ago);
-    
-        $diff->w = floor($diff->d / 7);
-        $diff->d -= $diff->w * 7;
-      
-        $string = array(
-            'y' => $lang['year'],
-            'm' => $lang['month'],
-            'w' => $lang['week'],
-            'd' => $lang['day'],
-            'h' => $lang['hour'],
-            'i' => $lang['minu'],
-            's' => $lang['sec'],
-        );
-
-        foreach ($string as $k => &$v) {
-            if ($diff->$k) {
-                // $v = $diff->$k . ' ' . $v . ($diff->$k > 1 ? 's' : '');
-                $v = $diff->$k . '' . $v . ($diff->$k > 1 ? ($useLang === "en" ? 's ' : '') : '');
-            } else {
-                unset($string[$k]);
-            }
-        }
-    
-        if (!$full) $string = array_slice($string, 0, 1);
-        return $string ? implode(', ', $string) . $lang['ago'] : $lang['justnow']; // ago, just now
-    }
-
-    if (isset($_POST['do'])) {
-        $url = $_POST['url'];
-
-        $url_type = "none";
-        if (false !== strpos($url, 'list=') || str_starts_with($url, 'PL')) {
-          $url_type = "playlist";
-        } else if (false !== strpos($url, 'watch/sm') || str_starts_with($url, 'sm')) {
-          $url_type = "nicovideo";
-        }
-    }
-?>
-<?php
 // HTMLヘッダーを出力
 renderHtmlHead($lang['title'], $useLang);
 
@@ -100,31 +43,6 @@ renderNavigation($lang, $useLang, $currentUser, true);
 // モバイルメニューを出力（matrix用）
 renderMobileMenu($lang, $useLang, $currentUser, true);
 ?>
-            <li><a href="<?php echo $useLang === "ja" ? "./" : "./" . $useLang . ".php"; ?>"><?php echo $lang['title']; ?></a></li>
-            <li class="none"><br /></li>
-            <li><a href="../?info"><?php echo $lang['info']; ?></a></li>
-            <li><a href="../?post"><?php echo $lang['send_pl']; ?></a></li>
-            <?php if ($currentUser): ?>
-                <li><a href="../favorites.php<?php echo $useLang !== "ja" ? "?lang=" . $useLang : ""; ?>">お気に入り</a></li>
-            <?php endif; ?>
-            <li class="none"><br /></li>
-            <li><a href="../<?php echo $useLang === "ja" ? "" : $useLang . ".php"; ?><?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>"><?= $lang['listview'] ?></a></li>
-            <li class="none"><br /></li>
-            <?php if ($currentUser): ?>
-                <li><span style="color: var(--text-color);">ようこそ、<?php echo htmlspecialchars($currentUser['username']); ?>さん</span></li>
-                <li><a href="../login.php?logout">ログアウト</a></li>
-                <li class="none"><br /></li>
-            <?php else: ?>
-                <li><a href="../login.php<?php echo $useLang !== "ja" ? "?lang=" . $useLang : ""; ?>">ログイン</a></li>
-                <li class="none"><br /></li>
-            <?php endif; ?>
-            <li><a href="./<?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>">日本語</a></li>
-            <li><a href="./en.php<?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>">English</a></li>
-            <li><a href="./zh.php<?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>">中国语</a></li>
-            <li><a href="./ko.php<?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>">한국인</a></li>            
-        </ul>
-    </div>
-    <br /><br />
     <div id="contents">
     
     <?php echo empty($notice) ? "" : '<h3>' . $notice . '</h3>'; ?>
@@ -185,7 +103,6 @@ renderMobileMenu($lang, $useLang, $currentUser, true);
     </form>
     <br />
     <?php
-
     $video_contents_html = '';
       
     $index = [];
@@ -420,11 +337,7 @@ renderMobileMenu($lang, $useLang, $currentUser, true);
 
 ?>
 <br />
-<span style="font-size:12px;">Languages: <a href="./" >日本語</a>, <a href="./en.php" >English</a>, <a href="./zh.php" >中国语</a>, <a href="./ko.php" >한국인</a><br /><br />
-※当サイトのデータは再生リストから取得したものです。<br />
-ソース: <a href="https://github.com/PTOM76/VPS-searcher">Gitリポジトリ</a><br />
-Copyright 2023-2025 © Pitan.</span>
+<?php renderFooter($lang, $useLang, true); ?>
 </div>
 </body>
 </html>
-<?php
