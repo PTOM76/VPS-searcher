@@ -1,4 +1,6 @@
 <?php
+require_once "../auth/auth.php";
+
 if (isset($_GET['q'])) {
   $analytics = "../data/analytics/" . date("Y-m-d") . ".txt";
   $data = '';
@@ -13,12 +15,20 @@ date_default_timezone_set('UTC');
 define("MAX_VIEW", 50);
 ini_set('display_errors', 0);
 
-if (!isset($useLang))
-    $useLang = "ja";
+if (!isset($useLang)) {
+    if (isset($_GET['lang'])) {
+        $useLang = $_GET['lang'];
+    } else {
+        $useLang = "ja";
+    }
+}
 
 require_once "../lang.ini.php";
 
 $lang = $_lang[$useLang];
+
+// ユーザー情報を取得
+$currentUser = Auth::getCurrentUser();
 
 global $notice;
 
@@ -175,6 +185,9 @@ function make_param(array $params) : string {
             <li><a href="<?php echo $useLang === "ja" ? "./" : "./" . $useLang . ".php"; ?>"><?php echo $lang['title']; ?></a></li>
             <li class="pc"><a href="../?info"><?php echo $lang['info']; ?></a></li>
             <li class="pc"><a href="../?post"><?php echo $lang['send_pl']; ?></a></li>
+            <?php if ($currentUser): ?>
+                <li class="pc"><a href="../favorites.php<?php echo $useLang !== "ja" ? "?lang=" . $useLang : ""; ?>">お気に入り</a></li>
+            <?php endif; ?>
             <li class="dropdown pc">
                 <a href="javascript:void(0)" class="dropbtn">Language</a>
                 <div class="dropdown-content">
@@ -188,6 +201,13 @@ function make_param(array $params) : string {
             <li><a href="../<?php echo $useLang === "ja" ? "" : $useLang . ".php"; ?><?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>"><img src="../image/vertical.png" /></a></li>
             <li><a href="javascript:toggleDarkMode();"><img id="darkmode" src="../image/darkmode.png" /></a></li>
 
+            <?php if ($currentUser): ?>
+                <li class="pc"><span style="color: var(--text-color); padding: 8px;"><?php echo htmlspecialchars($currentUser['username']); ?></span></li>
+                <li class="pc"><a href="../login.php?logout">ログアウト</a></li>
+            <?php else: ?>
+                <li class="pc"><a href="../login.php<?php echo $useLang !== "ja" ? "?lang=" . $useLang : ""; ?>">ログイン</a></li>
+            <?php endif; ?>
+
             <li class="sp noborder" id="menu"><a href="javascript:openSpMenu()"><img src="../image/menu.png" /></a></li>
         </ul>
     </div>
@@ -197,9 +217,20 @@ function make_param(array $params) : string {
             <li class="none"><br /></li>
             <li><a href="../?info"><?php echo $lang['info']; ?></a></li>
             <li><a href="../?post"><?php echo $lang['send_pl']; ?></a></li>
+            <?php if ($currentUser): ?>
+                <li><a href="../favorites.php<?php echo $useLang !== "ja" ? "?lang=" . $useLang : ""; ?>">お気に入り</a></li>
+            <?php endif; ?>
             <li class="none"><br /></li>
             <li><a href="../<?php echo $useLang === "ja" ? "" : $useLang . ".php"; ?><?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>"><?= $lang['listview'] ?></a></li>
             <li class="none"><br /></li>
+            <?php if ($currentUser): ?>
+                <li><span style="color: var(--text-color);">ようこそ、<?php echo htmlspecialchars($currentUser['username']); ?>さん</span></li>
+                <li><a href="../login.php?logout">ログアウト</a></li>
+                <li class="none"><br /></li>
+            <?php else: ?>
+                <li><a href="../login.php<?php echo $useLang !== "ja" ? "?lang=" . $useLang : ""; ?>">ログイン</a></li>
+                <li class="none"><br /></li>
+            <?php endif; ?>
             <li><a href="./<?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>">日本語</a></li>
             <li><a href="./en.php<?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>">English</a></li>
             <li><a href="./zh.php<?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>">中国语</a></li>

@@ -1,5 +1,6 @@
 <?php
-require_once "./secret.ini.php"
+require_once "./secret.ini.php";
+require_once './auth/auth.php';
 
 //error_reporting(E_ALL & ~E_DEPRECATED & ~E_STRICT);
 ini_set('display_errors', 0);
@@ -17,11 +18,11 @@ date_default_timezone_set('UTC');
 //define("API_KEY", getenv("API_KEY"));
 define("MAX_VIEW", 50);
 
-if (isset($_GET[getenv('PASS')])) {
+if (isset($_GET[getSecretValue('PASS')])) {
   addPlaylist("PLdKTS7WkYMJErsSEK6C0VAQin9N8zfVr5", "vps", false, true);
   addPlaylist("PLdKTS7WkYMJFj8REOW1mRE_hEK0QY9FrM", "material", false, true);
 }
-if (isset($_GET['replace_' . getenv('PASS')])) {
+if (isset($_GET['replace_' . getSecretValue('PASS')])) {
 
     if (isset($_GET['vps_nexttoken'])) 
         $next = addPlaylist("PLdKTS7WkYMJErsSEK6C0VAQin9N8zfVr5", "vps", $_GET['vps_nexttoken'], false);
@@ -36,7 +37,7 @@ if (isset($_GET['replace_' . getenv('PASS')])) {
   exit;
 }
 
-if (isset($_GET["update2_" . getenv('PASS')])) {
+if (isset($_GET["update2_" . getSecretValue('PASS')])) {
         $playlists = json_decode(file_get_contents("data/playlists.json"), true);
         foreach($playlists as $id => $data) {
             addPlaylist($id, $data['type'], false, false, true);
@@ -45,7 +46,7 @@ if (isset($_GET["update2_" . getenv('PASS')])) {
 
 if (file_exists("time.txt")) {
     $time = (int) file_get_contents("time.txt");
-    if ($time + 86400 < time() || isset($_GET['update_' . getenv('PASS')])) {
+    if ($time + 86400 < time() || isset($_GET['update_' . getSecretValue('PASS')])) {
         file_put_contents("time.txt", time());
         $playlists = json_decode(file_get_contents("data/playlists.json"), true);
 
@@ -61,12 +62,20 @@ if (file_exists("time.txt")) {
         addPlaylist($id, $data['type']);
     }
 }
-if (!isset($useLang))
-    $useLang = "ja";
+if (!isset($useLang)) {
+    if (isset($_GET['lang'])) {
+        $useLang = $_GET['lang'];
+    } else {
+        $useLang = "ja";
+    }
+}
 
 require_once "lang.ini.php";
 
 $lang = $_lang[$useLang];
+
+// ユーザー情報を取得
+$currentUser = Auth::getCurrentUser();
 
 global $notice;
 
@@ -468,6 +477,104 @@ function make_param(array $params) : string {
     </script>
     <script src="darkmode.js"></script>
     <link rel="stylesheet" type="text/css" href="main.css" />
+    <style>
+        .favorite-btn {
+            cursor: pointer;
+            font-size: 20px;
+            margin-left: 10px;
+            color: #ccc;
+            transition: color 0.3s;
+            display: inline-block;
+            user-select: none;
+        }
+        .favorite-btn:hover {
+            color: #ffd700;
+        }
+        .favorite-btn.favorited {
+            color: #ffd700;
+        }
+        .favorite-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            border-radius: 4px;
+            color: white;
+            font-weight: bold;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .favorite-message.success {
+            background: #28a745;
+        }
+        .favorite-message.error {
+            background: #dc3545;
+        }
+        .favorite-message.show {
+            opacity: 1;
+        }
+    </style>
+    <script>
+        function toggleFavorite(videoId, title, thumbnail) {
+            if (!<?php echo $currentUser ? 'true' : 'false'; ?>) {
+                showMessage('ログインが必要です', 'error');
+                return;
+            }
+            
+            const favoriteBtn = document.querySelector(`.favorite-btn[onclick*="${videoId}"]`);
+            const isFavorited = favoriteBtn.classList.contains('favorited');
+            
+            const formData = new FormData();
+            formData.append('action', isFavorited ? 'remove_favorite' : 'add_favorite');
+            formData.append('video_id', videoId);
+            formData.append('title', title);
+            formData.append('thumbnail', thumbnail);
+            
+            fetch('ajax/favorites.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    if (isFavorited) {
+                        favoriteBtn.classList.remove('favorited');
+                        favoriteBtn.textContent = '☆';
+                        favoriteBtn.title = 'お気に入りに追加';
+                    } else {
+                        favoriteBtn.classList.add('favorited');
+                        favoriteBtn.textContent = '★';
+                        favoriteBtn.title = 'お気に入りから削除';
+                    }
+                    showMessage(data.message, 'success');
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            })
+            .catch(error => {
+                showMessage('エラーが発生しました', 'error');
+            });
+        }
+        
+        function showMessage(message, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `favorite-message ${type}`;
+            messageDiv.textContent = message;
+            document.body.appendChild(messageDiv);
+            
+            setTimeout(() => {
+                messageDiv.classList.add('show');
+            }, 100);
+            
+            setTimeout(() => {
+                messageDiv.classList.remove('show');
+                setTimeout(() => {
+                    document.body.removeChild(messageDiv);
+                }, 300);
+            }, 3000);
+        }
+    </script>
 </head>
 <body>
     <div id="navi">
@@ -475,6 +582,9 @@ function make_param(array $params) : string {
             <li><a href="<?php echo $useLang === "ja" ? "./" : "./" . $useLang . ".php"; ?>"><?php echo $lang['title']; ?></a></li>
             <li class="pc"><a href="?info"><?php echo $lang['info']; ?></a></li>
             <li class="pc"><a href="?post"><?php echo $lang['send_pl']; ?></a></li>
+            <?php if ($currentUser): ?>
+                <li class="pc"><a href="favorites.php<?php echo $useLang !== "ja" ? "?lang=" . $useLang : ""; ?>">お気に入り</a></li>
+            <?php endif; ?>
             <li class="dropdown pc">
                 <a href="javascript:void(0)" class="dropbtn">Language</a>
                 <div class="dropdown-content">
@@ -488,6 +598,13 @@ function make_param(array $params) : string {
             <li><a href="./matrix/<?php echo $useLang === "ja" ? "" : $useLang . ".php"; ?><?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>"><img src="image/matrix.png" /></a></li>
             <li><a href="javascript:toggleDarkMode();"><img id="darkmode" src="image/darkmode.png" /></a></li>
 
+            <?php if ($currentUser): ?>
+                <li class="pc"><span style="color: var(--text-color); padding: 8px;"><?php echo htmlspecialchars($currentUser['username']); ?></span></li>
+                <li class="pc"><a href="login.php?logout">ログアウト</a></li>
+            <?php else: ?>
+                <li class="pc"><a href="login.php<?php echo $useLang !== "ja" ? "?lang=" . $useLang : ""; ?>">ログイン</a></li>
+            <?php endif; ?>
+
             <li class="sp noborder" id="menu"><a href="javascript:openSpMenu()"><img src="image/menu.png" /></a></li>
         </ul>
     </div>
@@ -497,9 +614,20 @@ function make_param(array $params) : string {
             <li class="none"><br /></li>
             <li><a href="?info"><?php echo $lang['info']; ?></a></li>
             <li><a href="?post"><?php echo $lang['send_pl']; ?></a></li>
+            <?php if ($currentUser): ?>
+                <li><a href="favorites.php<?php echo $useLang !== "ja" ? "?lang=" . $useLang : ""; ?>">お気に入り</a></li>
+            <?php endif; ?>
             <li class="none"><br /></li>
             <li><a href="./matrix/<?php echo $useLang === "ja" ? "" : $useLang . ".php"; ?><?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>"><?= $lang['matrixview'] ?></a></li>
             <li class="none"><br /></li>
+            <?php if ($currentUser): ?>
+                <li><span style="color: var(--text-color);">ようこそ、<?php echo htmlspecialchars($currentUser['username']); ?>さん</span></li>
+                <li><a href="login.php?logout">ログアウト</a></li>
+                <li class="none"><br /></li>
+            <?php else: ?>
+                <li><a href="login.php<?php echo $useLang !== "ja" ? "?lang=" . $useLang : ""; ?>">ログイン</a></li>
+                <li class="none"><br /></li>
+            <?php endif; ?>
             <li><a href="./<?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>">日本語</a></li>
             <li><a href="./en.php<?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>">English</a></li>
             <li><a href="./zh.php<?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>">中国语</a></li>
@@ -810,6 +938,21 @@ if (isset($_GET['post'])) {
             $ago = time_elapsed_string($data['publishedAt']);
 
         $view_str = number_format($data['view']);
+        
+        // お気に入りボタンのHTML
+        $favorite_button_html = '';
+        if ($currentUser) {
+            $is_favorite = Auth::isFavorite($currentUser['id'], $id);
+            $favorite_class = $is_favorite ? 'favorited' : '';
+            $favorite_text = $is_favorite ? '★' : '☆';
+            $favorite_title = $is_favorite ? 'お気に入りから削除' : 'お気に入りに追加';
+            $thumbnail_url = isset($data['is_nicovideo']) && $data['is_nicovideo'] === true 
+                ? "./cache/thumb/{$id}.jpg" 
+                : "https://i.ytimg.com/vi/{$id}/hqdefault.jpg";
+            
+            $favorite_button_html = "<span class=\"favorite-btn {$favorite_class}\" onclick=\"toggleFavorite('{$id}', '" . str_replace("'", "\\'", $data['title']) . "', '{$thumbnail_url}')\" title=\"{$favorite_title}\">{$favorite_text}</span>";
+        }
+        
         if (isset($data['is_nicovideo']) && $data['is_nicovideo'] === true) {
           // ニコニコ
         $video_contents_html .= <<<EOD
@@ -818,7 +961,7 @@ if (isset($_GET['post'])) {
                 <a href="javascript:onClickThumbNC('{$id}');"><img id="{$id}" loading="lazy" data-src="./cache/thumb/{$id}.jpg" width="320px" height="180px" style="width:320px;height:180px;object-fit:cover;" /></a>
             </div>
             <div>
-                <span style="font-size:18px;"><a target="_blank" class="plain" href="https://www.nicovideo.jp/watch/{$id}">{$data['title']}</a></span><br />
+                <span style="font-size:18px;"><a target="_blank" class="plain" href="https://www.nicovideo.jp/watch/{$id}">{$data['title']}</a> {$favorite_button_html}</span><br />
                 <span style="font-size:11px;">{$view_str} {$lang['view']}・{$ago}</span>
                 <br />
                 <span style="font-size:15px;"><a class="plain" href="https://www.nicovideo.jp/user/{$data['channelId']}">{$data['channelTitle']}</a></span>
@@ -840,7 +983,7 @@ if (isset($_GET['post'])) {
                 <a href="javascript:onClickThumb('{$id}');"><img id="{$id}" loading="lazy" data-src="https://i.ytimg.com/vi/{$id}/hqdefault.jpg" width="320px" height="180px" style="width:320px;height:180px;object-fit:cover;" /></a>
             </div>
             <div>
-                <span style="font-size:18px;"><a target="_blank" class="plain" href="https://youtu.be/{$id}">{$data['title']}</a></span><br />
+                <span style="font-size:18px;"><a target="_blank" class="plain" href="https://youtu.be/{$id}">{$data['title']}</a> {$favorite_button_html}</span><br />
                 <span style="font-size:11px;">{$view_str} {$lang['view']}・{$ago}</span>
                 <br />
                 <span style="font-size:15px;"><a class="plain" href="https://www.youtube.com/channel/{$data['channelId']}">{$data['channelTitle']}</a></span>

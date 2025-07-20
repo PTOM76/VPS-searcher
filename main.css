@@ -1,324 +1,341 @@
 :root {
-    --background-color: #fff;
-    --text-color: #000;
-    --link-color: #0066ff;
-    --link-hover-color: #0044dd;
-    --border-color: #ccc;
-    --box-shadow-color: #ccc;
-    --box-shadow-hover-color: #aaa;
-    --box-shadow-active-color: #888;
-    --button-background-color: #EBEBEB;
-    --button-text-color: #000;
-    --button-border-color: #AFAFAF;
-    --button-hover-background-color: #EBFBFF;
-    --button-hover-text-color: #000;
-    --button-hover-border-color: #AFCFFF;
-    --button-active-background-color: #d0d0d0;
-    --button-active-text-color: #000;
-    --button-active-border-color: #888;
-    --input-background-color: #f0f0f0;
-    --input-text-color: #444444;
-    --input-border-color: #AFAFAF;
-    --input-hover-background-color: #EBFBFF;
-    --input-hover-text-color: #000;
-    --input-hover-border-color: #aaa;
-    --input-active-background-color: #d0d0d0;
-    --input-active-text-color: #000;
-    --input-active-border-color: #888;
-    --next_birth-text-color: #E6C600;
-    --menu-sp-background-color: #dfdfdf;
-    --menu-sp-item-color: #f4f4f4
-    --menu-sp-item-border-color: #5a5a5a;
+	--background-color: #fff;
+	--text-color: #000;
+	--link-color: #0066ff;
+	--link-hover-color: #0044dd;
+	--border-color: #ccc;
+	--box-shadow-color: #ccc;
+	--box-shadow-hover-color: #aaa;
+	--box-shadow-active-color: #888;
+	--button-background-color: #EBEBEB;
+	--button-text-color: #000;
+	--button-border-color: #AFAFAF;
+	--button-hover-background-color: #EBFBFF;
+	--button-hover-text-color: #000;
+	--button-hover-border-color: #AFCFFF;
+	--button-active-background-color: #d0d0d0;
+	--button-active-text-color: #000;
+	--button-active-border-color: #888;
+	--input-background-color: #f0f0f0;
+	--input-text-color: #444444;
+	--input-border-color: #AFAFAF;
+	--input-hover-background-color: #EBFBFF;
+	--input-hover-text-color: #000;
+	--input-hover-border-color: #aaa;
+	--input-active-background-color: #d0d0d0;
+	--input-active-text-color: #000;
+	--input-active-border-color: #888;
+	--next_birth-text-color: #E6C600;
+	--menu-sp-background-color: #dfdfdf;
+	--menu-sp-item-color: #f4f4f4 --menu-sp-item-border-color: #5a5a5a;
 }
 
 :root[theme="dark"] {
-    --background-color: #161616;
-    --text-color: #fff;
-    --link-color: #77aaff;
-    --link-hover-color: #99ccff;
-    --border-color: #444;
-    --box-shadow-color: #444;
-    --box-shadow-hover-color: #666;
-    --box-shadow-active-color: #888;
-    --button-background-color: #333;
-    --button-text-color: #fff;
-    --button-border-color: #555;
-    --button-hover-background-color: #444;
-    --button-hover-text-color: #fff;
-    --button-hover-border-color: #666;
-    --button-active-background-color: #222;
-    --button-active-text-color: #fff;
-    --button-active-border-color: #444;
-    --input-background-color: #222;
-    --input-text-color: #fff;
-    --input-border-color: #555;
-    --input-hover-background-color: #333;
-    --input-hover-text-color: #fff;
-    --input-hover-border-color: #666;
-    --input-active-background-color: #111;
-    --input-active-text-color: #fff;
-    --input-active-border-color: #444;
-    --next_birth-text-color: #FFD700;
-    --menu-sp-background-color: #252525;
-    --menu-sp-item-color: #323232;
-    --menu-sp-item-border-color: #afafaf;
+	--background-color: #161616;
+	--text-color: #fff;
+	--link-color: #77aaff;
+	--link-hover-color: #99ccff;
+	--border-color: #444;
+	--box-shadow-color: #444;
+	--box-shadow-hover-color: #666;
+	--box-shadow-active-color: #888;
+	--button-background-color: #333;
+	--button-text-color: #fff;
+	--button-border-color: #555;
+	--button-hover-background-color: #444;
+	--button-hover-text-color: #fff;
+	--button-hover-border-color: #666;
+	--button-active-background-color: #222;
+	--button-active-text-color: #fff;
+	--button-active-border-color: #444;
+	--input-background-color: #222;
+	--input-text-color: #fff;
+	--input-border-color: #555;
+	--input-hover-background-color: #333;
+	--input-hover-text-color: #fff;
+	--input-hover-border-color: #666;
+	--input-active-background-color: #111;
+	--input-active-text-color: #fff;
+	--input-active-border-color: #444;
+	--next_birth-text-color: #FFD700;
+	--menu-sp-background-color: #252525;
+	--menu-sp-item-color: #323232;
+	--menu-sp-item-border-color: #afafaf;
 }
 
 html {
-    color: var(--text-color);
-    background-color: var(--background-color);
+	color: var(--text-color);
+	background-color: var(--background-color);
 }
 
 body {
-    margin:0;
-    font-family: verdana, arial, helvetica, Sans-Serif;
-}
-div#contents {
-    margin-left:8px;
-    margin-right:8px;
-}
-h3 a {
-    color: var(--text-color);
-    text-decoration:none;
-    font-weight:normal;
-}
-a.plain {
-    color: var(--text-color);
-    text-decoration:none;
-    font-weight:normal;
-}
-div#navi {
-    width:100%;
-    height:35px;
-    background-color:black;
-    box-sizing:border-box;
-    margin:0;
-    position:fixed;
-    top:0;
-    left:0;
-    opacity:0.85;
-    z-index: 50;
-    
-}
-div#navi li+ li {
-    border-left:1px solid #555;
+	margin: 0;
+	font-family: verdana, arial, helvetica, Sans-Serif;
 }
 
-div #navi li+ li.noborder {
-    border-left: none;
+div#contents {
+	margin-left: 8px;
+	margin-right: 8px;
+}
+
+h3 a {
+	color: var(--text-color);
+	text-decoration: none;
+	font-weight: normal;
+}
+
+a.plain {
+	color: var(--text-color);
+	text-decoration: none;
+	font-weight: normal;
+}
+
+div#navi {
+	width: 100%;
+	height: 35px;
+	background-color: black;
+	box-sizing: border-box;
+	margin: 0;
+	position: fixed;
+	top: 0;
+	left: 0;
+	opacity: 0.85;
+	z-index: 50;
+
+}
+
+div#navi li+li {
+	border-left: 1px solid #555;
+}
+
+div #navi li+li.noborder {
+	border-left: none;
 }
 
 div#navi ul {
-    display: flex;
-    margin-left:-40px;
+	display: flex;
+	margin-left: -40px;
 }
+
 div#navi li {
-    list-style:none;
-    margin-top:-10px;
+	list-style: none;
+	margin-top: -10px;
 }
+
 div#navi a {
-    display:block;
-    text-decoration:none;
-    color:white;
-    margin-right:10px;
-    margin-left:10px;
+	display: block;
+	text-decoration: none;
+	color: white;
+	margin-right: 10px;
+	margin-left: 10px;
 }
 
 div#navi a:hover {
-    color:#77aaff;
+	color: #77aaff;
 }
+
 div#navi img {
-    width: 22px;
-    height: 22px;
+	width: 22px;
+	height: 22px;
 }
 
 input[type='submit'] {
-height:24px;
-background: var(--button-background-color);
-text-align:center;
-border:1px solid var(--button-border-color);
-color: var(--button-text-color);
-font-size:15px;
-border-radius:3px;
--webkit-border-radius:3px;
--moz-border-radius:3px;
-transition: all 0.5s ease;
-margin-top:-1px;
+	height: 24px;
+	background: var(--button-background-color);
+	text-align: center;
+	border: 1px solid var(--button-border-color);
+	color: var(--button-text-color);
+	font-size: 15px;
+	border-radius: 3px;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	transition: all 0.5s ease;
+	margin-top: -1px;
 }
-input[type='submit']:hover{
-background: var(--button-hover-background-color);
-color: var(--button-hover-text-color);
-margin-left:0px;
-margin-top:-1px;
-border:1px solid var(--button-hover-border-color);
+
+input[type='submit']:hover {
+	background: var(--button-hover-background-color);
+	color: var(--button-hover-text-color);
+	margin-left: 0px;
+	margin-top: -1px;
+	border: 1px solid var(--button-hover-border-color);
 }
-input[type='text'] {
-height:20px;
-background-color: var(--input-background-color);
-border:1px solid var(--input-border-color);
-color: var(--input-text-color);
-font-size:15px;
-border-radius:3px;
--webkit-border-radius:3px;
--moz-border-radius:3px;
-transition: all 0.5s ease;
+
+input[type='text'],
+input[type='password'],
+input[type='email'] {
+	height: 20px;
+	background-color: var(--input-background-color);
+	border: 1px solid var(--input-border-color);
+	color: var(--input-text-color);
+	font-size: 15px;
+	border-radius: 3px;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	transition: all 0.5s ease;
 }
+
 a {
-text-decoration:none;
-color: var(--link-color)
+	text-decoration: none;
+	color: var(--link-color)
 }
+
 a:hover {
-text-decoration:none;
-color: var(--link-hover-color)
+	text-decoration: none;
+	color: var(--link-hover-color)
 }
 
 div.matrix {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: top;
-    justify-content: center;
-    margin: 0 auto;
-    width: 100%;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: top;
+	justify-content: center;
+	margin: 0 auto;
+	width: 100%;
 }
 
 div.matrix_box {
-    display: inline-block;
-    width: 320px;
-    margin: 3px;
+	display: inline-block;
+	width: 320px;
+	margin: 3px;
 }
 
 .dropdown-content {
-    display: none;
-    position: absolute;
-    color: #fff;
-    background-color: #333;
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-    z-index: 51;
+	display: none;
+	position: absolute;
+	color: #fff;
+	background-color: #333;
+	box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+	z-index: 51;
 }
+
 .dropdown-content a {
-    color: #fff;
-    padding: 2px 2px;
-    text-decoration: none;
-    display: block;
+	color: #fff;
+	padding: 2px 2px;
+	text-decoration: none;
+	display: block;
 }
+
 .dropdown-content a:hover {
-    background-color: #444;
+	background-color: #444;
 }
+
 div#navi .dropdown-content a img {
-    width: 24px;
-    height: 24px;
-    text-align: center;
-    margin: 0 auto;
-    margin-bottom: -6px;
+	width: 24px;
+	height: 24px;
+	text-align: center;
+	margin: 0 auto;
+	margin-bottom: -6px;
 }
 
 img[data-src] {
-    opacity: 0;
-    transition: opacity 0.3s ease-in-out;
+	opacity: 0;
+	transition: opacity 0.3s ease-in-out;
 }
+
 img[data-src].loaded {
-    opacity: 1;
+	opacity: 1;
 }
 
 select {
-    height: 24px;
-    background-color: var(--input-background-color);
-    border: 1px solid var(--input-border-color);
-    color: var(--input-text-color);
-    font-size: 15px;
-    border-radius: 3px;
-    -webkit-border-radius: 3px;
-    -moz-border-radius: 3px;
-    transition: all 0.5s ease;
+	height: 24px;
+	background-color: var(--input-background-color);
+	border: 1px solid var(--input-border-color);
+	color: var(--input-text-color);
+	font-size: 15px;
+	border-radius: 3px;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	transition: all 0.5s ease;
 }
 
 p#next_birth {
-    color: var(--next_birth-text-color);
-    font-size: 20px;
-    font-weight: bold;
+	color: var(--next_birth-text-color);
+	font-size: 20px;
+	font-weight: bold;
 }
 
 .pc {
-    display:block;
+	display: block;
 }
 
 .sp {
-    display:none;
+	display: none;
 }
 
 @media screen and (max-width: 600px) {
-    .pc {
-        display: none;
-    }
+	.pc {
+		display: none;
+	}
 
-    .sp {
-        display: block;
-    }
+	.sp {
+		display: block;
+	}
 
-    div#contents span {
-        word-break: break-all;
-    }
-    
+	div#contents span {
+		word-break: break-all;
+	}
+
 }
 
 div#menu_sp {
-    display: none;
+	display: none;
 }
 
 div#menu_sp[data-isopen="true"] {
-    display: block;
-    position: fixed;
-    top: 0;
-    right: 0;
-    max-width: 60%;
-    padding-top: 20px;
-    padding-bottom: 40px;
-    margin-top: 15px;
-    width: calc(100% - 80px);
-    min-width: 40%;
-    height: 100%;
-    background-color: var(--menu-sp-background-color);
-    z-index: 49;
-    opacity: 0.85;
-    overflow-y: auto;
-    animation: menuSpFade 0.5s ease;
+	display: block;
+	position: fixed;
+	top: 0;
+	right: 0;
+	max-width: 60%;
+	padding-top: 20px;
+	padding-bottom: 40px;
+	margin-top: 15px;
+	width: calc(100% - 80px);
+	min-width: 40%;
+	height: 100%;
+	background-color: var(--menu-sp-background-color);
+	z-index: 49;
+	opacity: 0.85;
+	overflow-y: auto;
+	animation: menuSpFade 0.5s ease;
 }
 
 div#menu_sp ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+	list-style: none;
+	padding: 0;
+	margin: 0;
 
 }
 
 div#menu_sp li {
-    margin: 0;
-    padding: 0;
-    border-bottom: 1px solid var(--menu-sp-item-border-color);
-    background-color: var(--menu-sp-item-color);
+	margin: 0;
+	padding: 0;
+	border-bottom: 1px solid var(--menu-sp-item-border-color);
+	background-color: var(--menu-sp-item-color);
 }
 
 div#menu_sp li.none {
-    background-color: var(--menu-sp-background-color);
+	background-color: var(--menu-sp-background-color);
 }
 
 div#menu_sp a {
-    display: block;
-    color: var(--text-color);
-    text-decoration: none;
-    font-weight: normal;
-    padding: 5px 10px;
-    width: 100%;
-    font-size: 18px;
-    line-height: 25px;
+	display: block;
+	color: var(--text-color);
+	text-decoration: none;
+	font-weight: normal;
+	padding: 5px 10px;
+	width: 100%;
+	font-size: 18px;
+	line-height: 25px;
 }
 
 @keyframes menuSpFade {
-    from {
-        transform: translateX(50%);
-    }
+	from {
+		transform: translateX(50%);
+	}
 
-    to {
-        transform: translateX(0px);
-    }
+	to {
+		transform: translateX(0px);
+	}
 }
