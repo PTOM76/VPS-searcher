@@ -127,7 +127,7 @@ function renderNavigation($lang, $useLang, $currentUser, $isMatrix = false) {
                 <li class="pc noborder nav-right"><a href="<?php echo $pathPrefix; ?>account.php<?php echo $useLang !== "ja" ? "?lang=" . $useLang : ""; ?>"><?php echo htmlspecialchars($currentUser['username']); ?></a></li>
                 <li class="pc nav-right"><a href="<?php echo $pathPrefix; ?>login.php?logout"><?php echo $lang['logout']; ?></a></li>
             <?php else: ?>
-                <li class="pc nav-right"><a href="<?php echo $pathPrefix; ?>login.php<?php echo $useLang !== "ja" ? "?lang=" . $useLang : ""; ?>"><?php echo $lang['login']; ?></a></li>
+                <li class="pc noborder nav-right"><a href="<?php echo $pathPrefix; ?>login.php<?php echo $useLang !== "ja" ? "?lang=" . $useLang : ""; ?>"><?php echo $lang['login']; ?></a></li>
             <?php endif; ?>
 
             <li class="sp noborder nav-right" id="menu"><a href="javascript:openSpMenu()"><img src="<?php echo $pathPrefix; ?>image/menu.png" /></a></li>

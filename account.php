@@ -103,7 +103,12 @@ renderNavigation($lang, $useLang, $currentUser);
 renderMobileMenu($lang, $useLang, $currentUser);
 ?>  
     <div class="auth-container">
-        <br />
+        <div class="account-section">
+            <h2><?php echo $lang['favorites']; ?></h2>
+            お気に入りに入れたものは以下のリンクから確認できます。
+            <p><a href="favorites.php<?php echo $useLang !== "ja" ? "?lang=" . $useLang : ""; ?>"><?php echo $lang['favorites']; ?></a></p>
+        </div>
+
         <div class="auth-header">
             <h1><?php echo $lang['account_settings']; ?></h1>
         </div>
@@ -160,11 +165,6 @@ renderMobileMenu($lang, $useLang, $currentUser);
                 </div>
                 <input type="submit" value="<?php echo $lang['update']; ?>">
             </form>
-        </div>
-
-        <div class="account-section">
-            <h2><?php echo $lang['favorites']; ?></h2>
-            <p><a href="favorites.php<?php echo $useLang !== "ja" ? "?lang=" . $useLang : ""; ?>"><?php echo $lang['favorites']; ?></a></p>
         </div>
 
         <div class="account-section danger">
