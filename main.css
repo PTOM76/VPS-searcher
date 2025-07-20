@@ -147,7 +147,7 @@ div#navi a {
 	padding: 0 10px;
 	height: 35px;
 	line-height: 35px;
-	font-size: 14px;
+	font-size: 16px;
 }
 
 div#navi a:hover {
@@ -300,11 +300,6 @@ p#next_birth {
 
 	div#contents span {
 		word-break: break-all;
-	}
-
-	/* スマホ版でのナビゲーション調整 */
-	div#navi ul {
-		justify-content: space-between;
 	}
 
 	div#navi .nav-spacer {
