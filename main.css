@@ -506,7 +506,10 @@ div#menu_sp a {
 	display: inline-block;
 	width: 320px;
 	margin: 3px;
+<<<<<<< HEAD
 	border: 1px solid var(--border-color);
+=======
+>>>>>>> 377a95a44c0d77dec3b75fd1a5914670624f5918
 	background-color: var(--background-color);
 	padding: 8px;
 }

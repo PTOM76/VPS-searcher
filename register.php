@@ -79,6 +79,8 @@ if (Auth::isLoggedIn()) {
             <h1><?php echo $lang['register_title']; ?></h1>
         </div>
 
+        <p>試験的に実装しているものであり、アカウントを作成しても、今後消すかもしれないです。</p>
+
         <?php if (!empty($message)): ?>
             <div class="message <?php echo $messageType; ?>">
                 <?php echo htmlspecialchars($message); ?>
