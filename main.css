@@ -137,7 +137,6 @@ div#navi .nav-right {
 div#navi li {
 	list-style: none;
 	height: 35px;
-	display: flex;
 	align-items: center;
 }
 
@@ -283,7 +282,7 @@ p#next_birth {
 }
 
 .pc {
-	display: block;
+	display: flex;
 }
 
 .sp {
@@ -296,7 +295,7 @@ p#next_birth {
 	}
 
 	.sp {
-		display: block;
+		display: flex;
 	}
 
 	div#contents span {
