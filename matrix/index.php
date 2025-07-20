@@ -35,7 +35,7 @@ if (isset($_POST['do'])) {
 }
 
 // HTMLヘッダーを出力
-renderHtmlHead($lang['title'], $useLang);
+renderHtmlHead($lang['title'], $useLang, true);
 
 // ナビゲーションバーを出力（matrix用）
 renderNavigation($lang, $useLang, $currentUser, true);

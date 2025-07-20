@@ -62,8 +62,11 @@ function time_elapsed_string($datetime, $full = false) {
 }
 
 // HTMLヘッダーの出力
-function renderHtmlHead($title, $useLang = "ja") {
+function renderHtmlHead($title, $useLang = "ja", $isMatrix = false) {
     global $currentUser, $lang;
+
+    $pathPrefix = $isMatrix ? '../' : '';
+
     ?>
     <!DOCTYPE html>
     <html>
@@ -73,9 +76,9 @@ function renderHtmlHead($title, $useLang = "ja") {
         <title><?php echo htmlspecialchars($title); ?></title>
         <meta name='viewport' content='width=device-width, initial-scale=1'>
         <link rel="icon" type="image/png" href="/favicon.png" />
-        <script src="<?php echo $useLang === 'ja' ? '' : '../'; ?>darkmode.js"></script>
-        <script src="<?php echo $useLang === 'ja' ? '' : '../'; ?>main.js"></script>
-        <link rel="stylesheet" type="text/css" href="<?php echo $useLang === 'ja' ? '' : '../'; ?>main.css" />
+        <script src="<?php echo $pathPrefix; ?>darkmode.js"></script>
+        <script src="<?php echo $pathPrefix; ?>main.js"></script>
+        <link rel="stylesheet" type="text/css" href="<?php echo $pathPrefix; ?>main.css" />
         <script>
             // ログイン状態と翻訳データをJavaScriptに渡す
             window.isLoggedIn = <?php echo $currentUser ? 'true' : 'false'; ?>;
@@ -120,11 +123,14 @@ function renderNavigation($lang, $useLang, $currentUser, $isMatrix = false) {
             <li><a href="<?php echo $matrixPath . ($useLang === "ja" ? "" : $useLang . ".php"); ?><?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>"><img src="<?php echo $pathPrefix; ?>image/<?php echo $matrixImage; ?>.png" /></a></li>
             <li><a href="javascript:toggleDarkMode();"><img id="darkmode" src="<?php echo $pathPrefix; ?>image/darkmode.png" /></a></li>
 
+            <!-- 右寄せ要素用のスペーサー -->
+            <li class="nav-spacer"></li>
+            
             <?php if ($currentUser): ?>
-                <li class="pc user-info"><a href="<?php echo $pathPrefix; ?>account.php<?php echo $useLang !== "ja" ? "?lang=" . $useLang : ""; ?>" style="color: var(--text-color); padding: 8px;"><?php echo htmlspecialchars($currentUser['username']); ?></a></li>
-                <li class="pc"><a href="<?php echo $pathPrefix; ?>login.php?logout"><?php echo $lang['logout']; ?></a></li>
+                <li class="pc nav-right"><a href="<?php echo $pathPrefix; ?>account.php<?php echo $useLang !== "ja" ? "?lang=" . $useLang : ""; ?>"><?php echo htmlspecialchars($currentUser['username']); ?></a></li>
+                <li class="pc nav-right"><a href="<?php echo $pathPrefix; ?>login.php?logout"><?php echo $lang['logout']; ?></a></li>
             <?php else: ?>
-                <li class="pc"><a href="<?php echo $pathPrefix; ?>login.php<?php echo $useLang !== "ja" ? "?lang=" . $useLang : ""; ?>"><?php echo $lang['login']; ?></a></li>
+                <li class="pc nav-right"><a href="<?php echo $pathPrefix; ?>login.php<?php echo $useLang !== "ja" ? "?lang=" . $useLang : ""; ?>"><?php echo $lang['login']; ?></a></li>
             <?php endif; ?>
 
             <li class="sp noborder" id="menu"><a href="javascript:openSpMenu()"><img src="<?php echo $pathPrefix; ?>image/menu.png" /></a></li>
@@ -149,14 +155,14 @@ function renderMobileMenu($lang, $useLang, $currentUser, $isMatrix = false) {
             <li class="none"><br /></li>
             <li><a href="./matrix/<?php echo $useLang === "ja" ? "" : $useLang . ".php"; ?><?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>"><?= $lang['matrixview'] ?></a></li>
             <li class="none"><br /></li>
-            <?php if ($currentUser): ?>
+            <?php if ($currentUser) { ?>
                 <li><span style="color: var(--text-color);"><?php echo htmlspecialchars($currentUser['username']); ?></span></li>
                 <li><a href="<?php echo $pathPrefix; ?>login.php?logout"><?php echo $lang['logout']; ?></a></li>
                 <li class="none"><br /></li>
-            <?php else: ?>
+            <?php } else { ?>
                 <li><a href="<?php echo $pathPrefix; ?>login.php<?php echo $useLang !== "ja" ? "?lang=" . $useLang : ""; ?>"><?php echo $lang['login']; ?></a></li>
                 <li class="none"><br /></li>
-            <?php endif; ?>
+            <?php } ?>
             <li><a href="./<?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>">日本語</a></li>
             <li><a href="./<?php echo $useLang === 'ja' ? 'en.php' : ($isMatrix ? '../en.php' : 'en.php'); ?><?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>">English</a></li>
             <li><a href="./<?php echo $useLang === 'ja' ? 'zh.php' : ($isMatrix ? '../zh.php' : 'zh.php'); ?><?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>">中国语</a></li>

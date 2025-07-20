@@ -27,7 +27,8 @@
 	--input-active-border-color: #888;
 	--next_birth-text-color: #E6C600;
 	--menu-sp-background-color: #dfdfdf;
-	--menu-sp-item-color: #f4f4f4 --menu-sp-item-border-color: #5a5a5a;
+	--menu-sp-item-color: #f4f4f4;
+	--menu-sp-item-border-color: #5a5a5a;
 }
 
 :root[theme="dark"] {
@@ -114,19 +115,27 @@ div #navi li+li.noborder {
 
 div#navi ul {
 	display: flex;
-	justify-content: space-between;
 	align-items: center;
 	height: 35px;
 	margin: 0;
-	padding: 0;
-	margin-left: -40px;
+	padding: 0 10px;
+	list-style: none;
+	width: 100%;
+}
+
+/* スペーサー（右寄せ用） */
+div#navi .nav-spacer {
+	flex: 1;
+}
+
+/* 右寄せ要素のスタイル */
+div#navi .nav-right {
+	margin-left: 0;
 }
 
 div#navi li {
 	list-style: none;
-	margin-top: -10px;
 	height: 35px;
-	line-height: 35px;
 	display: flex;
 	align-items: center;
 }
@@ -135,8 +144,8 @@ div#navi a {
 	display: block;
 	text-decoration: none;
 	color: white;
-	margin-right: 10px;
-	margin-left: 10px;
+	padding: 0 10px;
+	height: 35px;
 	line-height: 35px;
 	font-size: 14px;
 }
@@ -151,11 +160,9 @@ div#navi img {
 	vertical-align: middle;
 }
 
-/* ユーザー情報とログアウトボタンの右寄せ */
-div#navi ul .user-info,
-div#navi ul li:has(a[href*="login.php?logout"]),
-div#navi ul li:has(a[href*="login.php"]):not(.user-info) {
-    margin-left: auto;
+/* ナビゲーション右側の要素を右寄せ */
+div#navi .nav-right {
+	margin-left: 0;
 }
 
 input[type='submit'] {
@@ -357,50 +364,6 @@ div#menu_sp a {
 	to {
 		transform: translateX(0px);
 	}
-}
-
-/* お気に入り機能のスタイル */
-.favorite-btn {
-    cursor: pointer;
-    font-size: 20px;
-    margin-left: 10px;
-    color: #ccc;
-    transition: color 0.3s;
-    display: inline-block;
-    user-select: none;
-}
-
-.favorite-btn:hover {
-    color: #ffd700;
-}
-
-.favorite-btn.favorited {
-    color: #ffd700;
-}
-
-.favorite-message {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    padding: 10px 20px;
-    border-radius: 4px;
-    color: white;
-    font-weight: bold;
-    z-index: 1000;
-    opacity: 0;
-    transition: opacity 0.3s;
-}
-
-.favorite-message.success {
-    background: #28a745;
-}
-
-.favorite-message.error {
-    background: #dc3545;
-}
-
-.favorite-message.show {
-    opacity: 1;
 }
 
 /* 認証フォームのスタイル */
