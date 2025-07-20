@@ -251,7 +251,7 @@ div#navi .dropdown-content a img {
 	height: 24px;
 	text-align: center;
 	margin: 0 auto;
-	margin-bottom: -6px;
+	margin-bottom: 4px;
 }
 
 img[data-src] {
