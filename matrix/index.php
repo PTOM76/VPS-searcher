@@ -1,5 +1,6 @@
 <?php
-require_once "../auth/auth.php";
+require_once "../lib/auth.php";
+require_once "../lib/common.php";
 
 if (isset($_GET['q'])) {
   $analytics = "../data/analytics/" . date("Y-m-d") . ".txt";
@@ -31,22 +32,6 @@ $lang = $_lang[$useLang];
 $currentUser = Auth::getCurrentUser();
 
 global $notice;
-
-
-function kan2num($str) {
-    $str = str_replace("一", "1", $str);
-    $str = str_replace("二", "2", $str);
-    $str = str_replace("三", "3", $str);
-    $str = str_replace("四", "4", $str);
-    $str = str_replace("五", "5", $str);
-    $str = str_replace("六", "6", $str);
-    $str = str_replace("七", "7", $str);
-    $str = str_replace("八", "8", $str);
-    $str = str_replace("九", "9", $str);
-    $str = str_replace("！", "!", $str);
-    $str = str_replace("？", "?", $str);
-  return $str;
-}
 
 function make_param(array $params) : string {
     $param = "";
@@ -102,117 +87,19 @@ function make_param(array $params) : string {
           $url_type = "playlist";
         } else if (false !== strpos($url, 'watch/sm') || str_starts_with($url, 'sm')) {
           $url_type = "nicovideo";
-        } else {
-          $url_type = "youtube";
         }
     }
 ?>
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset='utf-8'>
-    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
-    <title><?php echo $lang['title']; ?></title>
-    <meta name='viewport' content='width=device-width, initial-scale=1'>
-    <link rel="icon" type="image/png" href="../favicon.png" />
-    <script>
-        function onClickThumb($id) {
-            document.getElementById("content_" + $id).innerHTML = '<iframe width="320" height="180" src="https://www.youtube.com/embed/' + $id + '" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>';
-        }
-      
-        function onClickThumbNC($id) {
-            var $script = document.createElement('script');
-            $script.setAttribute("type", "application/javascript");
-            $script.setAttribute("src", "https://embed.nicovideo.jp/watch/" + $id + "/script?w=320&h=180");
-            document.getElementById("content_" + $id).innerHTML = '';
-            document.getElementById("content_" + $id).appendChild($script);
-        }
+<?php
+// HTMLヘッダーを出力
+renderHtmlHead($lang['title'], $useLang);
 
-        document.addEventListener("DOMContentLoaded", function() {
-            // Dropdown
-            var dropdown = document.getElementsByClassName("dropdown");
-            var i;
+// ナビゲーションバーを出力（matrix用）
+renderNavigation($lang, $useLang, $currentUser, true);
 
-            for (i = 0; i < dropdown.length; i++) {
-                dropdown[i].addEventListener("mouseover", function() {
-                    this.getElementsByClassName("dropdown-content")[0].style.display = "block";
-                });
-                dropdown[i].addEventListener("mouseout", function() {
-                    this.getElementsByClassName("dropdown-content")[0].style.display = "none";
-                });
-            }
-            // Lazy Load
-
-            const lazyImages = document.querySelectorAll('img[data-src]');
-            const imageObserver = new IntersectionObserver((entries, observer) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        const img = entry.target;
-                        img.src = img.dataset.src;
-                        img.onload = () => img.classList.add('loaded');
-                        observer.unobserve(img);
-                    }
-                });
-            });
-            lazyImages.forEach(img => {
-                imageObserver.observe(img);
-            });
-        });
-
-        function openSpMenu() {
-            var menu = document.getElementById("menu_sp");
-            if (menu.getAttribute("data-isopen") === "false" || menu.getAttribute("data-isopen") === null) {
-                menu.setAttribute("data-isopen", "true");
-            } else {
-                menu.setAttribute("data-isopen", "false");
-            }
-        }
-
-        document.addEventListener("click", function(e) {
-            if (document.getElementById("menu_sp").getAttribute("data-isopen") === "true") {
-                if (!document.getElementById("menu_sp").contains(e.target) && !document.getElementById("menu").contains(e.target)) {
-                    document.getElementById("menu_sp").setAttribute("data-isopen", "false");
-                }
-            }
-        });
-    </script>
-    <script src="../darkmode.js"></script>
-    <link rel="stylesheet" type="text/css" href="../main.css" />
-</head>
-<body>
-    <div id="navi">
-        <ul>
-            <li><a href="<?php echo $useLang === "ja" ? "./" : "./" . $useLang . ".php"; ?>"><?php echo $lang['title']; ?></a></li>
-            <li class="pc"><a href="../?info"><?php echo $lang['info']; ?></a></li>
-            <li class="pc"><a href="../?post"><?php echo $lang['send_pl']; ?></a></li>
-            <?php if ($currentUser): ?>
-                <li class="pc"><a href="../favorites.php<?php echo $useLang !== "ja" ? "?lang=" . $useLang : ""; ?>">お気に入り</a></li>
-            <?php endif; ?>
-            <li class="dropdown pc">
-                <a href="javascript:void(0)" class="dropbtn">Language</a>
-                <div class="dropdown-content">
-                    <a href="./<?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>"><img src="../image/japanese.png" /> 日本語</a>
-                    <a href="./en.php<?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>"><img src="../image/english.png" /> English</a>
-                    <a href="./zh.php<?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>"><img src="../image/chinese.png" /> 中国语</a>
-                    <a href="./ko.php<?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>"><img src="../image/korean.png" /> 한국인</a>
-                </div>
-            </li>
-
-            <li><a href="../<?php echo $useLang === "ja" ? "" : $useLang . ".php"; ?><?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>"><img src="../image/vertical.png" /></a></li>
-            <li><a href="javascript:toggleDarkMode();"><img id="darkmode" src="../image/darkmode.png" /></a></li>
-
-            <?php if ($currentUser): ?>
-                <li class="pc"><span style="color: var(--text-color); padding: 8px;"><?php echo htmlspecialchars($currentUser['username']); ?></span></li>
-                <li class="pc"><a href="../login.php?logout">ログアウト</a></li>
-            <?php else: ?>
-                <li class="pc"><a href="../login.php<?php echo $useLang !== "ja" ? "?lang=" . $useLang : ""; ?>">ログイン</a></li>
-            <?php endif; ?>
-
-            <li class="sp noborder" id="menu"><a href="javascript:openSpMenu()"><img src="../image/menu.png" /></a></li>
-        </ul>
-    </div>
-    <div id="menu_sp" data-isopen="false">
-        <ul>
+// モバイルメニューを出力（matrix用）
+renderMobileMenu($lang, $useLang, $currentUser, true);
+?>
             <li><a href="<?php echo $useLang === "ja" ? "./" : "./" . $useLang . ".php"; ?>"><?php echo $lang['title']; ?></a></li>
             <li class="none"><br /></li>
             <li><a href="../?info"><?php echo $lang['info']; ?></a></li>

@@ -1,6 +1,7 @@
 <?php
 require_once "./secret.ini.php";
-require_once './auth/auth.php';
+require_once './lib/auth.php';
+require_once './lib/common.php';
 
 //error_reporting(E_ALL & ~E_DEPRECATED & ~E_STRICT);
 ini_set('display_errors', 0);
@@ -78,68 +79,6 @@ $lang = $_lang[$useLang];
 $currentUser = Auth::getCurrentUser();
 
 global $notice;
-
-
-function kan2num($str) {
-    $str = str_replace("一", "1", $str);
-    $str = str_replace("二", "2", $str);
-    $str = str_replace("三", "3", $str);
-    $str = str_replace("四", "4", $str);
-    $str = str_replace("五", "5", $str);
-    $str = str_replace("六", "6", $str);
-    $str = str_replace("七", "7", $str);
-    $str = str_replace("八", "8", $str);
-    $str = str_replace("九", "9", $str);
-    $str = str_replace("！", "!", $str);
-    $str = str_replace("？", "?", $str);
-  return $str;
-}
-
-function make_param(array $params) : string {
-    $param = "";
-    foreach ($params as $key => $value) {
-        if ($value === null || empty($value)) continue;
-        $param .= $key . "=" . $value . "&";
-    }
-    if (!empty($param)) {
-        $param = "?" . substr($param, 0, -1);
-    }
-    return $param;
-}
-
-    function time_elapsed_string($datetime, $full = false) {
-        global $lang, $useLang;
-
-        $now = new DateTime;
-        $ago = new DateTime;
-        $ago->setTimestamp($datetime);
-        $diff = $now->diff($ago);
-    
-        $diff->w = floor($diff->d / 7);
-        $diff->d -= $diff->w * 7;
-      
-        $string = array(
-            'y' => $lang['year'],
-            'm' => $lang['month'],
-            'w' => $lang['week'],
-            'd' => $lang['day'],
-            'h' => $lang['hour'],
-            'i' => $lang['minu'],
-            's' => $lang['sec'],
-        );
-
-        foreach ($string as $k => &$v) {
-            if ($diff->$k) {
-                // $v = $diff->$k . ' ' . $v . ($diff->$k > 1 ? 's' : '');
-                $v = $diff->$k . '' . $v . ($diff->$k > 1 ? ($useLang === "en" ? 's ' : '') : '');
-            } else {
-                unset($string[$k]);
-            }
-        }
-    
-        if (!$full) $string = array_slice($string, 0, 1);
-        return $string ? implode(', ', $string) . $lang['ago'] : $lang['justnow']; // ago, just now
-    }
 
     function addNicovideo($video_id, $type) {
       $api_url = "https://ext.nicovideo.jp/api/getthumbinfo/" . $video_id;
@@ -405,236 +344,16 @@ function make_param(array $params) : string {
         }
     }
 ?>
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset='utf-8'>
-    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
-    <title><?php echo $lang['title']; ?></title>
-    <meta name='viewport' content='width=device-width, initial-scale=1'>
-    <link rel="icon" type="image/png" href="/favicon.png" />
-    <script>
-        function onClickThumb($id) {
-            document.getElementById("content_" + $id).innerHTML = '<iframe width="320" height="180" src="https://www.youtube.com/embed/' + $id + '" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>';
-        }
-      
-        function onClickThumbNC($id) {
-            var $script = document.createElement('script');
-            $script.setAttribute("type", "application/javascript");
-            $script.setAttribute("src", "https://embed.nicovideo.jp/watch/" + $id + "/script?w=320&h=180");
-            document.getElementById("content_" + $id).innerHTML = '';
-            document.getElementById("content_" + $id).appendChild($script);
-        }
+<?php
+// HTMLヘッダーを出力
+renderHtmlHead($lang['title'], $useLang);
 
-        document.addEventListener("DOMContentLoaded", function() {
-            // Dropdown
-            var dropdown = document.getElementsByClassName("dropdown");
-            var i;
+// ナビゲーションバーを出力
+renderNavigation($lang, $useLang, $currentUser);
 
-            for (i = 0; i < dropdown.length; i++) {
-                dropdown[i].addEventListener("mouseover", function() {
-                    this.getElementsByClassName("dropdown-content")[0].style.display = "block";
-                });
-                dropdown[i].addEventListener("mouseout", function() {
-                    this.getElementsByClassName("dropdown-content")[0].style.display = "none";
-                });
-            }
-
-            // Lazy Load
-            const lazyImages = document.querySelectorAll('img[data-src]');
-            const imageObserver = new IntersectionObserver((entries, observer) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        const img = entry.target;
-                        img.src = img.dataset.src;
-                        img.onload = () => img.classList.add('loaded');
-                        observer.unobserve(img);
-                    }
-                });
-            });
-
-            lazyImages.forEach(img => {
-                imageObserver.observe(img);
-            });
-        });
-
-        function openSpMenu() {
-            var menu = document.getElementById("menu_sp");
-            if (menu.getAttribute("data-isopen") === "false" || menu.getAttribute("data-isopen") === null) {
-                menu.setAttribute("data-isopen", "true");
-            } else {
-                menu.setAttribute("data-isopen", "false");
-            }
-        }
-
-        document.addEventListener("click", function(e) {
-            if (document.getElementById("menu_sp").getAttribute("data-isopen") === "true") {
-                if (!document.getElementById("menu_sp").contains(e.target) && !document.getElementById("menu").contains(e.target)) {
-                    document.getElementById("menu_sp").setAttribute("data-isopen", "false");
-                }
-            }
-        });
-    </script>
-    <script src="darkmode.js"></script>
-    <link rel="stylesheet" type="text/css" href="main.css" />
-    <style>
-        .favorite-btn {
-            cursor: pointer;
-            font-size: 20px;
-            margin-left: 10px;
-            color: #ccc;
-            transition: color 0.3s;
-            display: inline-block;
-            user-select: none;
-        }
-        .favorite-btn:hover {
-            color: #ffd700;
-        }
-        .favorite-btn.favorited {
-            color: #ffd700;
-        }
-        .favorite-message {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 10px 20px;
-            border-radius: 4px;
-            color: white;
-            font-weight: bold;
-            z-index: 1000;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        .favorite-message.success {
-            background: #28a745;
-        }
-        .favorite-message.error {
-            background: #dc3545;
-        }
-        .favorite-message.show {
-            opacity: 1;
-        }
-    </style>
-    <script>
-        function toggleFavorite(videoId, title, thumbnail) {
-            if (!<?php echo $currentUser ? 'true' : 'false'; ?>) {
-                showMessage('ログインが必要です', 'error');
-                return;
-            }
-            
-            const favoriteBtn = document.querySelector(`.favorite-btn[onclick*="${videoId}"]`);
-            const isFavorited = favoriteBtn.classList.contains('favorited');
-            
-            const formData = new FormData();
-            formData.append('action', isFavorited ? 'remove_favorite' : 'add_favorite');
-            formData.append('video_id', videoId);
-            formData.append('title', title);
-            formData.append('thumbnail', thumbnail);
-            
-            fetch('ajax/favorites.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    if (isFavorited) {
-                        favoriteBtn.classList.remove('favorited');
-                        favoriteBtn.textContent = '☆';
-                        favoriteBtn.title = 'お気に入りに追加';
-                    } else {
-                        favoriteBtn.classList.add('favorited');
-                        favoriteBtn.textContent = '★';
-                        favoriteBtn.title = 'お気に入りから削除';
-                    }
-                    showMessage(data.message, 'success');
-                } else {
-                    showMessage(data.message, 'error');
-                }
-            })
-            .catch(error => {
-                showMessage('エラーが発生しました', 'error');
-            });
-        }
-        
-        function showMessage(message, type) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `favorite-message ${type}`;
-            messageDiv.textContent = message;
-            document.body.appendChild(messageDiv);
-            
-            setTimeout(() => {
-                messageDiv.classList.add('show');
-            }, 100);
-            
-            setTimeout(() => {
-                messageDiv.classList.remove('show');
-                setTimeout(() => {
-                    document.body.removeChild(messageDiv);
-                }, 300);
-            }, 3000);
-        }
-    </script>
-</head>
-<body>
-    <div id="navi">
-        <ul>
-            <li><a href="<?php echo $useLang === "ja" ? "./" : "./" . $useLang . ".php"; ?>"><?php echo $lang['title']; ?></a></li>
-            <li class="pc"><a href="?info"><?php echo $lang['info']; ?></a></li>
-            <li class="pc"><a href="?post"><?php echo $lang['send_pl']; ?></a></li>
-            <?php if ($currentUser): ?>
-                <li class="pc"><a href="favorites.php<?php echo $useLang !== "ja" ? "?lang=" . $useLang : ""; ?>">お気に入り</a></li>
-            <?php endif; ?>
-            <li class="dropdown pc">
-                <a href="javascript:void(0)" class="dropbtn">Language</a>
-                <div class="dropdown-content">
-                    <a href="./<?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>"><img src="./image/japanese.png" /> 日本語</a>
-                    <a href="./en.php<?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>"><img src="./image/english.png" /> English</a>
-                    <a href="./zh.php<?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>"><img src="./image/chinese.png" /> 中国语</a>
-                    <a href="./ko.php<?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>"><img src="./image/korean.png" /> 한국인</a>
-                </div>
-            </li>
-
-            <li><a href="./matrix/<?php echo $useLang === "ja" ? "" : $useLang . ".php"; ?><?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>"><img src="image/matrix.png" /></a></li>
-            <li><a href="javascript:toggleDarkMode();"><img id="darkmode" src="image/darkmode.png" /></a></li>
-
-            <?php if ($currentUser): ?>
-                <li class="pc"><span style="color: var(--text-color); padding: 8px;"><?php echo htmlspecialchars($currentUser['username']); ?></span></li>
-                <li class="pc"><a href="login.php?logout">ログアウト</a></li>
-            <?php else: ?>
-                <li class="pc"><a href="login.php<?php echo $useLang !== "ja" ? "?lang=" . $useLang : ""; ?>">ログイン</a></li>
-            <?php endif; ?>
-
-            <li class="sp noborder" id="menu"><a href="javascript:openSpMenu()"><img src="image/menu.png" /></a></li>
-        </ul>
-    </div>
-    <div id="menu_sp" data-isopen="false">
-        <ul>
-            <li><a href="<?php echo $useLang === "ja" ? "./" : "./" . $useLang . ".php"; ?>"><?php echo $lang['title']; ?></a></li>
-            <li class="none"><br /></li>
-            <li><a href="?info"><?php echo $lang['info']; ?></a></li>
-            <li><a href="?post"><?php echo $lang['send_pl']; ?></a></li>
-            <?php if ($currentUser): ?>
-                <li><a href="favorites.php<?php echo $useLang !== "ja" ? "?lang=" . $useLang : ""; ?>">お気に入り</a></li>
-            <?php endif; ?>
-            <li class="none"><br /></li>
-            <li><a href="./matrix/<?php echo $useLang === "ja" ? "" : $useLang . ".php"; ?><?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>"><?= $lang['matrixview'] ?></a></li>
-            <li class="none"><br /></li>
-            <?php if ($currentUser): ?>
-                <li><span style="color: var(--text-color);">ようこそ、<?php echo htmlspecialchars($currentUser['username']); ?>さん</span></li>
-                <li><a href="login.php?logout">ログアウト</a></li>
-                <li class="none"><br /></li>
-            <?php else: ?>
-                <li><a href="login.php<?php echo $useLang !== "ja" ? "?lang=" . $useLang : ""; ?>">ログイン</a></li>
-                <li class="none"><br /></li>
-            <?php endif; ?>
-            <li><a href="./<?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>">日本語</a></li>
-            <li><a href="./en.php<?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>">English</a></li>
-            <li><a href="./zh.php<?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>">中国语</a></li>
-            <li><a href="./ko.php<?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>">한국인</a></li>            
-        </ul>
-    </div>
-    <br /><br />
+// モバイルメニューを出力
+renderMobileMenu($lang, $useLang, $currentUser);
+?>
     <div id="contents">
     
     <?php echo empty($notice) ? "" : '<h3>' . $notice . '</h3>'; ?>
@@ -923,80 +642,8 @@ if (isset($_GET['post'])) {
         if ($view_c >= MAX_VIEW) break;
         ++$view_c;
 
-        $description = mb_substr($data['description'], 0, 100, "UTF-8");
-        if (mb_strlen($data['description']) > 100) {
-            $description .= "...";
-        }
-
-        // htmlエスケープ
-        $data['title'] = htmlspecialchars($data['title'], ENT_QUOTES);
-        $data['channelTitle'] = htmlspecialchars($data['channelTitle'], ENT_QUOTES);
-        $data['description'] = htmlspecialchars($data['description'], ENT_QUOTES);
-
-        $ago = "";
-        if (isset($data['publishedAt']))
-            $ago = time_elapsed_string($data['publishedAt']);
-
-        $view_str = number_format($data['view']);
-        
-        // お気に入りボタンのHTML
-        $favorite_button_html = '';
-        if ($currentUser) {
-            $is_favorite = Auth::isFavorite($currentUser['id'], $id);
-            $favorite_class = $is_favorite ? 'favorited' : '';
-            $favorite_text = $is_favorite ? '★' : '☆';
-            $favorite_title = $is_favorite ? 'お気に入りから削除' : 'お気に入りに追加';
-            $thumbnail_url = isset($data['is_nicovideo']) && $data['is_nicovideo'] === true 
-                ? "./cache/thumb/{$id}.jpg" 
-                : "https://i.ytimg.com/vi/{$id}/hqdefault.jpg";
-            
-            $favorite_button_html = "<span class=\"favorite-btn {$favorite_class}\" onclick=\"toggleFavorite('{$id}', '" . str_replace("'", "\\'", $data['title']) . "', '{$thumbnail_url}')\" title=\"{$favorite_title}\">{$favorite_text}</span>";
-        }
-        
-        if (isset($data['is_nicovideo']) && $data['is_nicovideo'] === true) {
-          // ニコニコ
-        $video_contents_html .= <<<EOD
-        <div style="clear:both;">
-            <div id="content_{$id}" style="float:left;margin-right:8px;">
-                <a href="javascript:onClickThumbNC('{$id}');"><img id="{$id}" loading="lazy" data-src="./cache/thumb/{$id}.jpg" width="320px" height="180px" style="width:320px;height:180px;object-fit:cover;" /></a>
-            </div>
-            <div>
-                <span style="font-size:18px;"><a target="_blank" class="plain" href="https://www.nicovideo.jp/watch/{$id}">{$data['title']}</a> {$favorite_button_html}</span><br />
-                <span style="font-size:11px;">{$view_str} {$lang['view']}・{$ago}</span>
-                <br />
-                <span style="font-size:15px;"><a class="plain" href="https://www.nicovideo.jp/user/{$data['channelId']}">{$data['channelTitle']}</a></span>
-                <br />
-                <span style="font-size:11px;">{$description}</span>
-                <br />
-                <span style="font-size:12px;"><a href="./?report&id={$id}&is_nicovideo=true">{$lang['report']}</a> |
-                <a href="javascript:navigator.clipboard.writeText('https://www.nicovideo.jp/watch/{$id}');">URL{$lang['copy']}</a></span>
-            </div>
-
-        </div>
-        EOD;
-          
-        } else {
-          // youtube
-        $video_contents_html .= <<<EOD
-        <div style="clear:both;">
-            <div id="content_{$id}" style="float:left;margin-right:8px;">
-                <a href="javascript:onClickThumb('{$id}');"><img id="{$id}" loading="lazy" data-src="https://i.ytimg.com/vi/{$id}/hqdefault.jpg" width="320px" height="180px" style="width:320px;height:180px;object-fit:cover;" /></a>
-            </div>
-            <div>
-                <span style="font-size:18px;"><a target="_blank" class="plain" href="https://youtu.be/{$id}">{$data['title']}</a> {$favorite_button_html}</span><br />
-                <span style="font-size:11px;">{$view_str} {$lang['view']}・{$ago}</span>
-                <br />
-                <span style="font-size:15px;"><a class="plain" href="https://www.youtube.com/channel/{$data['channelId']}">{$data['channelTitle']}</a></span>
-                <br />
-                <span style="font-size:11px;">{$description}</span>
-                <br />
-                <span style="font-size:12px;"><a href="./?report&id={$id}">{$lang['report']}</a> |
-                <a href="javascript:navigator.clipboard.writeText('https://youtu.be/{$id}');">URL{$lang['copy']}</a></span>
-            </div>
-
-        </div>
-        EOD;
-        }
+        // 共通関数を使用して動画HTMLを生成
+        $video_contents_html .= generateVideoHtml($id, $data, $lang, $currentUser);
     }
   
     $page_switch_html = '';

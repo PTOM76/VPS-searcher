@@ -1,5 +1,5 @@
 <?php
-require_once './auth/auth.php';
+require_once './lib/auth.php';
 require_once "lang.ini.php";
 
 if (!isset($useLang))
