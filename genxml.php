@@ -30,23 +30,23 @@ class XmlGenerator {
         $xml->appendChild($urlset);
         
         // メインページ
-        $this->addUrlToSitemap($xml, $urlset, '/', '1.0', 'daily');
-        $this->addUrlToSitemap($xml, $urlset, '/en.php', '1.0', 'daily');
-        $this->addUrlToSitemap($xml, $urlset, '/zh.php', '1.0', 'daily');
-        $this->addUrlToSitemap($xml, $urlset, '/ko.php', '1.0', 'daily');
+        $this->addUrlToSitemap($xml, $urlset, '/', '1.0', 'weekly');
+        $this->addUrlToSitemap($xml, $urlset, '/en.php', '1.0', 'weekly');
+        $this->addUrlToSitemap($xml, $urlset, '/zh.php', '1.0', 'weekly');
+        $this->addUrlToSitemap($xml, $urlset, '/ko.php', '1.0', 'weekly');
         
         // マトリックス表示
-        $this->addUrlToSitemap($xml, $urlset, '/matrix/', '0.9', 'daily');
-        $this->addUrlToSitemap($xml, $urlset, '/matrix/en.php', '0.9', 'daily');
-        $this->addUrlToSitemap($xml, $urlset, '/matrix/zh.php', '0.9', 'daily');
-        $this->addUrlToSitemap($xml, $urlset, '/matrix/ko.php', '0.9', 'daily');
+        $this->addUrlToSitemap($xml, $urlset, '/matrix/', '0.9', 'weekly');
+        $this->addUrlToSitemap($xml, $urlset, '/matrix/en.php', '0.9', 'weekly');
+        $this->addUrlToSitemap($xml, $urlset, '/matrix/zh.php', '0.9', 'weekly');
+        $this->addUrlToSitemap($xml, $urlset, '/matrix/ko.php', '0.9', 'weekly');
         
         // 静的ページ
         $this->addUrlToSitemap($xml, $urlset, '/?info', '0.8', 'weekly');
         $this->addUrlToSitemap($xml, $urlset, '/?post', '0.7', 'weekly');
         
         // 動画ページ（最新100件）
-        $this->addVideoUrlsToSitemap($xml, $urlset);
+        //$this->addVideoUrlsToSitemap($xml, $urlset);
         
         return $xml->saveXML();
     }
