@@ -123,10 +123,10 @@ function renderNavigation($lang, $useLang, $currentUser, $isMatrix = false) {
             <li class="nav-spacer noborder"></li>
             
             <?php if ($currentUser): ?>
-                <li class="pc noborder nav-right"><a href="<?php echo $pathPrefix; ?>account.php<?php echo $useLang !== "ja" ? "?lang=" . $useLang : ""; ?>"><?php echo htmlspecialchars($currentUser['username']); ?></a></li>
-                <li class="pc nav-right"><a href="<?php echo $pathPrefix; ?>login.php?logout"><?php echo $lang['logout']; ?></a></li>
+                <li class="pc noborder nav-right"><a href="<?php echo $pathPrefix; ?>?do=account<?php echo $useLang !== "ja" ? "&lang=" . $useLang : ""; ?>"><?php echo htmlspecialchars($currentUser['username']); ?></a></li>
+                <li class="pc nav-right"><a href="<?php echo $pathPrefix; ?>?do=logout"><?php echo $lang['logout']; ?></a></li>
             <?php else: ?>
-                <li class="pc noborder nav-right"><a href="<?php echo $pathPrefix; ?>login.php<?php echo $useLang !== "ja" ? "?lang=" . $useLang : ""; ?>"><?php echo $lang['login']; ?></a></li>
+                <li class="pc noborder nav-right"><a href="<?php echo $pathPrefix; ?>?do=login<?php echo $useLang !== "ja" ? "&lang=" . $useLang : ""; ?>"><?php echo $lang['login']; ?></a></li>
             <?php endif; ?>
 
             <li class="sp noborder nav-right" id="menu"><a href="javascript:openSpMenu()"><img src="<?php echo $pathPrefix; ?>image/menu.png" /></a></li>
@@ -146,17 +146,17 @@ function renderMobileMenu($lang, $useLang, $currentUser, $isMatrix = false) {
             <li><a href="<?php echo $pathPrefix; ?>?info"><?php echo $lang['info']; ?></a></li>
             <li><a href="<?php echo $pathPrefix; ?>?post"><?php echo $lang['send_pl']; ?></a></li>
             <?php if ($currentUser): ?>
-                <li><a href="<?php echo $pathPrefix; ?>favorites.php<?php echo $useLang !== "ja" ? "?lang=" . $useLang : ""; ?>"><?php echo $lang['favorites']; ?></a></li>
+                <li><a href="<?php echo $pathPrefix; ?>?do=favorites<?php echo $useLang !== "ja" ? "&lang=" . $useLang : ""; ?>"><?php echo $lang['favorites']; ?></a></li>
             <?php endif; ?>
             <li class="none"><br /></li>
             <li><a href="./matrix/<?php echo $useLang === "ja" ? "" : $useLang . ".php"; ?><?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>"><?= $lang['matrixview'] ?></a></li>
             <li class="none"><br /></li>
             <?php if ($currentUser) { ?>
-                <li><a href="<?php echo $pathPrefix; ?>account.php<?php echo $useLang !== "ja" ? "?lang=" . $useLang : ""; ?>"><?php echo htmlspecialchars($currentUser['username']); ?></a></li>
-                <li><a href="<?php echo $pathPrefix; ?>login.php?logout"><?php echo $lang['logout']; ?></a></li>
+                <li><a href="<?php echo $pathPrefix; ?>?do=account<?php echo $useLang !== "ja" ? "&lang=" . $useLang : ""; ?>"><?php echo htmlspecialchars($currentUser['username']); ?></a></li>
+                <li><a href="<?php echo $pathPrefix; ?>?do=logout"><?php echo $lang['logout']; ?></a></li>
                 <li class="none"><br /></li>
             <?php } else { ?>
-                <li><a href="<?php echo $pathPrefix; ?>login.php<?php echo $useLang !== "ja" ? "?lang=" . $useLang : ""; ?>"><?php echo $lang['login']; ?></a></li>
+                <li><a href="<?php echo $pathPrefix; ?>?do=login<?php echo $useLang !== "ja" ? "&lang=" . $useLang : ""; ?>"><?php echo $lang['login']; ?></a></li>
                 <li class="none"><br /></li>
             <?php } ?>
             <li><a href="./<?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>">日本語</a></li>
