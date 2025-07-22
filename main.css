@@ -165,10 +165,10 @@ div#navi .nav-right {
 
 div#contents form {
   display: flex;
-  flex-wrap: wrap;           /* ← これで改行OKになる */
-  align-items: center;       /* 高さ揃える */
-  gap: 4px;                  /* 間隔 */
-  row-gap: 8px;              /* 行間も調整したければ */
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  row-gap: 4px;
 
 }
 
