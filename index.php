@@ -232,6 +232,27 @@ if (isset($_GET['post'])) {
     include 'page/report.php';
 } else if (isset($_GET['info'])) {
     include 'page/info.php';
+} else if (isset($_GET['do'])) {
+    switch ($_GET['do']) {
+        case 'login':
+            include 'action/login.php';
+            break;
+        case 'logout':
+            include 'action/logout.php';
+            break;
+        case 'register':
+            include 'action/register.php';
+            break;
+        case 'account':
+            include 'action/account.php';
+            break;
+        case 'favorites':
+            include 'action/favorites.php';
+            break;
+        default:
+            header('Location: ./');
+            exit;
+    }
 } else {
     $q = isset($_GET['q']) ? $_GET['q'] : '';
     $method = isset($_GET['method']) ? $_GET['method'] : 'and';
