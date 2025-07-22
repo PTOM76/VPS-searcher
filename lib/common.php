@@ -403,3 +403,332 @@ function addPlaylist($playlist_id, $type, $nextPageToken = false, $only = false,
     }
     
 }
+
+/**
+ * 検索フォームを生成
+ */
+function renderSearchForm($lang, $queryParams, $isMatrix = false) {
+    $q = $queryParams['q'] ?? '';
+    $method = $queryParams['method'] ?? 'and';
+    $sort = $queryParams['sort'] ?? 'recent';
+    ?>
+    <form method="GET">
+        <select name="sort">
+            <option value="recent" <?php echo $sort === "recent" ? " selected" : ""; ?>><?php echo $lang['sort_recent']; ?></option>
+            <option value="ancient" <?php echo $sort === "ancient" ? " selected" : ""; ?>><?php echo $lang['sort_ancient']; ?></option>
+            <option value="most_view" <?php echo $sort === "most_view" ? " selected" : ""; ?>><?php echo $lang['sort_most_view']; ?></option>
+            <option value="worst_view" <?php echo $sort === "worst_view" ? " selected" : ""; ?>><?php echo $lang['sort_worst_view']; ?></option>
+            <option value="most_like" <?php echo $sort === "most_like" ? " selected" : ""; ?>><?php echo $lang['sort_most_like']; ?></option>
+            <option value="word" <?php echo $sort === "word" ? " selected" : ""; ?>><?php echo $lang['sort_word']; ?></option>
+            <option value="word_desc" <?php echo $sort === "word_desc" ? " selected" : ""; ?>><?php echo $lang['sort_word_desc']; ?></option>
+        </select>
+
+        <input type="text" name ="q" value="<?php echo htmlspecialchars($q); ?>" />
+        <input type="submit" value="<?php echo $lang['search']; ?>" />
+        
+        <input type="radio" name="method" value="and"<?php echo $method === "and" || !isset($queryParams['method']) ? " checked" : ""; ?>><?php echo $lang['and_search']; ?></input>
+        <input type="radio" name="method" value="or"<?php echo $method === "or" ? " checked" : ""; ?>><?php echo $lang['or_search']; ?></input>
+        <?php if (!$isMatrix): ?>
+        <div class="flex-break"></div>
+        <?php else: ?>
+        <br />
+        <?php endif; ?>
+        <input type="checkbox" id="q_title" name="title" value="1" <?php echo (isset($queryParams['title']) && $queryParams['title'] === "1") || !isset($queryParams['q']) ? "checked " : ""; ?>/>
+        <label for="q_title"><?php echo $lang['title_checkbox']; ?></label>
+        <input type="checkbox" id="q_tag" name="tag" value="1" <?php echo isset($queryParams['tag']) && $queryParams['tag'] === "1" ? "checked " : ""; ?>/>
+        <label for="q_tag"><?php echo $lang['tag_checkbox']; ?></label>
+        <input type="checkbox" id="q_expl" name="expl" value="1" <?php echo isset($queryParams['expl']) && $queryParams['expl'] === "1" ? "checked " : ""; ?>/>
+        <label for="q_expl"><?php echo $lang['overview_checkbox']; ?></label>
+        <input type="checkbox" id="q_author" name="author" value="1" <?php echo isset($queryParams['author']) && $queryParams['author'] === "1" ? "checked " : ""; ?>/>
+        <label for="q_author"><?php echo $lang['author_checkbox']; ?></label>
+
+        |
+
+        <input type="checkbox" id="q_unlisted" name="status" value="unlisted" <?php echo isset($queryParams['status']) && $queryParams['status'] === "unlisted" ? "checked " : ""; ?>/>
+        <label for="q_unlisted"><?php echo $lang['unlisted_checkbox']; ?></label>
+
+        <input type="checkbox" id="q_deleted" name="deleted" value="1" <?php echo isset($queryParams['deleted']) && $queryParams['deleted'] === "1" ? "checked " : ""; ?>/>
+        <label for="q_deleted"><?php echo $lang['deleted_checkbox']; ?></label>
+        
+        |
+
+        <input type="radio" name="t" value="all"<?php echo (isset($queryParams['t']) && $queryParams['t'] === "all") || !isset($queryParams['t']) ? " checked" : ""; ?>><?php echo $lang['all_radio']; ?></input>
+        <input type="radio" name="t" value="vps"<?php echo isset($queryParams['t']) && $queryParams['t'] === "vps" ? " checked" : ""; ?>><?php echo $lang['vps_radio']; ?></input>
+        <input type="radio" name="t" value="material"<?php echo isset($queryParams['t']) && $queryParams['t'] === "material" ? " checked" : ""; ?>><?php echo $lang['material_radio']; ?></input>
+        <input type="checkbox" id="ai_class" name="ai_class" value="1" <?php echo isset($queryParams['ai_class']) && $queryParams['ai_class'] === "1" ? "checked " : ""; ?>/>
+        <label for="ai_class"><?php echo $lang['use_ai_class']; ?></label>
+    </form>
+    <br />
+    <?php
+}
+
+/**
+ * データインデックスを読み込み、並び替えを行う
+ */
+function loadAndSortIndex($queryParams, $isMatrix = false) {
+    $dataPath = $isMatrix ? '../data/' : 'data/';
+    
+    $index = [];
+    if (isset($queryParams['ai_class']) && $queryParams['ai_class'] == "1" && file_exists($dataPath . "ai_index.json")) {
+        $index = json_decode(file_get_contents($dataPath . "ai_index.json"), true);
+    } elseif (file_exists($dataPath . "index.json")) {
+        $index = json_decode(file_get_contents($dataPath . "index.json"), true);
+    }
+
+    // 削除された動画を除外
+    if (!isset($queryParams['deleted']) || $queryParams['deleted'] === "0") {
+        foreach ($index as $id => $data) {
+            if ($data['publishedAt'] === false && 
+                ($data['title'] === "Deleted video" || $data['title'] === "Private video")
+            ) {
+                unset($index[$id]);
+            }
+        }
+    }
+
+    // 並び替え
+    $sort = $queryParams['sort'] ?? 'recent';
+    if ($sort != 'recent') {
+        $sort_array = [];
+        foreach ($index as $id => $data) {
+            if (!isset($data['like'])) $index[$id]['like'] = 0;
+            $sort_array[$id] = $data['publishedAt'];
+        }
+        if ($sort === 'ancient') {
+            array_multisort($sort_array, SORT_ASC, $index);
+        } else if ($sort === 'most_view') {
+            array_multisort(array_column($index, 'view'), SORT_DESC, $index);
+        } else if ($sort === 'worst_view') {
+            array_multisort(array_column($index, 'view'), SORT_ASC, $index);
+        } else if ($sort === 'most_like') {
+            array_multisort(array_column($index, 'like'), SORT_DESC, $index);
+        } else if ($sort === 'word') {
+            array_multisort(array_column($index, 'title'), SORT_ASC, $index);
+        } else if ($sort === 'word_desc') {
+            array_multisort(array_column($index, 'title'), SORT_DESC, $index);
+        }
+    }
+
+    return $index;
+}
+
+/**
+ * 検索フィルタリングを行う
+ */
+function filterVideos($index, $queryParams) {
+    $words = [];
+    if (!empty($queryParams['q'])) {
+        $words = explode(" ", $queryParams['q']);
+    }
+
+    $filtered = [];
+    foreach ($index as $id => $data) {
+        $continue = false;
+        foreach ($words as $word) {
+            if (!isset($queryParams['method']) || $queryParams['method'] === "and") {
+                if (
+                       (!isset($queryParams['title']) || $queryParams['title'] !== "1" || false === strpos(mb_strtolower(mb_convert_kana(kan2num($data['title']), "Hc")), mb_strtolower(mb_convert_kana(kan2num($word), "Hc"))))
+                    && (!isset($queryParams['expl']) || $queryParams['expl'] !== "1" || false === strpos(mb_strtolower($data['description']), mb_strtolower($word)))
+                    && (!isset($queryParams['author']) || $queryParams['author'] !== "1" || false === strpos(mb_strtolower($data['channelTitle']), mb_strtolower($word))) 
+                    && (!isset($queryParams['tag']) || $queryParams['tag'] !== "1" || false === strpos(mb_strtolower(implode(",", $data['tags'])), mb_strtolower($word)))
+                ) {
+                    $continue = true;
+                }
+            }
+            if (isset($queryParams['method']) && $queryParams['method'] === "or") {
+                if (
+                       (!isset($queryParams['title']) || $queryParams['title'] !== "1" || false === strpos(mb_strtolower(mb_convert_kana(kan2num($data['title']), "Hc")), mb_strtolower(mb_convert_kana(kan2num($word), "Hc"))))
+                    && (!isset($queryParams['expl']) || $queryParams['expl'] !== "1" || false === strpos(mb_strtolower($data['description']), mb_strtolower($word)))
+                    && (!isset($queryParams['author']) || $queryParams['author'] !== "1" || false === strpos(mb_strtolower($data['channelTitle']), mb_strtolower($word)))
+                    && (!isset($queryParams['tag']) || $queryParams['tag'] !== "1" || false === strpos(mb_strtolower(implode(",", $data['tags'])), mb_strtolower($word)))
+                ) {
+                    if ($continue === false) $continue = 0;
+                    ++$continue;
+                }
+            }
+        }
+
+        if (isset($queryParams['t']) && $queryParams['t'] !== "all") {
+            if ($queryParams['t'] != $data['type']) continue;
+        }
+        if (isset($queryParams['status']) && $queryParams['status'] !== "public") {
+            if (!isset($data['status'])) continue;
+            if ($queryParams['status'] != $data['status']) continue;
+        }
+
+        if (!isset($queryParams['deleted']) || $queryParams['deleted'] === "0") {
+            if (isset($data['error']) && !empty($data['error'])) 
+                continue;
+        }
+
+        if ($continue === true || (count($words) > 0 && $continue >= count($words))) continue;
+        
+        $filtered[$id] = $data;
+    }
+
+    return $filtered;
+}
+
+/**
+ * ページネーションを生成
+ */
+function generatePagination($page, $viewCount, $totalCount, $queryParams, $lang) {
+    $page_switch_html = '<div style="clear:both;">';
+    
+    if ($page !== 1) {
+        $param_array = $queryParams;
+        $param_array['page'] = $page - 50;
+        $page_switch_html .= '<a href="' . make_param($param_array) . '"><strong>' . $lang['prev'] . '</strong></a> | ';
+    }
+    
+    $move_n = round(9 / 2);
+    $num_op_tag = '';
+    $c = 1;
+    while ($c <= 9) {
+        $n = round(($page + MAX_VIEW) / MAX_VIEW);
+        $disp_num = $c;
+        if ($n > $move_n) $disp_num = $c + $n - $move_n;
+        $f = $disp_num * MAX_VIEW - MAX_VIEW + 1;
+        if ($f > $totalCount) break;
+
+        $param_array = $queryParams;
+        $param_array['page'] = $f;
+        $num_op_tag .= '<' . ($f == $page ? 'span' : 'a' ) . ' href="' . make_param($param_array) . '"><strong>' . $disp_num . '</strong></' . ($f == $page ? 'span' : 'a' ) . '> | ';
+
+        if ($f === $page && $viewCount < MAX_VIEW) break;
+        ++$c;
+    }
+    $page_switch_html .= $num_op_tag;
+    
+    if ($viewCount >= MAX_VIEW) {
+        $param_array = $queryParams;
+        $param_array['page'] = $page + 50;
+        $page_switch_html .= '<a href="' . make_param($param_array) . '"><strong>' . $lang['next'] . '</strong></a>';
+    } else {
+        $page_switch_html .= '<strong>...</strong>';
+    }
+    $page_switch_html .= '</div>';
+
+    return $page_switch_html;
+}
+
+/**
+ * マトリックス表示用の動画HTMLを生成
+ */
+function generateMatrixVideoHtml($id, $data, $lang, $isMatrix = false) {
+    $pathPrefix = $isMatrix ? '../' : '';
+    
+    // HTMLエスケープ
+    $title = htmlspecialchars($data['title'], ENT_QUOTES);
+    $channelTitle = htmlspecialchars($data['channelTitle'], ENT_QUOTES);
+
+    $ago = "";
+    if (isset($data['publishedAt']))
+        $ago = time_elapsed_string($data['publishedAt']);
+
+    $view_str = number_format($data['view']);
+    
+    if (isset($data['is_nicovideo']) && $data['is_nicovideo'] === true) {
+        // ニコニコ動画
+        return <<<EOD
+        <div class="matrix_box">
+            <span id="content_{$id}" style="margin-right:8px;">
+                <a href="javascript:onClickThumbNC('{$id}');"><img id="{$id}" loading="lazy" data-src="./cache/thumb/{$id}.jpg" width="320px" height="180px" style="width:320px;height:180px;object-fit:cover;" /></a>
+            </span>
+            <br />
+            <span>
+                <span style="font-size:15px;"><a target="_blank" class="plain" href="https://www.nicovideo.jp/watch/{$id}">{$title}</a></span><br />
+                <span style="font-size:12px;"><a class="plain" href="https://www.nicovideo.jp/user/{$data['channelId']}">{$channelTitle}</a></span>
+                <span style="font-size:12px;">{$view_str} {$lang['view']}・{$ago}</span>
+                <br />
+                <span style="font-size:12px;"><a href="{$pathPrefix}?report&id={$id}&is_nicovideo=true">{$lang['report']}</a> |
+                <a href="javascript:navigator.clipboard.writeText('https://www.nicovideo.jp/watch/{$id}');">URL{$lang['copy']}</a></span>
+            </span>
+        </div>
+        EOD;
+    } else {
+        // YouTube動画
+        return <<<EOD
+        <div class="matrix_box">
+            <span id="content_{$id}" style="margin-right:8px;">
+                <a href="javascript:onClickThumb('{$id}');"><img id="{$id}" loading="lazy" data-src="https://i.ytimg.com/vi/{$id}/hqdefault.jpg" width="320px" height="180px" style="width:320px;height:180px;object-fit:cover;" /></a>
+            </span>
+            <br />
+            <span>
+                <span style="font-size:15px;"><a target="_blank" class="plain" href="https://youtu.be/{$id}">{$title}</a></span><br />
+                <span style="font-size:12px;"><a class="plain" href="https://www.youtube.com/channel/{$data['channelId']}">{$channelTitle}</a></span>
+                <span style="font-size:12px;">{$view_str} {$lang['view']}・{$ago}</span>
+                <br />
+                <span style="font-size:12px;"><a href="{$pathPrefix}?report&id={$id}">{$lang['report']}</a> |
+                <a href="javascript:navigator.clipboard.writeText('https://youtu.be/{$id}');">URL{$lang['copy']}</a></span>
+            </span>
+        </div>
+        EOD;
+    }
+}
+
+/**
+ * 動画検索・表示のメイン処理
+ */
+function processVideoSearch($lang, $currentUser, $isMatrix = false) {
+    // クエリパラメータを取得
+    $queryParams = [
+        'q' => $_GET['q'] ?? '',
+        'method' => $_GET['method'] ?? 'and',
+        'title' => $_GET['title'] ?? '1',
+        'expl' => $_GET['expl'] ?? '0',
+        'author' => $_GET['author'] ?? '0',
+        't' => $_GET['t'] ?? 'all',
+        'sort' => $_GET['sort'] ?? 'recent',
+        'page' => (int)($_GET['page'] ?? 1),
+        'status' => $_GET['status'] ?? null,
+        'deleted' => $_GET['deleted'] ?? null,
+        'ai_class' => $_GET['ai_class'] ?? null,
+        'tag' => $_GET['tag'] ?? null
+    ];
+
+    // 検索フォームを表示
+    renderSearchForm($lang, $queryParams, $isMatrix);
+
+    // データを読み込み、並び替え
+    $index = loadAndSortIndex($queryParams, $isMatrix);
+
+    // フィルタリング
+    $filtered = filterVideos($index, $queryParams);
+
+    // ページネーション処理
+    $c = $view_c = 0;
+    $video_contents_html = '';
+    $page = $queryParams['page'];
+
+    foreach ($filtered as $id => $data) {
+        ++$c;
+        if ($c < $page) continue;
+
+        if ($view_c >= MAX_VIEW) break;
+        ++$view_c;
+
+        // 動画HTMLを生成
+        if ($isMatrix) {
+            $video_contents_html .= generateMatrixVideoHtml($id, $data, $lang, true);
+        } else {
+            $video_contents_html .= generateVideoHtml($id, $data, $lang, $currentUser);
+        }
+    }
+
+    // ページネーション生成
+    $dataPath = $isMatrix ? '../data/' : 'data/';
+    $page_count = 0;
+    if (file_exists($dataPath . "index.json")) {
+        $page_count = count(json_decode(file_get_contents($dataPath . "index.json"), true));
+    }
+
+    $page_switch_html = generatePagination($page, $view_c, $page_count, $queryParams, $lang);
+
+    // 結果を表示
+    if ($isMatrix) {
+        echo $page_switch_html . "\n<hr />" . "<div class=\"matrix\">\n" . $video_contents_html . "\n</div>\n<br />\n<div style=\"clear:both;\"><hr /></div>\n" . $page_switch_html;
+    } else {
+        echo $page_switch_html . "\n<hr />" . $video_contents_html . "\n<br />\n<div style=\"clear:both;\"><hr /></div>\n" . $page_switch_html;
+    }
+}
