@@ -268,16 +268,39 @@ function renderHtmlHead($title, $useLang = "ja", $isMatrix = false) {
     global $currentUser, $lang;
 
     $pathPrefix = $isMatrix ? '../' : '';
+    
+    // ベースURLを取得
+    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
+    $baseUrl = $protocol . $_SERVER['HTTP_HOST'] . dirname($_SERVER['SCRIPT_NAME']);
 
     ?>
     <!DOCTYPE html>
-    <html>
+    <html lang="<?php echo $useLang; ?>">
     <head>
         <meta charset='utf-8'>
         <meta http-equiv='X-UA-Compatible' content='IE=edge'>
         <title><?php echo htmlspecialchars($title); ?></title>
         <meta name='viewport' content='width=device-width, initial-scale=1'>
+        <meta name="description" content="ボイパ対決という音MADに特化した検索ツール。YouTube・ニコニコ動画の動画を検索できます。">
+        <meta name="keywords" content="ボイパ対決,音MAD,検索,YouTube,ニコニコ動画,VPS">
         <link rel="icon" type="image/png" href="/favicon.png" />
+        
+        <!-- RSS/Atom フィード -->
+        <link rel="alternate" type="application/rss+xml" title="RSS Feed" href="<?php echo $baseUrl; ?>/rss.xml">
+        <link rel="alternate" type="application/atom+xml" title="Atom Feed" href="<?php echo $baseUrl; ?>/feed.atom">
+        
+        <!-- Open Graph -->
+        <meta property="og:title" content="<?php echo htmlspecialchars($title); ?>">
+        <meta property="og:description" content="ボイパ対決という音MADに特化した検索ツール">
+        <meta property="og:type" content="website">
+        <meta property="og:url" content="<?php echo $baseUrl; ?>">
+        <meta property="og:site_name" content="ボ対検索ツール">
+        
+        <!-- Twitter Card -->
+        <meta name="twitter:card" content="summary">
+        <meta name="twitter:title" content="<?php echo htmlspecialchars($title); ?>">
+        <meta name="twitter:description" content="ボイパ対決という音MADに特化した検索ツール">
+        
         <script src="<?php echo $pathPrefix; ?>darkmode.js"></script>
         <script src="<?php echo $pathPrefix; ?>main.js"></script>
         <link rel="stylesheet" type="text/css" href="<?php echo $pathPrefix; ?>main.css" />
@@ -490,6 +513,7 @@ function renderFooter($lang, $useLang, $isMatrix = false) {
 <a href="{$pathPrefix}ko.php" >한국인</a><br /><br />
 {$lang['data_note']}<br />
 {$lang['source']}: <a href="{$repositoryUrl}">{$lang['git_repository']}</a><br />
+<strong>XML/Feed:</strong> <a href="{$pathPrefix}sitemap.xml">Sitemap</a> | <a href="{$pathPrefix}rss.xml">RSS</a> | <a href="{$pathPrefix}feed.atom">Atom</a><br />
 Copyright {$copyrightYears} © {$author}.</span>
 EOD;
 }

@@ -112,10 +112,8 @@ if (isset($_POST['action'])) {
         <h2><?php echo $lang['change_username']; ?></h2>
         <form method="POST" class="auth-form">
             <input type="hidden" name="action" value="update_username">
-            <div class="form-group">
-                <label for="current_username"><?php echo $lang['username']; ?> (<?php echo $lang['current']; ?>)</label><br />
-                <input type="text" id="current_username" value="<?php echo htmlspecialchars($userDetails['username']); ?>" readonly>
-            </div>
+            <label for="current_username"><?php echo $lang['username']; ?> (<?php echo $lang['current']; ?>)</label><br />
+            <input type="text" id="current_username" value="<?php echo htmlspecialchars($userDetails['username']); ?>" readonly>
             <div class="form-group">
                 <label for="new_username"><?php echo $lang['new_username']; ?></label><br />
                 <input type="text" id="new_username" name="new_username" required>

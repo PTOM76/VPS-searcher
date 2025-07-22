@@ -18,7 +18,38 @@
 - 自作ニューラルネットワーク - ネーミングセンスが悪いけど動画判別用の「ボ対トル AI」 → ちな、これはオープンにしてない。
 
 ### AI
-- Claude Snonet 4 - リファクタリングに使ってるAIエージェント、メンテナンスしやすくなった
+### AI
+- Claude Sonnet 3.5 - リファクタリングに使ってるAIエージェント、メンテナンスしやすくなった
+
+## XML/Feed機能
+
+### 生成される XML ファイル
+- **sitemap.xml**: サイト全体の構造を示すサイトマップ
+- **rss.xml**: 最新動画のRSSフィード
+- **feed.atom**: 最新動画のAtomフィード  
+- **robots.txt**: 検索エンジンクローラー向け指示ファイル
+
+### アクセス方法
+```
+https://example.com/sitemap.xml
+https://example.com/rss.xml
+https://example.com/feed.atom
+https://example.com/robots.txt
+```
+
+### 直接生成
+```
+https://example.com/genxml.php?type=sitemap
+https://example.com/genxml.php?type=rss&limit=20
+https://example.com/genxml.php?type=atom&limit=30
+```
+
+### SEO改善
+- HTMLヘッダーにRSS/Atomフィードの自動検出メタタグを追加
+- Open Graph、Twitter Cardメタタグを追加
+- 適切な言語設定とメタ情報を設定
+
+## アーキテクチャの改善点
 
 
 ## プロジェクト構造

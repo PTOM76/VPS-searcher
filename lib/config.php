@@ -62,4 +62,14 @@ class UrlPatterns {
 class AppConstants {
     const UPDATE_INTERVAL = 86400; // 24時間
     const MAX_DESCRIPTION_LENGTH = 100;
+    
+    // XML/Feed設定
+    const SITEMAP_MAX_URLS = 50000; // サイトマップの最大URL数
+    const RSS_MAX_ITEMS = 50; // RSSの最大アイテム数
+    const ATOM_MAX_ENTRIES = 50; // Atomの最大エントリ数
+    
+    // SEO設定
+    const SITE_NAME = 'ボ対検索ツール';
+    const SITE_DESCRIPTION = 'ボイパ対決という音MADに特化した検索ツール。YouTube・ニコニコ動画の動画を検索できます。';
+    const SITE_KEYWORDS = 'ボイパ対決,音MAD,検索,YouTube,ニコニコ動画,VPS';
 }

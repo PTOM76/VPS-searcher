@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XML生成テスト - ボ対検索ツール</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .link-group { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .link-group h3 { margin-top: 0; color: #333; }
+        a { color: #0066cc; text-decoration: none; margin-right: 15px; }
+        a:hover { text-decoration: underline; }
+        .description { color: #666; font-size: 14px; margin-top: 5px; }
+        .code { background: #f5f5f5; padding: 10px; border-radius: 3px; font-family: monospace; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>XML生成機能テスト</h1>
+        <p>ボ対検索ツールのXML生成機能をテストできます。</p>
+        
+        <div class="link-group">
+            <h3>🗺️ サイトマップ</h3>
+            <a href="sitemap.xml" target="_blank">sitemap.xml</a>
+            <a href="genxml.php?type=sitemap" target="_blank">genxml.php?type=sitemap</a>
+            <div class="description">
+                サイト全体の構造を示すXMLサイトマップです。検索エンジンのインデックス向上に役立ちます。
+            </div>
+        </div>
+        
+        <div class="link-group">
+            <h3>📡 RSS フィード</h3>
+            <a href="rss.xml" target="_blank">rss.xml</a>
+            <a href="feed.rss" target="_blank">feed.rss</a>
+            <a href="genxml.php?type=rss" target="_blank">genxml.php?type=rss</a>
+            <a href="genxml.php?type=rss&limit=20" target="_blank">制限20件</a>
+            <div class="description">
+                最新動画のRSSフィードです。RSSリーダーで購読できます。
+            </div>
+        </div>
+        
+        <div class="link-group">
+            <h3>⚛️ Atom フィード</h3>
+            <a href="feed.atom" target="_blank">feed.atom</a>
+            <a href="genxml.php?type=atom" target="_blank">genxml.php?type=atom</a>
+            <a href="genxml.php?type=atom&limit=30" target="_blank">制限30件</a>
+            <div class="description">
+                最新動画のAtomフィードです。RSSの後継規格で、より詳細な情報を提供します。
+            </div>
+        </div>
+        
+        <div class="link-group">
+            <h3>🤖 robots.txt</h3>
+            <a href="robots.txt" target="_blank">robots.txt</a>
+            <div class="description">
+                検索エンジンクローラー向けの指示ファイルです。サイトマップの場所も記載されています。
+            </div>
+        </div>
+        
+        <div class="link-group">
+            <h3>🔧 利用方法</h3>
+            <div class="code">
+                <!-- HTMLでの利用例 -->
+                &lt;link rel="alternate" type="application/rss+xml" title="RSS Feed" href="/rss.xml"&gt;<br>
+                &lt;link rel="alternate" type="application/atom+xml" title="Atom Feed" href="/feed.atom"&gt;
+            </div>
+            <div class="description">
+                RSSやAtomフィードはHTMLの&lt;head&gt;内で宣言することで、ブラウザやRSSリーダーが自動検出できます。
+            </div>
+        </div>
+        
+        <div class="link-group">
+            <h3>📊 パラメータ</h3>
+            <ul>
+                <li><strong>type</strong>: sitemap, rss, atom</li>
+                <li><strong>limit</strong>: フィードの最大件数（デフォルト: 50）</li>
+                <li><strong>lang</strong>: 言語設定（ja, en, zh, ko）</li>
+            </ul>
+            <div class="description">
+                genxml.phpに直接アクセスする場合は、これらのパラメータを使用できます。
+            </div>
+        </div>
+        
+        <hr>
+        <p style="text-align: center; color: #666;">
+            <a href="./">&larr; メインページに戻る</a>
+        </p>
+    </div>
+</body>
+</html>

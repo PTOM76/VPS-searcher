@@ -4,6 +4,7 @@ require_once "config.ini.php";
 require_once "lang.ini.php";
 require_once './lib/auth.php';
 require_once './lib/common.php';
+require_once './lib/xml_routing.php';
 
 // アナリティクス処理
 handleAnalytics();
