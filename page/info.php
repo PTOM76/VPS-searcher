@@ -48,12 +48,18 @@
     ソースコード: <a href="https://github.com/PTOM76/VPS-searcher" target="_blank">GitHub</a><br />
 </p>
 
-<h3>Related Links</h3>
+<h3>External Links</h3>
 <ul>
     <li><a href="https://dic.nicovideo.jp/a/hikakin%E3%83%9C%E3%82%A4%E3%83%91%E5%AF%BE%E6%B1%BA%E3%82%B7%E3%83%AA%E3%83%BC%E3%82%BA" target="_blank">HIKAKINボイパ対決シリーズとは - ニコニコ大百科</a></li>
     <li><a href="https://w.atwiki.jp/vpsseries/" target="_blank">HIKAKINボイパ対決シリーズWiki</a></li>
     <li><a href="https://w.atwiki.jp/voicepercussionhkkn/" target="_blank">HIKAKIN Wiki - Vocal Percussion Showdown</a></li>
     <li><a href="./ai/">AIによるタイトルラベリングツール</a></li>
+</ul>
+
+<h3>Internal Links</h3>
+<ul>
+    <li><a href="./ai/">AIによるタイトルラベリングツール</a></li>
+    <li><a href="./?post">データ送信</a></li>
 </ul>
 
 <h3>Data Count</h3>

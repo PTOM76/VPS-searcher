@@ -636,6 +636,7 @@ function renderSearchForm($lang, $queryParams, $isMatrix = false) {
             <option value="most_like" <?php echo $sort === "most_like" ? " selected" : ""; ?>><?php echo $lang['sort_most_like']; ?></option>
             <option value="word" <?php echo $sort === "word" ? " selected" : ""; ?>><?php echo $lang['sort_word']; ?></option>
             <option value="word_desc" <?php echo $sort === "word_desc" ? " selected" : ""; ?>><?php echo $lang['sort_word_desc']; ?></option>
+            <option value="random" <?php echo $sort === "random" ? " selected" : ""; ?>><?php echo $lang['sort_random']; ?></option>
         </select>
 
         <input type="text" name ="q" value="<?php echo htmlspecialchars($q); ?>" />
@@ -726,6 +727,15 @@ function loadAndSortIndex($queryParams, $isMatrix = false) {
                 break;
             case 'word_desc':
                 array_multisort(array_column($index, 'title'), SORT_DESC, $index);
+                break;
+            case 'random':
+                $keys = array_keys($index);
+                shuffle($keys);
+                $shuffled_index = [];
+                foreach ($keys as $key) {
+                    $shuffled_index[$key] = $index[$key];
+                }
+                $index = $shuffled_index;
                 break;
         }
     }

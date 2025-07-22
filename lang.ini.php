@@ -46,7 +46,8 @@ $_lang['ja'] = [
     'sort_worst_view' => '再生数が少ない順',
     'sort_most_like' => '高評価が多い順',
     'sort_word' => 'タイトル昇順',
-        'sort_word_desc' => 'タイトル降順',
+    'sort_word_desc' => 'タイトル降順',
+    'sort_random' => 'ランダム順',
 
     'total' => '総計',
     'next_birth' => 'HIKAKINボイパ対決シリーズ%d周年まで%d日',
@@ -169,6 +170,7 @@ $_lang['en'] = [
     'sort_most_like' => 'Most Like',
     'sort_word' => 'Word Asc',
     'sort_word_desc' => 'Word Desc',
+    'sort_random' => 'Random',
 
     'total' => 'Total',
     'next_birth' => 'Next %dth anniversary %d days',
@@ -291,6 +293,7 @@ $_lang['zh'] = [
 'sort_most_like' => '按点赞次数最多排序',
 'sort_word' => '按标题升序排序',
 'sort_word_desc' => '按标题降序排序',
+'sort_random' => '随机排序',
 
 'total' => '总计',
 'next_birth' => '距离%d周年还有%d天',
@@ -411,6 +414,7 @@ $_lang['zh'] = [
 'sort_most_like' => '좋아요가 많은 순',
 'sort_word' => '제목 오름차순',
 'sort_word_desc' => '제목 내림차순',
+'sort_random' => '무작위 정렬',
 
 'total' => '총계',
 'next_birth' => '보이스피싱 대결 %d주년까지 %d일 남음',
@@ -486,5 +490,3 @@ $_lang['zh'] = [
 'source' => '소스',
 'git_repository' => 'Git 저장소',
 ];
-
-?>
