@@ -163,7 +163,7 @@ div#navi .nav-right {
 	margin-left: 0;
 }
 
-div#contents form {
+div#contents form#search {
   display: flex;
   flex-wrap: wrap;
   align-items: center;

@@ -651,7 +651,7 @@ function renderSearchForm($lang, $queryParams, $isMatrix = false) {
     $method = $queryParams['method'] ?? 'and';
     $sort = $queryParams['sort'] ?? 'recent';
     ?>
-    <form method="GET">
+    <form method="GET" class="search">
         <select name="sort">
             <option value="recent" <?php echo $sort === "recent" ? " selected" : ""; ?>><?php echo $lang['sort_recent']; ?></option>
             <option value="ancient" <?php echo $sort === "ancient" ? " selected" : ""; ?>><?php echo $lang['sort_ancient']; ?></option>
