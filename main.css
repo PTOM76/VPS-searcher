@@ -168,7 +168,7 @@ div#contents form {
   flex-wrap: wrap;
   align-items: center;
   gap: 4px;
-  row-gap: 4px;
+  row-gap: 2px;
 }
 
 .flex-break {
