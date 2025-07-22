@@ -106,7 +106,6 @@ function renderNavigation($lang, $useLang, $currentUser, $isMatrix = false) {
         <ul>
             <li><a href="<?php echo $useLang === "ja" ? "./" : "./" . $useLang . ".php"; ?>"><?php echo $lang['title']; ?></a></li>
             <li class="pc"><a href="<?php echo $pathPrefix; ?>?info"><?php echo $lang['info']; ?></a></li>
-            <li class="pc"><a href="<?php echo $pathPrefix; ?>?post"><?php echo $lang['send_pl']; ?></a></li>
             <li class="dropdown pc">
                 <a href="javascript:void(0)" class="dropbtn">Language</a>
                 <div class="dropdown-content">

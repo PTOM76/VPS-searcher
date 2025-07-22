@@ -163,6 +163,15 @@ div#navi .nav-right {
 	margin-left: 0;
 }
 
+div#contents form {
+  display: flex;
+  flex-wrap: wrap;           /* ← これで改行OKになる */
+  align-items: center;       /* 高さ揃える */
+  gap: 4px;                  /* 間隔 */
+  row-gap: 8px;              /* 行間も調整したければ */
+
+}
+
 input[type='submit'], button {
 	height: 24px;
 	background: var(--button-background-color);
@@ -174,14 +183,12 @@ input[type='submit'], button {
 	-webkit-border-radius: 3px;
 	-moz-border-radius: 3px;
 	transition: all 0.5s ease;
-	margin-top: -1px;
 }
 
 input[type='submit']:hover, button:hover {
 	background: var(--button-hover-background-color);
 	color: var(--button-hover-text-color);
 	margin-left: 0px;
-	margin-top: -1px;
 	border: 1px solid var(--button-hover-border-color);
 }
 
@@ -189,6 +196,18 @@ input[type='text'],
 input[type='password'],
 input[type='email'] {
 	height: 20px;
+	background-color: var(--input-background-color);
+	border: 1px solid var(--input-border-color);
+	color: var(--input-text-color);
+	font-size: 15px;
+	border-radius: 3px;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	transition: all 0.5s ease;
+}
+
+select {
+	height: 24px;
 	background-color: var(--input-background-color);
 	border: 1px solid var(--input-border-color);
 	color: var(--input-text-color);
@@ -261,18 +280,6 @@ img[data-src] {
 
 img[data-src].loaded {
 	opacity: 1;
-}
-
-select {
-	height: 24px;
-	background-color: var(--input-background-color);
-	border: 1px solid var(--input-border-color);
-	color: var(--input-text-color);
-	font-size: 15px;
-	border-radius: 3px;
-	-webkit-border-radius: 3px;
-	-moz-border-radius: 3px;
-	transition: all 0.5s ease;
 }
 
 p#next_birth {
