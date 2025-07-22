@@ -428,11 +428,9 @@ function renderSearchForm($lang, $queryParams, $isMatrix = false) {
         
         <input type="radio" name="method" value="and"<?php echo $method === "and" || !isset($queryParams['method']) ? " checked" : ""; ?>><?php echo $lang['and_search']; ?></input>
         <input type="radio" name="method" value="or"<?php echo $method === "or" ? " checked" : ""; ?>><?php echo $lang['or_search']; ?></input>
-        <?php if (!$isMatrix): ?>
+
         <div class="flex-break"></div>
-        <?php else: ?>
-        <br />
-        <?php endif; ?>
+
         <input type="checkbox" id="q_title" name="title" value="1" <?php echo (isset($queryParams['title']) && $queryParams['title'] === "1") || !isset($queryParams['q']) ? "checked " : ""; ?>/>
         <label for="q_title"><?php echo $lang['title_checkbox']; ?></label>
         <input type="checkbox" id="q_tag" name="tag" value="1" <?php echo isset($queryParams['tag']) && $queryParams['tag'] === "1" ? "checked " : ""; ?>/>
