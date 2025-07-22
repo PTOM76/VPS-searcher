@@ -225,133 +225,14 @@ renderMobileMenu($lang, $useLang, $currentUser);
     <?php echo empty($notice) ? "" : '<h3>' . $notice . '</h3>'; ?>
 <?php
 if (isset($_GET['post'])) {
-    ?>
-    <p>ボイパ対決、素材の動画情報を当ツールへ追加するための再生リストを送信できます<br />再生リストに入っているものがボイパ対決・素材であるかこちらで審査します。<br />比較動画などに関しては今のところ採用しません。<br /><br />YouTubeの動画・再生リストのURLかニコニコ動画のURL</p>
-        <form action="./" method="POST">
-            <input type="text" name ="url" />
-            <input type="hidden" name="do" value="post" placeholder="Playlist URL" />
-            <input type="radio" name="t" value="vps"><?php echo $lang['vps_radio']; ?></input>
-            <input type="radio" name="t" value="material"><?php echo $lang['material_radio']; ?></input>
-            <input type="submit" />
-        </form>
-    <?php
-}
-if (isset($_GET['post_' . getenv('PASS')])) {
-    ?>
-        <form action="./" method="POST">
-            <input type="text" name ="url" />
-            <input type="hidden" name="do" value="post_<?php echo getenv('PASS'); ?>" placeholder="Playlist URL" />
-            <input type="radio" name="t" value="vps"><?php echo $lang['vps_radio']; ?></input>
-            <input type="radio" name="t" value="material"><?php echo $lang['material_radio']; ?></input>
-            <input type="submit" />
-        </form>
-    <?php
+    include 'page/post.php';
+} else if (isset($_GET['post_' . getenv('PASS')])) {
+    include 'page/post_admin.php';
 } else if (isset($_GET['report'])) {
-    $id = $_GET['id'];
-    echo <<<EOD
-        <iframe width="560" height="315" src="https://www.youtube.com/embed/{$id}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-        <p>報告内容を以下から選んでください。</p>
-        <form action="./" method="POST">
-        <input type="hidden" name="id" value="{$id}" />
-        <input type="hidden" name="do" value="report" />
-        <input type="radio" name="t" value="比較などの動画である、または関係のない動画である">比較などの動画である、または関係のない動画である</input><br />
-            <input type="radio" name="t" value="動画が削除、非公開である">動画が削除、非公開である</input><br />
-            <input type="radio" name="t" value="法律に反する動画である">法律に反する動画である</input><br />
-            <input type="radio" name="t" value="種類(ボイパ対決/素材)が間違えている">種類(ボイパ対決/素材)が間違えている</input><br />
-            <input type="radio" name="t" value="その他">その他</input><br />
-            <textarea name="reason" cols="75" rows="5" placeholder="理由等 (「その他」を選択した場合)"></textarea><br />
-            <input type="submit" />
-        </form>
-    EOD;
+    include 'page/report.php';
 } else if (isset($_GET['info'])) {
-    ?>
-
-    <div id="badapple">
-        <!-- メニューにはめ込む -->
-        <img src="image/badapple.gif" style="width: 25%; text-align: center; opacity: 75%; position: absolute; top: 0; left: 50%; transform: translate(-50%, 0%);" />
-        <script>
-            var img = document.querySelector("#badapple img");
-            img.onload = function() {
-                setTimeout(function() {
-                    document.querySelector("#badapple").remove();
-                }, 3100);
-            }
-        </script>
-
-    </div>
-
-    <h2>Information</h2>
-
-    <p id="next_birth">
-        <?php
-
-        $date = new DateTime("2014-05-05");
-        $now = new DateTime();
-        $interval = $date->diff($now);
-        $year = $interval->y;
-        $day = $interval->days;
-        $next = $year + 1;
-        $next_date = new DateTime("2014-05-05");
-        $next_date->add(new DateInterval("P" . $next . "Y"));
-        $next_interval = $now->diff($next_date);
-        $next_day = $next_interval->days;
-        echo sprintf($lang['next_birth'], $next, $next_day);
-        ?>
-    </p>
-
-    <h3>Description</h3>
-    <p>
-        このサイトはボイパ対決という音MADに特化した検索ツールです。<br />
-        The site is a search tool specialized in sound MAD called "Vocal Percussion Showdown".<br />
-        本サイトはYouTube APIを使用しています。<br />
-        This site uses the YouTube API.<br />
-        <br />
-        サイト名: HIKAKINボイパ対決シリーズ専用検索ツール / Vocal Percussion Showdown Search Tool<br />
-        サイトURL: <a href="https://vps-search.pitan76.net/">https://vps-search.pitan76.net/</a><br />
-        開発者: Pitan<br />
-        開発言語: PHP, JavaScript (HTML, CSS)<br />
-        ソースコード: <a href="https://github.com/PTOM76/VPS-searcher" target="_blank">GitHub</a><br />
-    </p>
-
-    <h3>Related Links</h3>
-    <ul>
-        <li><a href="https://dic.nicovideo.jp/a/hikakin%E3%83%9C%E3%82%A4%E3%83%91%E5%AF%BE%E6%B1%BA%E3%82%B7%E3%83%AA%E3%83%BC%E3%82%BA" target="_blank">HIKAKINボイパ対決シリーズとは - ニコニコ大百科</a></li>
-        <li><a href="https://w.atwiki.jp/vpsseries/" target="_blank">HIKAKINボイパ対決シリーズWiki</a></li>
-        <li><a href="https://w.atwiki.jp/voicepercussionhkkn/" target="_blank">HIKAKIN Wiki - Vocal Percussion Showdown</a></li>
-        <li><a href="./ai/">AIによるタイトルラベリングツール</a></li>
-    </ul>
-
-    <h3>Data Count</h3>
-    <p>
-        <?php
-        $vps = $material = 0;
-
-        if (file_exists("cache/info.json") && filemtime("cache/info.json") + 86400 > time()) {
-            $info = json_decode(file_get_contents("cache/info.json"), true);
-            $vps = $info['vps'];
-            $material = $info['material'];
-        } else {
-            $index = json_decode(file_get_contents("data/index.json"), true);
-            foreach ($index as $id => $data) {
-                if ($data['type'] === "vps") ++$vps;
-                if ($data['type'] === "material") ++$material;
-            }
-            file_put_contents("cache/info.json", json_encode(['vps' => $vps, 'material' => $material]));
-        }
-
-        echo $lang['total'] . ": " . number_format($vps + $material) . "<br />";
-        
-        echo $lang['vps_radio'] . ": " . number_format($vps) . "<br />";
-        echo $lang['material_radio'] . ": " . number_format($material) . "<br />";
-        ?>
-
-    </p>
-
-    <hr />
-
-    <?php
+    include 'page/info.php';
 } else {
-
     $q = isset($_GET['q']) ? $_GET['q'] : '';
     $method = isset($_GET['method']) ? $_GET['method'] : 'and';
     $title = isset($_GET['title']) ? $_GET['title'] : '1';
