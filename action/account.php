@@ -3,7 +3,7 @@
 
 // ログインチェック
 if (!Auth::isLoggedIn()) {
-    header('Location: ?do=login');
+    header('Location: /?do=login');
     exit;
 }
 
@@ -35,7 +35,11 @@ if (isset($_POST['action'])) {
         case 'update_password':
             $currentPassword = $_POST['current_password'] ?? '';
             $newPassword = $_POST['new_password'] ?? '';
-            if (!empty($currentPassword) && !empty($newPassword)) {
+            $confirmPassword = $_POST['confirm_password'] ?? '';
+            if ($newPassword !== $confirmPassword) {
+                $message = $lang['password_mismatch'];
+                $messageType = 'error';
+            } else if (!empty($currentPassword) && !empty($newPassword)) {
                 if (strlen($newPassword) >= 6) {
                     $result = Auth::updatePassword($currentUser['id'], $currentPassword, $newPassword);
                     $message = $result['message'];
@@ -109,20 +113,6 @@ if (isset($_POST['action'])) {
     <?php endif; ?>
 
     <div class="account-section">
-        <h2><?php echo $lang['change_username']; ?></h2>
-        <form method="POST" class="auth-form">
-            <input type="hidden" name="action" value="update_username">
-            <label for="current_username"><?php echo $lang['username']; ?> (<?php echo $lang['current']; ?>)</label><br />
-            <input type="text" id="current_username" value="<?php echo htmlspecialchars($userDetails['username']); ?>" readonly>
-            <div class="form-group">
-                <label for="new_username"><?php echo $lang['new_username']; ?></label><br />
-                <input type="text" id="new_username" name="new_username" required>
-            </div>
-            <input type="submit" value="<?php echo $lang['update']; ?>">
-        </form>
-    </div>
-
-    <div class="account-section">
         <h2><?php echo $lang['change_password']; ?></h2>
         <form method="POST" class="auth-form">
             <input type="hidden" name="action" value="update_password">
@@ -134,6 +124,10 @@ if (isset($_POST['action'])) {
                 <label for="new_password"><?php echo $lang['new_password']; ?></label><br />
                 <input type="password" id="new_password" name="new_password" required>
             </div>
+            <div class="form-group">
+                <label for="confirm_password"><?php echo $lang['confirm_password']; ?></label><br />
+                <input type="password" id="confirm_password" name="confirm_password" required>
+            </div>
             <input type="submit" value="<?php echo $lang['update']; ?>">
         </form>
     </div>
@@ -143,12 +137,8 @@ if (isset($_POST['action'])) {
         <form method="POST" class="auth-form">
             <input type="hidden" name="action" value="update_email">
             <div class="form-group">
-                <label for="current_email"><?php echo $lang['email']; ?> (<?php echo $lang['current']; ?>)</label><br />
-                <input type="email" id="current_email" value="<?php echo htmlspecialchars($userDetails['email']); ?>" readonly>
-            </div>
-            <div class="form-group">
                 <label for="new_email"><?php echo $lang['new_email']; ?></label><br />
-                <input type="email" id="new_email" name="new_email" required>
+                <input type="email" id="new_email" name="new_email" value="<?php echo htmlspecialchars($userDetails['email']); ?>" required>
             </div>
             <input type="submit" value="<?php echo $lang['update']; ?>">
         </form>
