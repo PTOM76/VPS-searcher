@@ -152,7 +152,7 @@ function renderMobileMenu($lang, $useLang, $currentUser, $isMatrix = false) {
             <li><a href="./matrix/<?php echo $useLang === "ja" ? "" : $useLang . ".php"; ?><?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>"><?= $lang['matrixview'] ?></a></li>
             <li class="none"><br /></li>
             <?php if ($currentUser) { ?>
-                <li><span style="color: var(--text-color);"><?php echo htmlspecialchars($currentUser['username']); ?></span></li>
+                <li><a href="<?php echo $pathPrefix; ?>account.php<?php echo $useLang !== "ja" ? "?lang=" . $useLang : ""; ?>"><?php echo htmlspecialchars($currentUser['username']); ?></a></li>
                 <li><a href="<?php echo $pathPrefix; ?>login.php?logout"><?php echo $lang['logout']; ?></a></li>
                 <li class="none"><br /></li>
             <?php } else { ?>
