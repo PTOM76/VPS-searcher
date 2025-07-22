@@ -311,14 +311,14 @@ function renderNavigation($lang, $useLang, $currentUser, $isMatrix = false) {
             <li class="dropdown pc">
                 <a href="javascript:void(0)" class="dropbtn">Language</a>
                 <div class="dropdown-content">
-                    <a href="./<?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>"><img src="<?php echo $pathPrefix; ?>image/japanese.png" /> 日本語</a>
-                    <a href="./<?php echo $useLang === 'ja' ? 'en.php' : ($isMatrix ? '../en.php' : 'en.php'); ?><?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>"><img src="<?php echo $pathPrefix; ?>image/english.png" /> English</a>
-                    <a href="./<?php echo $useLang === 'ja' ? 'zh.php' : ($isMatrix ? '../zh.php' : 'zh.php'); ?><?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>"><img src="<?php echo $pathPrefix; ?>image/chinese.png" /> 中国语</a>
-                    <a href="./<?php echo $useLang === 'ja' ? 'ko.php' : ($isMatrix ? '../ko.php' : 'ko.php'); ?><?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>"><img src="<?php echo $pathPrefix; ?>image/korean.png" /> 한국인</a>
+                    <a href="./<?= isset($_SERVER['QUERY_STRING']) && !empty($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>"><img src="<?php echo $pathPrefix; ?>image/japanese.png" /> 日本語</a>
+                    <a href="./<?php echo $useLang === 'ja' ? 'en.php' : ($isMatrix ? '../en.php' : 'en.php'); ?><?= isset($_SERVER['QUERY_STRING']) && !empty($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>"><img src="<?php echo $pathPrefix; ?>image/english.png" /> English</a>
+                    <a href="./<?php echo $useLang === 'ja' ? 'zh.php' : ($isMatrix ? '../zh.php' : 'zh.php'); ?><?= isset($_SERVER['QUERY_STRING']) && !empty($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>"><img src="<?php echo $pathPrefix; ?>image/chinese.png" /> 中国语</a>
+                    <a href="./<?php echo $useLang === 'ja' ? 'ko.php' : ($isMatrix ? '../ko.php' : 'ko.php'); ?><?= isset($_SERVER['QUERY_STRING']) && !empty($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>"><img src="<?php echo $pathPrefix; ?>image/korean.png" /> 한국인</a>
                 </div>
             </li>
 
-            <li><a href="<?php echo $matrixPath . ($useLang === "ja" ? "" : $useLang . ".php"); ?><?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>"><img src="<?php echo $pathPrefix; ?>image/<?php echo $matrixImage; ?>.png" /></a></li>
+            <li><a href="<?php echo $matrixPath . ($useLang === "ja" ? "" : $useLang . ".php"); ?><?= isset($_SERVER['QUERY_STRING']) && !empty($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>"><img src="<?php echo $pathPrefix; ?>image/<?php echo $matrixImage; ?>.png" /></a></li>
             <li><a href="javascript:toggleDarkMode();"><img id="darkmode" src="<?php echo $pathPrefix; ?>image/darkmode.png" /></a></li>
 
             <!-- 右寄せ要素用のスペーサー -->
@@ -351,7 +351,7 @@ function renderMobileMenu($lang, $useLang, $currentUser, $isMatrix = false) {
                 <li><a href="<?php echo $pathPrefix; ?>?do=favorites<?php echo $useLang !== "ja" ? "&lang=" . $useLang : ""; ?>"><?php echo $lang['favorites']; ?></a></li>
             <?php endif; ?>
             <li class="none"><br /></li>
-            <li><a href="./matrix/<?php echo $useLang === "ja" ? "" : $useLang . ".php"; ?><?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>"><?= $lang['matrixview'] ?></a></li>
+            <li><a href="<?= ($isMatrix ? '../' : './matrix/') . ($useLang === "ja" ? "" : $useLang . ".php"); ?><?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>"><?= $isMatrix ? $lang['listview'] : $lang['matrixview'] ?></a></li>
             <li class="none"><br /></li>
             <?php if ($currentUser) { ?>
                 <li><a href="<?php echo $pathPrefix; ?>?do=account<?php echo $useLang !== "ja" ? "&lang=" . $useLang : ""; ?>"><?php echo htmlspecialchars($currentUser['username']); ?></a></li>
