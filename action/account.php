@@ -117,15 +117,15 @@ if (isset($_POST['action'])) {
         <form method="POST" class="auth-form">
             <input type="hidden" name="action" value="update_password">
             <div class="form-group">
-                <label for="current_password"><?php echo $lang['current_password']; ?></label><br />
+                <label for="current_password"><?php echo $lang['current_password']; ?></label>
                 <input type="password" id="current_password" name="current_password" required>
             </div>
             <div class="form-group">
-                <label for="new_password"><?php echo $lang['new_password']; ?></label><br />
+                <label for="new_password"><?php echo $lang['new_password']; ?></label>
                 <input type="password" id="new_password" name="new_password" required>
             </div>
             <div class="form-group">
-                <label for="confirm_password"><?php echo $lang['confirm_password']; ?></label><br />
+                <label for="confirm_password"><?php echo $lang['confirm_password']; ?></label>
                 <input type="password" id="confirm_password" name="confirm_password" required>
             </div>
             <input type="submit" value="<?php echo $lang['update']; ?>">
@@ -137,7 +137,7 @@ if (isset($_POST['action'])) {
         <form method="POST" class="auth-form">
             <input type="hidden" name="action" value="update_email">
             <div class="form-group">
-                <label for="new_email"><?php echo $lang['new_email']; ?></label><br />
+                <label for="new_email"><?php echo $lang['new_email']; ?></label>
                 <input type="email" id="new_email" name="new_email" value="<?php echo htmlspecialchars($userDetails['email']); ?>" required>
             </div>
             <input type="submit" value="<?php echo $lang['update']; ?>">
@@ -150,11 +150,11 @@ if (isset($_POST['action'])) {
         <form method="POST" class="auth-form" onsubmit="return confirm('<?php echo $lang['confirm_delete']; ?>')">
             <input type="hidden" name="action" value="delete_account">
             <div class="form-group">
-                <label for="delete_current_password"><?php echo $lang['current_password']; ?></label><br />
+                <label for="delete_current_password"><?php echo $lang['current_password']; ?></label>
                 <input type="password" id="delete_current_password" name="current_password" required>
             </div>
             <div class="form-group">
-                <label for="confirm_text"><?php echo $lang['delete_confirmation']; ?></label><br />
+                <label for="confirm_text"><?php echo $lang['delete_confirmation']; ?></label>
                 <input type="text" id="confirm_text" name="confirm_text" required>
             </div>
             <input type="submit" value="<?php echo $lang['delete']; ?>" class="delete-button">
