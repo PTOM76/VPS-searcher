@@ -1,5 +1,207 @@
 <?php
 // 共通関数とユーティリティ
+require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/error_handler.php';
+
+/**
+ * アナリティクス処理
+ */
+function handleAnalytics() {
+    if (isset($_GET['q'])) {
+        FilePaths::ensureDirectoryExists(FilePaths::ANALYTICS_DIR);
+        $analytics = FilePaths::ANALYTICS_DIR . date("Y-m-d") . ".txt";
+        $data = '';
+        if (file_exists($analytics))
+            $data = file_get_contents($analytics);
+        file_put_contents($analytics, $data . "DATE: " . date("Y-m-d_H:i:s") . "\n" . "URI: " . $_SERVER['REQUEST_URI'] . "\nWORD: " . $_GET['q'] . "\n----------------\n");
+    }
+}
+
+/**
+ * プレイリスト管理API処理
+ */
+function handlePlaylistAPI() {
+    if (isset($_GET[getSecretValue('PASS')])) {
+        addPlaylist(PlaylistConfig::VPS_PLAYLIST_ID, "vps", false, true);
+        addPlaylist(PlaylistConfig::MATERIAL_PLAYLIST_ID, "material", false, true);
+    }
+
+    if (isset($_GET['replace_' . getSecretValue('PASS')])) {
+        if (isset($_GET['vps_nexttoken'])) 
+            $next = addPlaylist(PlaylistConfig::VPS_PLAYLIST_ID, "vps", $_GET['vps_nexttoken'], false);
+        else 
+            $next = addPlaylist(PlaylistConfig::VPS_PLAYLIST_ID, "vps", false, false);
+        if (isset($_GET['material_nexttoken'])) 
+            $next2 = addPlaylist(PlaylistConfig::MATERIAL_PLAYLIST_ID, "material", $_GET['material_nexttoken'], false);
+        else 
+            $next2 = addPlaylist(PlaylistConfig::MATERIAL_PLAYLIST_ID, "material", false, false);
+        echo 'vps_nexttoken: ' . $next . ' , ';
+        echo 'material_nexttoken: ' . $next2;
+        exit;
+    }
+
+    if (isset($_GET["update2_" . getSecretValue('PASS')])) {
+        if (file_exists(FilePaths::PLAYLISTS_JSON)) {
+            $playlists = json_decode(file_get_contents(FilePaths::PLAYLISTS_JSON), true);
+            foreach($playlists as $id => $data) {
+                addPlaylist($id, $data['type'], false, false, true);
+            }
+        }
+    }
+}
+
+/**
+ * ファイル更新処理
+ */
+function handleFileUpdates() {
+    if (file_exists(FilePaths::TIME_TXT)) {
+        $time = (int) file_get_contents(FilePaths::TIME_TXT);
+        if ($time + AppConstants::UPDATE_INTERVAL < time() || isset($_GET['update_' . getSecretValue('PASS')])) {
+            file_put_contents(FilePaths::TIME_TXT, time());
+            if (file_exists(FilePaths::PLAYLISTS_JSON)) {
+                $playlists = json_decode(file_get_contents(FilePaths::PLAYLISTS_JSON), true);
+                foreach($playlists as $id => $data) {
+                    addPlaylist($id, $data['type']);
+                }
+            }
+        }
+    } else {
+        file_put_contents(FilePaths::TIME_TXT, time());
+        if (file_exists(FilePaths::PLAYLISTS_JSON)) {
+            $playlists = json_decode(file_get_contents(FilePaths::PLAYLISTS_JSON), true);
+            foreach($playlists as $id => $data) {
+                addPlaylist($id, $data['type']);
+            }
+        }
+    }
+}
+
+/**
+ * URL種別の判定
+ */
+function getUrlType($url) {
+    if (false !== strpos($url, 'list=') || str_starts_with($url, 'PL')) {
+        return "playlist";
+    } else if (false !== strpos($url, 'watch/sm') || str_starts_with($url, 'sm')) {
+        return "nicovideo";
+    } else {
+        return "youtube";
+    }
+}
+
+/**
+ * POST処理を統一的に処理
+ */
+function handlePostRequests($lang) {
+    global $notice;
+    
+    if (!isset($_POST['do'])) {
+        return;
+    }
+    
+    $url = $_POST['url'];
+    $url_type = getUrlType($url);
+    
+    switch ($_POST['do']) {
+        case 'post':
+            handlePublicPost($url, $url_type, $lang);
+            break;
+        case 'post_' . getenv('PASS'):
+            handleAdminPost($url, $url_type, $lang);
+            break;
+        case 'report':
+            handleReport($_POST, $lang);
+            break;
+    }
+}
+
+/**
+ * 一般ユーザーの投稿処理
+ */
+function handlePublicPost($url, $url_type, $lang) {
+    global $notice;
+    
+    switch ($url_type) {
+        case "playlist":
+            $playlist_id = preg_replace(UrlPatterns::PLAYLIST_ID, '$1', $url);
+            FilePaths::ensureDirectoryExists(FilePaths::QUEUE_DIR);
+            file_put_contents(FilePaths::QUEUE_DIR . "pl_" . $playlist_id . ".txt", 
+                "ID: {$playlist_id}\nURL: " . $_POST['url'] . "\nType: " . $_POST['t']);
+            $notice .= $lang['sended_pl'];
+            break;
+            
+        case "nicovideo":
+            $video_id = preg_replace(UrlPatterns::NICOVIDEO_ID, '$1', $url);
+            FilePaths::ensureDirectoryExists(FilePaths::QUEUE_DIR);
+            file_put_contents(FilePaths::QUEUE_DIR . "nc_" . $video_id . ".txt", 
+                "ID: {$video_id}\nURL: " . $_POST['url'] . "\nType: " . $_POST['t']);
+            $notice .= $lang['sended_vd'];
+            break;
+            
+        case "youtube":
+            $video_id = preg_replace(UrlPatterns::YOUTUBE_ID, '$1', $url);
+            FilePaths::ensureDirectoryExists(FilePaths::QUEUE_DIR);
+            file_put_contents(FilePaths::QUEUE_DIR . "yt_" . $video_id . ".txt", 
+                "ID: {$video_id}\nURL: " . $_POST['url'] . "\nType: " . $_POST['t']);
+            $notice .= $lang['sended_vd'];
+            break;
+    }
+}
+
+/**
+ * 管理者の投稿処理
+ */
+function handleAdminPost($url, $url_type, $lang) {
+    global $notice;
+    
+    switch ($url_type) {
+        case "playlist":
+            $playlist_id = preg_replace(UrlPatterns::PLAYLIST_ID, '$1', $url);
+            $array = [];
+            if (file_exists(FilePaths::PLAYLISTS_JSON))
+                $array = json_decode(file_get_contents(FilePaths::PLAYLISTS_JSON), true);
+            $array[$playlist_id] = ["type" => $_POST['t']];
+            file_put_contents(FilePaths::PLAYLISTS_JSON, json_encode($array));
+            addPlaylist($playlist_id, $_POST['t']);
+            $notice .= $lang['added_pl'];
+            break;
+            
+        case "nicovideo":
+            $video_id = preg_replace(UrlPatterns::NICOVIDEO_ID, '$1', $url);
+            $array = [];
+            if (file_exists(FilePaths::NC_VIDEOS_JSON))
+                $array = json_decode(file_get_contents(FilePaths::NC_VIDEOS_JSON), true);
+            $array[$video_id] = ["type" => $_POST['t']];
+            file_put_contents(FilePaths::NC_VIDEOS_JSON, json_encode($array));
+            addNicovideo($video_id, $_POST['t']);
+            $notice .= $lang['added_vd'];
+            break;
+            
+        case "youtube":
+            $video_id = preg_replace(UrlPatterns::YOUTUBE_ID, '$1', $url);
+            $array = [];
+            if (file_exists(FilePaths::YT_VIDEOS_JSON))
+                $array = json_decode(file_get_contents(FilePaths::YT_VIDEOS_JSON), true);
+            $array[$video_id] = ["type" => $_POST['t']];
+            file_put_contents(FilePaths::YT_VIDEOS_JSON, json_encode($array));
+            $notice .= $lang['added_vd'];
+            break;
+    }
+}
+
+/**
+ * 報告処理
+ */
+function handleReport($postData, $lang) {
+    global $notice;
+    
+    FilePaths::ensureDirectoryExists(FilePaths::REPORT_DIR);
+    $id = $postData['id'];
+    file_put_contents(FilePaths::REPORT_DIR . $postData['id'] . "-" . time() . ".txt", 
+        "ID: {$id}\nURL: https://youtu.be/{$id}\nType: " . $postData['t'] . 
+        "\nReason: " . (isset($postData['reason']) ? $postData['reason'] : 'none'));
+    $notice .= $lang['reported_video'];
+}
 
 function kan2num($str) {
     $str = str_replace("一", "1", $str);
@@ -191,8 +393,8 @@ function generateFavoriteButton($videoId, $title, $thumbnailUrl, $currentUser) {
 
 // 動画表示用のHTMLを生成
 function generateVideoHtml($id, $data, $lang, $currentUser) {
-    $description = mb_substr($data['description'], 0, 100, "UTF-8");
-    if (mb_strlen($data['description']) > 100) {
+    $description = mb_substr($data['description'], 0, AppConstants::MAX_DESCRIPTION_LENGTH, "UTF-8");
+    if (mb_strlen($data['description']) > AppConstants::MAX_DESCRIPTION_LENGTH) {
         $description .= "...";
     }
 
@@ -215,46 +417,58 @@ function generateVideoHtml($id, $data, $lang, $currentUser) {
     $favorite_button_html = generateFavoriteButton($id, $title, $thumbnail_url, $currentUser);
     
     if (isset($data['is_nicovideo']) && $data['is_nicovideo'] === true) {
-        // ニコニコ動画
-        return <<<EOD
-        <div style="clear:both;">
-            <div id="content_{$id}" style="float:left;margin-right:8px;">
-                <a href="javascript:onClickThumbNC('{$id}');"><img id="{$id}" loading="lazy" data-src="./cache/thumb/{$id}.jpg" width="320px" height="180px" style="width:320px;height:180px;object-fit:cover;" /></a>
-            </div>
-            <div>
-                <span style="font-size:18px;"><a target="_blank" class="plain" href="https://www.nicovideo.jp/watch/{$id}">{$title}</a> {$favorite_button_html}</span><br />
-                <span style="font-size:11px;">{$view_str} {$lang['view']}・{$ago}</span>
-                <br />
-                <span style="font-size:15px;"><a class="plain" href="https://www.nicovideo.jp/user/{$data['channelId']}">{$channelTitle}</a></span>
-                <br />
-                <span style="font-size:11px;">{$description}</span>
-                <br />
-                <span style="font-size:12px;"><a href="./?report&id={$id}&is_nicovideo=true">{$lang['report']}</a> |
-                <a href="javascript:navigator.clipboard.writeText('https://www.nicovideo.jp/watch/{$id}');">URL{$lang['copy']}</a></span>
-            </div>
-        </div>
-        EOD;
+        return generateNicovideoHtml($id, $data, $title, $channelTitle, $description, $view_str, $ago, $favorite_button_html, $lang);
     } else {
-        // YouTube動画
-        return <<<EOD
-        <div style="clear:both;">
-            <div id="content_{$id}" style="float:left;margin-right:8px;">
-                <a href="javascript:onClickThumb('{$id}');"><img id="{$id}" loading="lazy" data-src="https://i.ytimg.com/vi/{$id}/hqdefault.jpg" width="320px" height="180px" style="width:320px;height:180px;object-fit:cover;" /></a>
-            </div>
-            <div>
-                <span style="font-size:18px;"><a target="_blank" class="plain" href="https://youtu.be/{$id}">{$title}</a> {$favorite_button_html}</span><br />
-                <span style="font-size:11px;">{$view_str} {$lang['view']}・{$ago}</span>
-                <br />
-                <span style="font-size:15px;"><a class="plain" href="https://www.youtube.com/channel/{$data['channelId']}">{$channelTitle}</a></span>
-                <br />
-                <span style="font-size:11px;">{$description}</span>
-                <br />
-                <span style="font-size:12px;"><a href="./?report&id={$id}">{$lang['report']}</a> |
-                <a href="javascript:navigator.clipboard.writeText('https://youtu.be/{$id}');">URL{$lang['copy']}</a></span>
-            </div>
-        </div>
-        EOD;
+        return generateYoutubeHtml($id, $data, $title, $channelTitle, $description, $view_str, $ago, $favorite_button_html, $lang);
     }
+}
+
+/**
+ * ニコニコ動画のHTML生成
+ */
+function generateNicovideoHtml($id, $data, $title, $channelTitle, $description, $view_str, $ago, $favorite_button_html, $lang) {
+    return <<<EOD
+    <div style="clear:both;">
+        <div id="content_{$id}" style="float:left;margin-right:8px;">
+            <a href="javascript:onClickThumbNC('{$id}');"><img id="{$id}" loading="lazy" data-src="./cache/thumb/{$id}.jpg" width="320px" height="180px" style="width:320px;height:180px;object-fit:cover;" /></a>
+        </div>
+        <div>
+            <span style="font-size:18px;"><a target="_blank" class="plain" href="https://www.nicovideo.jp/watch/{$id}">{$title}</a> {$favorite_button_html}</span><br />
+            <span style="font-size:11px;">{$view_str} {$lang['view']}・{$ago}</span>
+            <br />
+            <span style="font-size:15px;"><a class="plain" href="https://www.nicovideo.jp/user/{$data['channelId']}">{$channelTitle}</a></span>
+            <br />
+            <span style="font-size:11px;">{$description}</span>
+            <br />
+            <span style="font-size:12px;"><a href="./?report&id={$id}&is_nicovideo=true">{$lang['report']}</a> |
+            <a href="javascript:navigator.clipboard.writeText('https://www.nicovideo.jp/watch/{$id}');">URL{$lang['copy']}</a></span>
+        </div>
+    </div>
+    EOD;
+}
+
+/**
+ * YouTube動画のHTML生成
+ */
+function generateYoutubeHtml($id, $data, $title, $channelTitle, $description, $view_str, $ago, $favorite_button_html, $lang) {
+    return <<<EOD
+    <div style="clear:both;">
+        <div id="content_{$id}" style="float:left;margin-right:8px;">
+            <a href="javascript:onClickThumb('{$id}');"><img id="{$id}" loading="lazy" data-src="https://i.ytimg.com/vi/{$id}/hqdefault.jpg" width="320px" height="180px" style="width:320px;height:180px;object-fit:cover;" /></a>
+        </div>
+        <div>
+            <span style="font-size:18px;"><a target="_blank" class="plain" href="https://youtu.be/{$id}">{$title}</a> {$favorite_button_html}</span><br />
+            <span style="font-size:11px;">{$view_str} {$lang['view']}・{$ago}</span>
+            <br />
+            <span style="font-size:15px;"><a class="plain" href="https://www.youtube.com/channel/{$data['channelId']}">{$channelTitle}</a></span>
+            <br />
+            <span style="font-size:11px;">{$description}</span>
+            <br />
+            <span style="font-size:12px;"><a href="./?report&id={$id}">{$lang['report']}</a> |
+            <a href="javascript:navigator.clipboard.writeText('https://youtu.be/{$id}');">URL{$lang['copy']}</a></span>
+        </div>
+    </div>
+    EOD;
 }
 
 /**
@@ -286,9 +500,8 @@ function addNicovideo($video_id, $type) {
     $array = json_decode(json_encode(simplexml_load_string($xml)), true);
 
     $index = [];
-    if (file_exists("data/index.json"))
-        $index = json_decode(file_get_contents("data/index.json"), true);
-      
+    if (file_exists(FilePaths::INDEX_JSON))
+        $index = json_decode(file_get_contents(FilePaths::INDEX_JSON), true);
       
     $thumb = $array['thumb'];
 
@@ -304,12 +517,14 @@ function addNicovideo($video_id, $type) {
         'type' => $type,
     ];
 
-    file_put_contents("cache/thumb/" . $video_id . ".jpg", file_get_contents($thumb['thumbnail_url']));
+    // サムネイル保存処理
+    FilePaths::ensureDirectoryExists(FilePaths::CACHE_THUMB_DIR);
+    file_put_contents(FilePaths::CACHE_THUMB_DIR . $video_id . ".jpg", file_get_contents($thumb['thumbnail_url']));
 
     $index = ((array) $index);
     array_multisort(array_column($index, 'publishedAt'), SORT_DESC, $index);
         
-    file_put_contents("data/index.json", json_encode($index, JSON_UNESCAPED_UNICODE));
+    file_put_contents(FilePaths::INDEX_JSON, json_encode($index, JSON_UNESCAPED_UNICODE));
     return;
 }
 
@@ -317,7 +532,7 @@ function addPlaylist($playlist_id, $type, $nextPageToken = false, $only = false,
     global $blacklist;
 
     if (!isset($blacklist)) {
-        $blacklist = json_decode(file_get_contents("blacklist.json"), true);
+        $blacklist = json_decode(file_get_contents(FilePaths::BLACKLIST_JSON), true);
     }
 
     static $c = 0;
@@ -339,10 +554,11 @@ function addPlaylist($playlist_id, $type, $nextPageToken = false, $only = false,
     curl_close($ch);
 
     $index = [];
-    file_put_contents("data/" . $c . "-" . $playlist_id . ".json", json_encode($output, JSON_UNESCAPED_UNICODE));
+    FilePaths::ensureDirectoryExists(FilePaths::DATA_DIR);
+    file_put_contents(FilePaths::DATA_DIR . $c . "-" . $playlist_id . ".json", json_encode($output, JSON_UNESCAPED_UNICODE));
 
-    if (file_exists("data/index.json")) {
-        $index = json_decode(file_get_contents("data/index.json"), true);
+    if (file_exists(FilePaths::INDEX_JSON)) {
+        $index = json_decode(file_get_contents(FilePaths::INDEX_JSON), true);
     }
 
     foreach ($output->items as $item) {
@@ -394,14 +610,13 @@ function addPlaylist($playlist_id, $type, $nextPageToken = false, $only = false,
     $index = ((array) $index);
     array_multisort(array_column($index, 'publishedAt'), SORT_DESC, $index);
     
-    file_put_contents("data/index.json", json_encode($index, JSON_UNESCAPED_UNICODE));
+    file_put_contents(FilePaths::INDEX_JSON, json_encode($index, JSON_UNESCAPED_UNICODE));
 
     if ((!$only || $nextWithOnly) && isset($output->nextPageToken)) {
         addPlaylist($playlist_id, $type, $output->nextPageToken);
     } else if (isset($output->nextPageToken)) {
         return $output->nextPageToken;
     }
-    
 }
 
 /**
@@ -464,7 +679,7 @@ function renderSearchForm($lang, $queryParams, $isMatrix = false) {
  * データインデックスを読み込み、並び替えを行う
  */
 function loadAndSortIndex($queryParams, $isMatrix = false) {
-    $dataPath = $isMatrix ? '../data/' : 'data/';
+    $dataPath = $isMatrix ? '../' . FilePaths::DATA_DIR : FilePaths::DATA_DIR;
     
     $index = [];
     if (isset($queryParams['ai_class']) && $queryParams['ai_class'] == "1" && file_exists($dataPath . "ai_index.json")) {
@@ -492,18 +707,26 @@ function loadAndSortIndex($queryParams, $isMatrix = false) {
             if (!isset($data['like'])) $index[$id]['like'] = 0;
             $sort_array[$id] = $data['publishedAt'];
         }
-        if ($sort === 'ancient') {
-            array_multisort($sort_array, SORT_ASC, $index);
-        } else if ($sort === 'most_view') {
-            array_multisort(array_column($index, 'view'), SORT_DESC, $index);
-        } else if ($sort === 'worst_view') {
-            array_multisort(array_column($index, 'view'), SORT_ASC, $index);
-        } else if ($sort === 'most_like') {
-            array_multisort(array_column($index, 'like'), SORT_DESC, $index);
-        } else if ($sort === 'word') {
-            array_multisort(array_column($index, 'title'), SORT_ASC, $index);
-        } else if ($sort === 'word_desc') {
-            array_multisort(array_column($index, 'title'), SORT_DESC, $index);
+        
+        switch ($sort) {
+            case 'ancient':
+                array_multisort($sort_array, SORT_ASC, $index);
+                break;
+            case 'most_view':
+                array_multisort(array_column($index, 'view'), SORT_DESC, $index);
+                break;
+            case 'worst_view':
+                array_multisort(array_column($index, 'view'), SORT_ASC, $index);
+                break;
+            case 'most_like':
+                array_multisort(array_column($index, 'like'), SORT_DESC, $index);
+                break;
+            case 'word':
+                array_multisort(array_column($index, 'title'), SORT_ASC, $index);
+                break;
+            case 'word_desc':
+                array_multisort(array_column($index, 'title'), SORT_DESC, $index);
+                break;
         }
     }
 
@@ -715,7 +938,7 @@ function processVideoSearch($lang, $currentUser, $isMatrix = false) {
     }
 
     // ページネーション生成
-    $dataPath = $isMatrix ? '../data/' : 'data/';
+    $dataPath = $isMatrix ? '../' . FilePaths::DATA_DIR : FilePaths::DATA_DIR;
     $page_count = 0;
     if (file_exists($dataPath . "index.json")) {
         $page_count = count(json_decode(file_get_contents($dataPath . "index.json"), true));
