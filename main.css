@@ -450,7 +450,6 @@ div#menu_sp a {
 .account-section {
 	margin: 20px 0;
 	padding: 10px;
-	border: 1px solid var(--border-color);
 	background-color: var(--background-color);
 }
 
@@ -460,10 +459,6 @@ div#menu_sp a {
 	font-size: 18px;
 	border-bottom: 1px solid var(--border-color);
 	padding-bottom: 5px;
-}
-
-.account-section.danger {
-	border-color: #ff4444;
 }
 
 .account-section.danger h2 {
