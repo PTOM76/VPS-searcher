@@ -326,12 +326,103 @@ class XmlGenerator {
             $count++;
         }
     }
+    
+    /**
+     * robots.txtを生成
+     */
+    public function generateRobotsTxt() {
+        $content = "User-agent: *\n";
+        $content .= "Allow: /\n";
+        $content .= "Disallow: /data/\n";
+        $content .= "Disallow: /cache/\n";
+        $content .= "Disallow: /queue/\n";
+        $content .= "Disallow: /report/\n";
+        $content .= "Disallow: /logs/\n";
+        $content .= "Disallow: /lib/\n";
+        $content .= "\n";
+        $content .= "Sitemap: {$this->baseUrl}/sitemap.xml\n";
+        
+        return $content;
+    }
+    
+    /**
+     * XMLファイルを生成してファイルに保存
+     */
+    public function generateAndSaveFiles($limit = 50) {
+        $results = [];
+        
+        try {
+            // サイトマップ生成
+            $sitemapContent = $this->generateSitemap();
+            $sitemapFile = 'sitemap.xml';
+            file_put_contents($sitemapFile, $sitemapContent);
+            $results['sitemap'] = [
+                'success' => true,
+                'file' => $sitemapFile,
+                'size' => filesize($sitemapFile)
+            ];
+            
+            // RSSフィード生成
+            $rssContent = $this->generateRssFeed($limit);
+            $rssFile = 'rss.xml';
+            file_put_contents($rssFile, $rssContent);
+            $results['rss'] = [
+                'success' => true,
+                'file' => $rssFile,
+                'size' => filesize($rssFile)
+            ];
+            
+            // Atomフィード生成
+            $atomContent = $this->generateAtomFeed($limit);
+            $atomFile = 'feed.atom';
+            file_put_contents($atomFile, $atomContent);
+            $results['atom'] = [
+                'success' => true,
+                'file' => $atomFile,
+                'size' => filesize($atomFile)
+            ];
+            
+            // robots.txt生成
+            $robotsContent = $this->generateRobotsTxt();
+            $robotsFile = 'robots.txt';
+            file_put_contents($robotsFile, $robotsContent);
+            $results['robots'] = [
+                'success' => true,
+                'file' => $robotsFile,
+                'size' => filesize($robotsFile)
+            ];
+        } catch (Exception $e) {
+            $results['error'] = $e->getMessage();
+        }
+        
+        return $results;
+    }
+    
+    /**
+     * 生成されたファイルが存在するかチェック
+     */
+    public function checkGeneratedFiles() {
+        $files = ['sitemap.xml', 'rss.xml', 'feed.atom', 'robots.txt'];
+        $status = [];
+        
+        foreach ($files as $file) {
+            $filePath = $file;
+            $status[$file] = [
+                'exists' => file_exists($filePath),
+                'size' => file_exists($filePath) ? filesize($filePath) : 0,
+                'modified' => file_exists($filePath) ? filemtime($filePath) : 0
+            ];
+        }
+        
+        return $status;
+    }
 }
 
 // リクエスト処理
 $type = $_GET['type'] ?? 'sitemap';
 $format = $_GET['format'] ?? 'xml';
 $limit = (int)($_GET['limit'] ?? 50);
+$generateFiles = true;
 
 // ベースURLを取得
 $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
@@ -342,6 +433,49 @@ $useLang = $_GET['lang'] ?? 'ja';
 $lang = $_lang[$useLang] ?? $_lang['ja'];
 
 $generator = new XmlGenerator($baseUrl, $lang);
+
+// ファイル生成モード
+if ($generateFiles) {
+    header('Content-Type: application/json; charset=utf-8');
+    
+    try {
+        $results = $generator->generateAndSaveFiles($limit);
+        echo json_encode([
+            'success' => true,
+            'message' => 'ファイル生成が完了しました',
+            'results' => $results,
+            'timestamp' => date('Y-m-d H:i:s')
+        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode([
+            'success' => false,
+            'error' => $e->getMessage()
+        ], JSON_UNESCAPED_UNICODE);
+    }
+    exit;
+}
+
+// ファイル状態確認モード
+if (isset($_GET['status'])) {
+    header('Content-Type: application/json; charset=utf-8');
+    
+    try {
+        $status = $generator->checkGeneratedFiles();
+        echo json_encode([
+            'success' => true,
+            'files' => $status,
+            'timestamp' => date('Y-m-d H:i:s')
+        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode([
+            'success' => false,
+            'error' => $e->getMessage()
+        ], JSON_UNESCAPED_UNICODE);
+    }
+    exit;
+}
 
 // レスポンスヘッダーを設定
 header('Content-Type: application/xml; charset=utf-8');
@@ -358,6 +492,11 @@ try {
             
         case 'atom':
             echo $generator->generateAtomFeed($limit);
+            break;
+            
+        case 'robots':
+            header('Content-Type: text/plain; charset=utf-8');
+            echo $generator->generateRobotsTxt();
             break;
             
         default:
