@@ -51,6 +51,8 @@ if (isset($_GET['post'])) {
     include 'page/report.php';
 } else if (isset($_GET['info'])) {
     include 'page/info.php';
+} else if (isset($_GET['statistics'])) {
+    include 'page/statistics.php';
 } else if (isset($_GET['do'])) {
     switch ($_GET['do']) {
         case 'login':

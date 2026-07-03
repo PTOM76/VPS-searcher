@@ -301,11 +301,16 @@ function renderHtmlHead($title, $useLang = "ja", $isMatrix = false) {
         <meta name="twitter:title" content="<?php echo htmlspecialchars($title); ?>">
         <meta name="twitter:description" content="ボイパ対決という音MADに特化した検索ツール">
         
+        <?php
+            if (isset($_GET['statistics'])) {
+                echo '<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>';
+            }
+        ?>
+
         <script src="<?php echo $pathPrefix; ?>darkmode.js"></script>
         <script src="<?php echo $pathPrefix; ?>main.js"></script>
         <link rel="stylesheet" type="text/css" href="<?php echo $pathPrefix; ?>main.css" />
         <script>
-            // ログイン状態と翻訳データをJavaScriptに渡す
             window.isLoggedIn = <?php echo $currentUser ? 'true' : 'false'; ?>;
             window.translations = {
                 login_required: '<?php echo addslashes($lang['login_required']); ?>',

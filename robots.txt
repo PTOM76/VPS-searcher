@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /data/
+Disallow: /cache/
+Disallow: /queue/
+Disallow: /report/
+Disallow: /logs/
+Disallow: /lib/
+
+Sitemap: https://vps-search.pitan76.net/sitemap.xml

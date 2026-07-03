@@ -1,6 +1,6 @@
 // ダークモードの実装 :root[theme=dark]を追加
 
-window.addEventListener('DOMContentLoaded', function () {
+window.addEventListener('load', function () {
     // OSのダークモード設定に合わせる
     var darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     darkModeMediaQuery.addEventListener('change', function (event) {
