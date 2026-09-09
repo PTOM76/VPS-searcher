@@ -76,6 +76,7 @@ if (Auth::isLoggedIn()) {
                         <br />
                         <span class="compare-picker-title"><?php echo htmlspecialchars($favorite['title']); ?></span>
                     </a>
+                    <br />
                 <?php endforeach; ?>
             </div>
         <?php endif; ?>
