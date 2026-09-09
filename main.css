@@ -768,8 +768,10 @@ div#menu_sp a {
 /* 1fr で伸ばすと選んだ大きさが無視されて画面幅まで膨らむので、トラック幅は固定する。
    画面が1枚ぶんより狭いときだけ container 幅まで縮める */
 #compare-grid {
+	--compare-width: 320px;
+	--compare-height: 180px;
 	display: grid;
-	grid-template-columns: repeat(auto-fill, min(var(--compare-min, 240px), 100%));
+	grid-template-columns: repeat(auto-fill, min(var(--compare-width), 100%));
 	justify-content: start;
 	align-items: start;
 	gap: 14px;
@@ -785,15 +787,20 @@ div#menu_sp a {
 
 .compare-card-player {
 	width: 100%;
-	aspect-ratio: 16 / 9;
+	height: var(--compare-height);
 	background: #000;
+	position: relative;
+	overflow: hidden;
 }
 
+/* YouTube API が挿入する iframe のインラインスタイルを無効化して枠いっぱいに広げる */
 .compare-card-player iframe,
 .compare-card-player > div {
-	display: block;
-	width: 100%;
-	height: 100%;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100% !important;
+	height: 100% !important;
 	border: 0;
 }
 
