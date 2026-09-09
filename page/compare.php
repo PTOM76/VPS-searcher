@@ -27,6 +27,14 @@ if (Auth::isLoggedIn()) {
         </div>
 
         <div class="compare-playback">
+            <label class="compare-size">
+                大きさ
+                <select onchange="CompareVideos.setSize(this.value)">
+                    <option value="180">小</option>
+                    <option value="260" selected>中</option>
+                    <option value="380">大</option>
+                </select>
+            </label>
             <button type="button" class="compare-btn-primary" onclick="CompareVideos.playAll()">同時再生</button>
             <button type="button" onclick="CompareVideos.pauseAll()">一時停止</button>
             <button type="button" onclick="CompareVideos.clearAll()">クリア</button>
@@ -95,6 +103,11 @@ if (Auth::isLoggedIn()) {
 
         function refreshEmptyState() {
             document.getElementById('compare-empty').hidden = entries.length > 0;
+        }
+
+        // 比較したい本数が並ぶかは画面幅と1枚の大きさで決まるので、大きさを選べるようにする
+        function setSize(minWidth) {
+            document.getElementById('compare-grid').style.setProperty('--compare-min', minWidth + 'px');
         }
 
         // お気に入りのボタンは videoId を直接渡してくる。URL欄からの追加は引数無しで呼ばれる
@@ -214,6 +227,7 @@ if (Auth::isLoggedIn()) {
             clearAll: clearAll,
             openFavorites: openFavorites,
             closeFavorites: closeFavorites,
+            setSize: setSize,
         };
     })();
 </script>
