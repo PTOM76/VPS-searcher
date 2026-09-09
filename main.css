@@ -611,3 +611,49 @@ div#menu_sp a {
 .compare-remove {
 	padding: 2px 8px;
 }
+
+.compare-source-tabs {
+	display: flex;
+	gap: 8px;
+	margin-bottom: 12px;
+}
+
+.compare-tab.active {
+	background-color: var(--button-active-background-color);
+	border-color: var(--button-active-border-color);
+}
+
+.compare-favorites-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+	gap: 10px;
+	margin-bottom: 12px;
+}
+
+.compare-favorite-item {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 4px;
+	padding: 6px;
+	background: var(--input-background-color);
+	border: 1px solid var(--border-color);
+	border-radius: 4px;
+	cursor: pointer;
+	text-align: left;
+}
+
+.compare-favorite-item img {
+	width: 100%;
+	aspect-ratio: 16 / 9;
+	object-fit: cover;
+	border-radius: 2px;
+}
+
+.compare-favorite-item span {
+	font-size: 12px;
+	color: var(--text-color);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}

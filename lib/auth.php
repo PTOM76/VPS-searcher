@@ -85,6 +85,81 @@ class Auth {
     }
 
     /**
+     * ChreeID (sub) からユーザーを引き当てる。
+     *
+     * @param string $chreeId
+     * @return array|null
+     */
+    public static function findByChreeId($chreeId) {
+        self::init();
+
+        $users = json_decode(file_get_contents(self::$usersFile), true);
+
+        foreach ($users as $user) {
+            if (($user['chree_id'] ?? null) === $chreeId) return $user;
+        }
+
+        return null;
+    }
+
+    /**
+     * メールアドレスからユーザーを引き当てる。
+     *
+     * @param string $email
+     * @return array|null
+     */
+    public static function findByEmail($email) {
+        self::init();
+
+        $users = json_decode(file_get_contents(self::$usersFile), true);
+
+        foreach ($users as $user) {
+            if (($user['email'] ?? null) === $email) return $user;
+        }
+
+        return null;
+    }
+
+    /**
+     * ChreeID のクレームだけでユーザーを新規作成する (パスワード無し)。
+     *
+     * @param string $chreeId
+     * @param string $email
+     * @param string|null $displayName
+     * @return array 作成したユーザー行
+     */
+    public static function createFromChreeId($chreeId, $email, $displayName = null) {
+        self::init();
+
+        $users = json_decode(file_get_contents(self::$usersFile), true);
+
+        $newUser = [
+            'id' => uniqid(),
+            'username' => $displayName !== null && $displayName !== '' ? $displayName : $email,
+            'password' => null,
+            'email' => $email,
+            'chree_id' => $chreeId,
+            'created_at' => date('Y-m-d H:i:s')
+        ];
+
+        $users[] = $newUser;
+        file_put_contents(self::$usersFile, json_encode($users, JSON_UNESCAPED_UNICODE));
+
+        return $newUser;
+    }
+
+    /**
+     * ユーザー行を指定してセッションを確立する。ChreeIdAuth から呼ぶ。
+     *
+     * @param array $user
+     * @return void
+     */
+    public static function loginAsUser(array $user) {
+        $_SESSION['user_id'] = $user['id'];
+        $_SESSION['username'] = $user['username'];
+    }
+
+    /**
      * ChreeID の sub を users.json に書き込む。ChreeIdProvisioner から呼ぶ。
      *
      * @param string $userId

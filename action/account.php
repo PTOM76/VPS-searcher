@@ -120,9 +120,9 @@ if (!empty($userDetails['chree_id'])) {
     <div class="account-section">
         <h2>ChreeID連携</h2>
         <?php if ($chreeIdStatus === 'claimed'): ?>
-            <p>このアカウントは ChreeID (WikiChree.COM共通アカウント) と連携済みです。ChreeIDのパスワード/パスキー/Google連携でもログインできます。</p>
+            <p>このアカウントは ChreeID と連携済みです。ChreeIDのパスワード/パスキー/Google連携でもログインできます。</p>
         <?php elseif ($chreeIdStatus === 'unclaimed'): ?>
-            <p>ChreeIDのサービスアカウントが裏で用意されていますが、まだ引き取っていません(このサイト固有のアカウントのままです)。</p>
+            <p>ChreeID を作成することでパスキーなどの認証が利用できます。</p>
             <p><a href="<?php echo htmlspecialchars($chreeIdClaimUrl); ?>" class="btn btn-secondary">ChreeIDアカウントとして引き取る</a></p>
         <?php elseif ($chreeIdStatus === 'not_provisioned'): ?>
             <p>次回ログイン時に自動で用意されます。</p>
