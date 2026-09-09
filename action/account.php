@@ -92,40 +92,45 @@ if (isset($_POST['action'])) {
             }
             break;
 
-        case 'chreeid_claim':
-            require_once __DIR__ . '/../lib/ChreeIdProvisioner.php';
-            try {
-                $claimUrl = (new ChreeIdProvisioner())->claimUrl($userDetails);
-            } catch (\Throwable $e) {
-                $message = 'ChreeIDに接続できませんでした';
-                $messageType = 'error';
-            }
-            break;
     }
+}
+
+// ChreeID の状態を毎回確認する。chree_id は自動発行された「未引き取りの
+// サービスアカウント」の可能性があり、それだけでは「連携済み」と言えない。
+// claim-tickets を叩き、409 (already_claimed) なら本当に引き取り済み
+require_once __DIR__ . '/../lib/ChreeIdProvisioner.php';
+
+$chreeIdStatus = 'disabled'; // disabled | not_provisioned | unclaimed | claimed | unreachable
+$chreeIdClaimUrl = null;
+
+if (!empty($userDetails['chree_id'])) {
+    try {
+        $chreeIdClaimUrl = (new ChreeIdProvisioner())->claimUrl($userDetails);
+        $chreeIdStatus = $chreeIdClaimUrl !== null ? 'unclaimed' : 'claimed';
+    } catch (\Throwable $e) {
+        $chreeIdStatus = 'unreachable';
+    }
+} elseif (ChreeIdProvisioner::isEnabled()) {
+    $chreeIdStatus = 'not_provisioned';
 }
 ?>
 
 <div class="auth-container">
+    <?php if ($chreeIdStatus !== 'disabled'): ?>
     <div class="account-section">
         <h2>ChreeID連携</h2>
-        <?php if (!empty($userDetails['chree_id'])): ?>
-            <p>このアカウントは ChreeID (WikiChree.COM共通アカウント) と連携済みです。</p>
-            <?php if (isset($claimUrl)): ?>
-                <?php if ($claimUrl !== null): ?>
-                    <p><a href="<?php echo htmlspecialchars($claimUrl); ?>" class="btn btn-secondary">ChreeIDを引き取る</a></p>
-                <?php else: ?>
-                    <p>既に引き取り済みです。ChreeIDのパスワード/パスキー/Google連携でログインできます。</p>
-                <?php endif; ?>
-            <?php else: ?>
-                <form method="POST" class="auth-form">
-                    <input type="hidden" name="action" value="chreeid_claim">
-                    <input type="submit" value="ChreeIDを引き取る">
-                </form>
-            <?php endif; ?>
-        <?php else: ?>
-            <p>次回ログイン時に自動で連携されます。</p>
+        <?php if ($chreeIdStatus === 'claimed'): ?>
+            <p>このアカウントは ChreeID (WikiChree.COM共通アカウント) と連携済みです。ChreeIDのパスワード/パスキー/Google連携でもログインできます。</p>
+        <?php elseif ($chreeIdStatus === 'unclaimed'): ?>
+            <p>ChreeIDのサービスアカウントが裏で用意されていますが、まだ引き取っていません(このサイト固有のアカウントのままです)。</p>
+            <p><a href="<?php echo htmlspecialchars($chreeIdClaimUrl); ?>" class="btn btn-secondary">ChreeIDアカウントとして引き取る</a></p>
+        <?php elseif ($chreeIdStatus === 'not_provisioned'): ?>
+            <p>次回ログイン時に自動で用意されます。</p>
+        <?php elseif ($chreeIdStatus === 'unreachable'): ?>
+            <p>ChreeIDに接続できませんでした。時間を置いて再度お試しください。</p>
         <?php endif; ?>
     </div>
+    <?php endif; ?>
 
     <div class="account-section">
         <h2><?php echo $lang['favorites']; ?></h2>
