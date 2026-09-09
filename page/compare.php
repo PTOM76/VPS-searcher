@@ -28,9 +28,9 @@ if (Auth::isLoggedIn()) {
 
         <div class="compare-bar-right">
             <div class="compare-seg" role="group" aria-label="表示サイズ">
-                <button type="button" class="compare-seg-btn" data-size="170" onclick="CompareVideos.setSize(this)">小</button>
-                <button type="button" class="compare-seg-btn is-active" data-size="240" onclick="CompareVideos.setSize(this)">中</button>
-                <button type="button" class="compare-seg-btn" data-size="380" onclick="CompareVideos.setSize(this)">大</button>
+                <button type="button" class="compare-seg-btn is-active" data-size="320" onclick="CompareVideos.setSize(this)">小</button>
+                <button type="button" class="compare-seg-btn" data-size="480" onclick="CompareVideos.setSize(this)">中</button>
+                <button type="button" class="compare-seg-btn" data-size="640" onclick="CompareVideos.setSize(this)">大</button>
             </div>
 
             <div class="compare-bar-play">
@@ -114,6 +114,8 @@ if (Auth::isLoggedIn()) {
 
         // 何本並ぶかは画面幅と1枚の大きさで決まる。比較したい本数に合わせて選べるようにする
         function setSize(button) {
+            console.log(button);
+
             document.querySelectorAll('.compare-seg-btn').forEach(function (el) {
                 el.classList.toggle('is-active', el === button);
             });
