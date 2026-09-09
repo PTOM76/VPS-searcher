@@ -551,3 +551,63 @@ div#menu_sp a {
 	display: inline;
 	margin-left: 5px;
 }
+
+/* 動画比較 (page/compare.php) */
+#compare-page {
+	max-width: 1200px;
+	margin: 0 auto;
+	padding: 10px;
+}
+
+.compare-help {
+	color: var(--text-color);
+	font-size: 14px;
+	margin-bottom: 12px;
+}
+
+.compare-add-form,
+.compare-controls {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-bottom: 12px;
+}
+
+.compare-add-form input[type='text'] {
+	flex: 1;
+	min-width: 200px;
+}
+
+.compare-add-form input[type='number'] {
+	width: 110px;
+}
+
+#compare-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+	gap: 16px;
+}
+
+.compare-slot {
+	border: 1px solid var(--border-color);
+	border-radius: 4px;
+	overflow: hidden;
+}
+
+.compare-slot-player {
+	width: 100%;
+	aspect-ratio: 16 / 9;
+}
+
+.compare-slot-meta {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 6px 10px;
+	font-size: 13px;
+	color: var(--text-color);
+}
+
+.compare-remove {
+	padding: 2px 8px;
+}

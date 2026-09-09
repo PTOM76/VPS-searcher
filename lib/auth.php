@@ -65,18 +65,46 @@ class Auth {
     public static function login($username, $password) {
         self::init();
         $lang = self::getLang();
-        
+
         $users = json_decode(file_get_contents(self::$usersFile), true);
-        
+
         foreach ($users as $user) {
             if ($user['username'] === $username && password_verify($password, $user['password'])) {
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['username'] = $user['username'];
+
+                // まだ ChreeID を持たないユーザーに裏で用意する。失敗してもログインは止めない
+                require_once __DIR__ . '/ChreeIdProvisioner.php';
+                (new ChreeIdProvisioner())->ensure($user);
+
                 return ['success' => true, 'message' => $lang['login_success']];
             }
         }
-        
+
         return ['success' => false, 'message' => $lang['invalid_credentials']];
+    }
+
+    /**
+     * ChreeID の sub を users.json に書き込む。ChreeIdProvisioner から呼ぶ。
+     *
+     * @param string $userId
+     * @param string $sub
+     * @return void
+     */
+    public static function linkChreeId($userId, $sub) {
+        self::init();
+
+        $users = json_decode(file_get_contents(self::$usersFile), true);
+
+        foreach ($users as &$user) {
+            if ($user['id'] === $userId) {
+                $user['chree_id'] = $sub;
+                break;
+            }
+        }
+        unset($user);
+
+        file_put_contents(self::$usersFile, json_encode($users, JSON_UNESCAPED_UNICODE));
     }
     
     public static function logout() {
@@ -254,6 +282,10 @@ class Auth {
         foreach ($users as $key => $user) {
             if ($user['id'] === $userId) {
                 if (password_verify($currentPassword, $user['password'])) {
+                    // ChreeID 側のサービスアカウントも止める (物理削除はしない)
+                    require_once __DIR__ . '/ChreeIdProvisioner.php';
+                    (new ChreeIdProvisioner())->deactivate($user);
+
                     // ユーザーを削除
                     unset($users[$key]);
                     file_put_contents(self::$usersFile, json_encode(array_values($users), JSON_UNESCAPED_UNICODE));
@@ -289,7 +321,8 @@ class Auth {
                     'id' => $user['id'],
                     'username' => $user['username'],
                     'email' => $user['email'],
-                    'created_at' => $user['created_at']
+                    'created_at' => $user['created_at'],
+                    'chree_id' => $user['chree_id'] ?? null
                 ];
             }
         }

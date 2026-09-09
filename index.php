@@ -1,4 +1,8 @@
 <?php
+// action/login.php 等がHTML出力後に header('Location: ...') を呼ぶため、
+// バッファリングせずに書くとリダイレクトが効かず ?do=login のまま固まる
+ob_start();
+
 require_once "secret.ini.php";
 require_once "config.ini.php";
 require_once "lang.ini.php";
@@ -53,6 +57,8 @@ if (isset($_GET['post'])) {
     include 'page/info.php';
 } else if (isset($_GET['statistics'])) {
     include 'page/statistics.php';
+} else if (isset($_GET['compare'])) {
+    include 'page/compare.php';
 } else if (isset($_GET['do'])) {
     switch ($_GET['do']) {
         case 'login':

@@ -336,6 +336,7 @@ function renderNavigation($lang, $useLang, $currentUser, $isMatrix = false) {
         <ul>
             <li><a href="<?php echo $useLang === "ja" ? "./" : "./" . $useLang . ".php"; ?>"><?php echo $lang['title']; ?></a></li>
             <li class="pc"><a href="<?php echo $pathPrefix; ?>?info"><?php echo $lang['info']; ?></a></li>
+            <li class="pc"><a href="<?php echo $pathPrefix; ?>?compare"><?php echo $lang['compare']; ?></a></li>
             <li class="dropdown pc">
                 <a href="javascript:void(0)" class="dropbtn">Language</a>
                 <div class="dropdown-content">
@@ -374,6 +375,7 @@ function renderMobileMenu($lang, $useLang, $currentUser, $isMatrix = false) {
             <li><a href="<?php echo $useLang === "ja" ? "./" : "./" . $useLang . ".php"; ?>"><?php echo $lang['title']; ?></a></li>
             <li class="none"><br /></li>
             <li><a href="<?php echo $pathPrefix; ?>?info"><?php echo $lang['info']; ?></a></li>
+            <li><a href="<?php echo $pathPrefix; ?>?compare"><?php echo $lang['compare']; ?></a></li>
             <li><a href="<?php echo $pathPrefix; ?>?post"><?php echo $lang['send_pl']; ?></a></li>
             <?php if ($currentUser): ?>
                 <li><a href="<?php echo $pathPrefix; ?>?do=favorites<?php echo $useLang !== "ja" ? "&lang=" . $useLang : ""; ?>"><?php echo $lang['favorites']; ?></a></li>

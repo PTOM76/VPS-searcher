@@ -91,11 +91,42 @@ if (isset($_POST['action'])) {
                 $messageType = 'error';
             }
             break;
+
+        case 'chreeid_claim':
+            require_once __DIR__ . '/../lib/ChreeIdProvisioner.php';
+            try {
+                $claimUrl = (new ChreeIdProvisioner())->claimUrl($userDetails);
+            } catch (\Throwable $e) {
+                $message = 'ChreeIDに接続できませんでした';
+                $messageType = 'error';
+            }
+            break;
     }
 }
 ?>
 
 <div class="auth-container">
+    <div class="account-section">
+        <h2>ChreeID連携</h2>
+        <?php if (!empty($userDetails['chree_id'])): ?>
+            <p>このアカウントは ChreeID (WikiChree.COM共通アカウント) と連携済みです。</p>
+            <?php if (isset($claimUrl)): ?>
+                <?php if ($claimUrl !== null): ?>
+                    <p><a href="<?php echo htmlspecialchars($claimUrl); ?>" class="btn btn-secondary">ChreeIDを引き取る</a></p>
+                <?php else: ?>
+                    <p>既に引き取り済みです。ChreeIDのパスワード/パスキー/Google連携でログインできます。</p>
+                <?php endif; ?>
+            <?php else: ?>
+                <form method="POST" class="auth-form">
+                    <input type="hidden" name="action" value="chreeid_claim">
+                    <input type="submit" value="ChreeIDを引き取る">
+                </form>
+            <?php endif; ?>
+        <?php else: ?>
+            <p>次回ログイン時に自動で連携されます。</p>
+        <?php endif; ?>
+    </div>
+
     <div class="account-section">
         <h2><?php echo $lang['favorites']; ?></h2>
         お気に入りに入れたものは以下のリンクから確認できます。
