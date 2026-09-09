@@ -76,6 +76,12 @@ if (isset($_GET['post'])) {
         case 'favorites':
             include 'action/favorites.php';
             break;
+        case 'chreeid':
+            include 'action/chreeid.php';
+            break;
+        case 'chreeid_callback':
+            include 'action/chreeid_callback.php';
+            break;
         default:
             header('Location: ./');
             exit;

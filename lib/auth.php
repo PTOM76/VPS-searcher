@@ -69,7 +69,7 @@ class Auth {
         $users = json_decode(file_get_contents(self::$usersFile), true);
 
         foreach ($users as $user) {
-            if ($user['username'] === $username && password_verify($password, $user['password'])) {
+            if ($user['username'] === $username && !empty($user['password']) && password_verify($password, $user['password'])) {
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['username'] = $user['username'];
 
@@ -305,7 +305,7 @@ class Auth {
         
         foreach ($users as &$user) {
             if ($user['id'] === $userId) {
-                if (password_verify($currentPassword, $user['password'])) {
+                if (!empty($user['password']) && password_verify($currentPassword, $user['password'])) {
                     $user['password'] = password_hash($newPassword, PASSWORD_DEFAULT);
                     file_put_contents(self::$usersFile, json_encode($users, JSON_UNESCAPED_UNICODE));
                     return ['success' => true, 'message' => $lang['password_updated']];
@@ -356,7 +356,7 @@ class Auth {
         
         foreach ($users as $key => $user) {
             if ($user['id'] === $userId) {
-                if (password_verify($currentPassword, $user['password'])) {
+                if (!empty($user['password']) && password_verify($currentPassword, $user['password'])) {
                     // ChreeID 側のサービスアカウントも止める (物理削除はしない)
                     require_once __DIR__ . '/ChreeIdProvisioner.php';
                     (new ChreeIdProvisioner())->deactivate($user);

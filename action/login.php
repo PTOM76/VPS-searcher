@@ -1,8 +1,15 @@
 <?php
 // action/login.php
 
+require_once __DIR__ . '/../lib/ChreeIdAuth.php';
+
 $message = '';
 $messageType = '';
+
+if (isset($_GET['chreeid_error'])) {
+    $message = 'ChreeIDでのログインに失敗しました。もう一度お試しください。';
+    $messageType = 'error';
+}
 
 // ログイン処理
 if (isset($_POST['login'])) {
@@ -53,7 +60,13 @@ if (Auth::isLoggedIn()) {
         
         <button type="submit" name="login" class="btn-primary"><?php echo $lang['login'] ?? 'ログイン'; ?></button>
     </form>
-    
+
+    <?php if (ChreeIdAuth::isConfigured()): ?>
+        <div class="auth-links">
+            <p><a href="?do=chreeid" class="btn btn-secondary">ChreeIDでログイン</a></p>
+        </div>
+    <?php endif; ?>
+
     <div class="auth-links">
         <p><a href="?do=register"><?php echo $lang['register'] ?? 'アカウント作成'; ?></a></p>
         <p><a href="./"><?php echo $lang['back'] ?? '戻る'; ?></a></p>
