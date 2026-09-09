@@ -1,0 +1,15 @@
+# ftps / ftp / sftp
+FTP_PROTOCOL=ftps
+
+FTP_HOST=ftp.example.jp
+FTP_USER=your-account
+FTP_PASS=your-password
+
+# ftps/ftp は 21、sftp は 22
+FTP_PORT=21
+
+# 転送先。ftps ではログイン後のルートからの相対 (/public_html/pitan76vps-search)、
+# sftp では絶対パス (/virtual/<account>/public_html/pitan76vps-search) になる点に注意。
+FTP_DIR=/public_html/pitan76vps-search
+
+# FTP_KEY=C:\Users\you\.ssh\id_rsa

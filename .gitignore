@@ -4,3 +4,15 @@ report/
 cache/
 ai/
 secret.ini.php
+
+*.log
+.DS_Store
+.env.*
+*.env
+!.env.example
+/.idea
+/.vscode
+/.deploy-state
+/tools/.deploy-env
+*.pyc
+**/__pycache__/**

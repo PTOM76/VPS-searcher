@@ -1,0 +1,12 @@
+# deploy.py がサーバへ送らないパス。1 行 1 パターン、# 以降はコメント。
+#   末尾が / … そのディレクトリ以下すべて
+#   それ以外 … パス完全一致 または glob
+
+tools/
+.env.example
+.vscode/
+.idea/
+.github/
+.gitignore
+.deploy-ignore
+README.md
