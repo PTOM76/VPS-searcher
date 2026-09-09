@@ -90,6 +90,9 @@ if (Auth::isLoggedIn()) {
         var entries = [];
         var apiReady = false;
         var nextSlotId = 0;
+        // 現在のサイズ状態を管理 (初期値: 320x180)
+        var currentWidth = 320;
+        var currentHeight = 180;
 
         function extractVideoId(input) {
             input = input.trim();
@@ -114,18 +117,26 @@ if (Auth::isLoggedIn()) {
 
         // 何本並ぶかは画面幅と1枚の大きさで決まる。比較したい本数に合わせて選べるようにする
         function setSize(width, height) {
-            // ボタンのアクティブ表示切替 (data-width 属性と判定)
+            currentWidth = width;
+            currentHeight = height;
+
+            // 1. ボタンのアクティブ状態切り替え
             document.querySelectorAll('.compare-seg-btn').forEach(function (el) {
                 el.classList.toggle('is-active', parseInt(el.dataset.width, 10) === width);
             });
 
-            // CSS変数を更新 (幅と高さを直接セット)
-            var grid = document.getElementById('compare-grid');
-            grid.style.setProperty('--compare-width', width + 'px');
-            grid.style.setProperty('--compare-height', height + 'px');
+            // 2. 既存の全プレイヤーに対し、YouTube API の setSize メソッドを呼び出す
+            entries.forEach(function (e) {
+                if (e.player && typeof e.player.setSize === 'function') {
+                    e.player.setSize(width, height);
+                }
+            });
 
-            // グリッドの列幅を直接上書き
-            grid.style.gridTemplateColumns = 'repeat(auto-fill, min(' + width + 'px, 100%))';
+            // 3. グリッドの列幅を調整
+            var grid = document.getElementById('compare-grid');
+            if (grid) {
+                grid.style.gridTemplateColumns = 'repeat(auto-fill, min(' + width + 'px, 100%))';
+            }
         }
 
         // お気に入りのボタンは videoId を直接渡してくる。URL欄からの追加は引数無しで呼ばれる
@@ -214,12 +225,13 @@ if (Auth::isLoggedIn()) {
         }
 
         function createPlayer(entry) {
-            // start は整数秒までしか受け付けないため、小数の頭出しは playAll() の seekTo で行う
+            // コンストラクタ生成時にも width と height を明示的に指定する
             entry.player = new YT.Player(entry.slotId, {
+                width: currentWidth,
+                height: currentHeight,
                 videoId: entry.videoId,
                 playerVars: {
                     start: Math.floor(entry.startSeconds),
-                    // enablejsapi の postMessage は origin が合っていないと通らないことがある
                     origin: window.location.origin,
                 },
             });
