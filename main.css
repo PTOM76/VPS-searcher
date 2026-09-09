@@ -555,83 +555,242 @@ div#menu_sp a {
 
 /* 動画比較 (page/compare.php) */
 #compare-page {
-	max-width: 1200px;
-	margin: 40px auto 0;
-	padding: 10px;
+	max-width: 1400px;
+	margin: 45px auto 0;
+	padding: 0 4px;
 }
 
-#compare-page h2 {
+.compare-head h2 {
 	color: var(--text-color);
-	font-size: 22px;
-	margin: 0 0 6px 0;
+	font-size: 20px;
+	margin: 0 0 4px 0;
 }
 
 .compare-help {
 	color: var(--text-color);
-	opacity: 0.75;
+	opacity: 0.7;
 	font-size: 13px;
-	margin: 0 0 16px 0;
+	line-height: 1.6;
+	margin: 0 0 14px 0;
 }
 
-/* タブ */
-.compare-source-tabs {
+/* 操作は1行にまとめる。プレイヤーが主役なので、ここは高さを取らない */
+.compare-toolbar {
 	display: flex;
-	gap: 4px;
-	margin-bottom: 14px;
-	border-bottom: 1px solid var(--border-color);
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+	padding: 10px 12px;
+	margin-bottom: 16px;
+	background: var(--input-background-color);
+	border: 1px solid var(--border-color);
+	border-radius: 8px;
 }
 
-.compare-tab {
-	height: auto;
-	padding: 8px 16px;
+.compare-add,
+.compare-playback {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.compare-add {
+	flex: 1;
+	min-width: 260px;
+	max-width: 560px;
+}
+
+/* 「追加」と「再生制御」は役割が違うので、寄せ方と仕切りで見た目から分ける */
+.compare-playback {
+	margin-left: auto;
+	padding-left: 12px;
+	border-left: 1px solid var(--border-color);
+}
+
+.compare-add input[type='text'] {
+	flex: 1;
+	min-width: 0;
+	height: 30px;
+	padding: 0 10px;
+}
+
+.compare-toolbar button {
+	height: 30px;
+	padding: 0 14px;
+	white-space: nowrap;
+}
+
+.compare-btn-primary {
+	background: var(--link-color);
+	border-color: var(--link-color);
+	color: #fff;
+	font-weight: bold;
+}
+
+.compare-btn-primary:hover {
+	background: var(--link-hover-color);
+	border-color: var(--link-hover-color);
+	color: #fff;
+}
+
+/* 追加済み動画 */
+#compare-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+	gap: 16px;
+}
+
+.compare-slot {
+	background: var(--background-color);
+	border: 1px solid var(--border-color);
+	border-radius: 8px;
+	overflow: hidden;
+}
+
+.compare-slot-player {
+	width: 100%;
+	aspect-ratio: 16 / 9;
+	background: #000;
+	display: block;
+}
+
+.compare-slot-player iframe {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+.compare-slot-bar {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 10px;
+	border-top: 1px solid var(--border-color);
+	font-size: 13px;
+	color: var(--text-color);
+}
+
+.compare-slot-index {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 20px;
+	height: 20px;
+	flex: none;
+	border-radius: 50%;
+	background: var(--link-color);
+	color: #fff;
+	font-size: 11px;
+	font-weight: bold;
+}
+
+.compare-slot-offset {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	white-space: nowrap;
+	opacity: 0.85;
+}
+
+.compare-slot-offset input {
+	width: 64px;
+	height: 26px;
+	padding: 0 6px;
+	text-align: right;
+}
+
+.compare-slot-bar button {
+	height: 26px;
+	font-size: 12px;
+}
+
+.compare-slot-here {
+	padding: 0 8px;
+}
+
+.compare-slot-remove {
+	width: 26px;
+	padding: 0;
+	margin-left: auto;
+	flex: none;
 	background: transparent;
-	border: none;
-	border-bottom: 2px solid transparent;
-	border-radius: 0;
+	border: 1px solid var(--border-color);
+	color: var(--text-color);
+	opacity: 0.7;
+	font-size: 15px;
+	line-height: 1;
+}
+
+.compare-slot-remove:hover {
+	background: #cc0000;
+	border-color: #cc0000;
+	color: #fff;
+	opacity: 1;
+}
+
+.compare-empty {
+	padding: 40px 16px;
+	border: 1px dashed var(--border-color);
+	border-radius: 8px;
+	text-align: center;
 	color: var(--text-color);
 	opacity: 0.6;
-	font-size: 14px;
+	font-size: 13px;
 }
 
-.compare-tab:hover {
-	background: transparent;
-	border: none;
-	border-bottom: 2px solid var(--button-hover-border-color);
-	opacity: 0.9;
-}
-
-.compare-tab.active {
-	opacity: 1;
-	font-weight: bold;
-	border-bottom: 2px solid var(--link-color);
-}
-
-.compare-tab-panel {
-	margin-bottom: 20px;
-}
-
-/* URLで追加 */
-.compare-add-form {
+/* お気に入りの選択 (モーダル) */
+.compare-modal {
+	position: fixed;
+	inset: 0;
+	z-index: 60;
 	display: flex;
-	gap: 8px;
+	align-items: center;
+	justify-content: center;
+	padding: 16px;
 }
 
-.compare-add-form input[type='text'] {
-	flex: 1;
-	height: 34px;
-	padding: 0 10px;
-	font-size: 14px;
+.compare-modal-backdrop {
+	position: absolute;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.6);
 }
 
-.compare-add-form button {
-	height: 36px;
-	padding: 0 18px;
+.compare-modal-body {
+	position: relative;
+	width: 100%;
+	max-width: 900px;
+	max-height: 80vh;
+	overflow-y: auto;
+	padding: 14px 16px 16px;
+	background: var(--background-color);
+	border: 1px solid var(--border-color);
+	border-radius: 10px;
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
 }
 
-/* お気に入りから追加 */
+.compare-modal-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 12px;
+	padding-bottom: 10px;
+	border-bottom: 1px solid var(--border-color);
+	color: var(--text-color);
+	font-size: 15px;
+}
+
+.compare-modal-close {
+	width: 28px;
+	height: 28px;
+	padding: 0;
+	font-size: 18px;
+	line-height: 1;
+}
+
 .compare-favorites-grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+	grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
 	gap: 12px;
 }
 
@@ -639,16 +798,15 @@ div#menu_sp a {
 	display: flex;
 	flex-direction: column;
 	align-items: stretch;
-	gap: 0;
 	height: auto;
 	padding: 0;
 	background: var(--background-color);
 	border: 1px solid var(--border-color);
-	border-radius: 6px;
+	border-radius: 8px;
 	overflow: hidden;
 	cursor: pointer;
 	text-align: left;
-	transition: border-color 0.2s ease, transform 0.2s ease;
+	transition: border-color 0.15s ease, transform 0.15s ease;
 }
 
 .compare-favorite-item:hover {
@@ -665,73 +823,26 @@ div#menu_sp a {
 }
 
 .compare-favorite-title {
-	font-size: 12px;
+	padding: 8px 10px;
 	color: var(--text-color);
+	font-size: 12px;
+	line-height: 1.4;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-	padding: 8px 10px;
 }
 
-/* 追加済み動画の操作ボタン */
-.compare-controls {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 8px;
-	margin: 4px 0 20px 0;
-	padding-top: 14px;
-	border-top: 1px solid var(--border-color);
-}
+@media screen and (max-width: 600px) {
+	.compare-toolbar {
+		align-items: stretch;
+	}
 
-.compare-controls button {
-	padding: 0 16px;
-}
+	.compare-add,
+	.compare-playback {
+		flex-wrap: wrap;
+	}
 
-/* 追加済み動画のグリッド */
-#compare-grid {
-	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-	gap: 18px;
-}
-
-.compare-slot {
-	background: var(--background-color);
-	border: 1px solid var(--border-color);
-	border-radius: 6px;
-	overflow: hidden;
-}
-
-.compare-slot-player {
-	width: 100%;
-	aspect-ratio: 16 / 9;
-	background: #000;
-}
-
-.compare-slot-meta {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 8px;
-	padding: 8px 10px;
-	font-size: 13px;
-	color: var(--text-color);
-}
-
-.compare-slot-meta label {
-	display: flex;
-	align-items: center;
-	gap: 6px;
-	white-space: nowrap;
-}
-
-.compare-slot-start {
-	width: 70px;
-	height: 26px;
-	padding: 0 6px;
-}
-
-.compare-remove {
-	height: 26px;
-	padding: 0 10px;
-	font-size: 12px;
+	#compare-grid {
+		grid-template-columns: 1fr;
+	}
 }
