@@ -556,97 +556,112 @@ div#menu_sp a {
 /* 動画比較 (page/compare.php) */
 #compare-page {
 	max-width: 1200px;
-	margin: 0 auto;
+	margin: 40px auto 0;
 	padding: 10px;
+}
+
+#compare-page h2 {
+	color: var(--text-color);
+	font-size: 22px;
+	margin: 0 0 6px 0;
 }
 
 .compare-help {
 	color: var(--text-color);
-	font-size: 14px;
-	margin-bottom: 12px;
+	opacity: 0.75;
+	font-size: 13px;
+	margin: 0 0 16px 0;
 }
 
-.compare-add-form,
-.compare-controls {
+/* タブ */
+.compare-source-tabs {
 	display: flex;
-	flex-wrap: wrap;
+	gap: 4px;
+	margin-bottom: 14px;
+	border-bottom: 1px solid var(--border-color);
+}
+
+.compare-tab {
+	height: auto;
+	padding: 8px 16px;
+	background: transparent;
+	border: none;
+	border-bottom: 2px solid transparent;
+	border-radius: 0;
+	color: var(--text-color);
+	opacity: 0.6;
+	font-size: 14px;
+}
+
+.compare-tab:hover {
+	background: transparent;
+	border: none;
+	border-bottom: 2px solid var(--button-hover-border-color);
+	opacity: 0.9;
+}
+
+.compare-tab.active {
+	opacity: 1;
+	font-weight: bold;
+	border-bottom: 2px solid var(--link-color);
+}
+
+.compare-tab-panel {
+	margin-bottom: 20px;
+}
+
+/* URLで追加 */
+.compare-add-form {
+	display: flex;
 	gap: 8px;
-	margin-bottom: 12px;
 }
 
 .compare-add-form input[type='text'] {
 	flex: 1;
-	min-width: 200px;
+	height: 34px;
+	padding: 0 10px;
+	font-size: 14px;
 }
 
-.compare-add-form input[type='number'] {
-	width: 110px;
+.compare-add-form button {
+	height: 36px;
+	padding: 0 18px;
 }
 
-#compare-grid {
-	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-	gap: 16px;
-}
-
-.compare-slot {
-	border: 1px solid var(--border-color);
-	border-radius: 4px;
-	overflow: hidden;
-}
-
-.compare-slot-player {
-	width: 100%;
-	aspect-ratio: 16 / 9;
-}
-
-.compare-slot-meta {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	padding: 6px 10px;
-	font-size: 13px;
-	color: var(--text-color);
-}
-
-.compare-remove {
-	padding: 2px 8px;
-}
-
-.compare-source-tabs {
-	display: flex;
-	gap: 8px;
-	margin-bottom: 12px;
-}
-
-.compare-tab.active {
-	background-color: var(--button-active-background-color);
-	border-color: var(--button-active-border-color);
-}
-
+/* お気に入りから追加 */
 .compare-favorites-grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-	gap: 10px;
-	margin-bottom: 12px;
+	grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+	gap: 12px;
 }
 
 .compare-favorite-item {
 	display: flex;
 	flex-direction: column;
 	align-items: stretch;
-	gap: 6px;
-	padding: 8px;
-	background: var(--input-background-color);
+	gap: 0;
+	height: auto;
+	padding: 0;
+	background: var(--background-color);
 	border: 1px solid var(--border-color);
-	border-radius: 4px;
+	border-radius: 6px;
+	overflow: hidden;
+	cursor: pointer;
+	text-align: left;
+	transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.compare-favorite-item:hover {
+	background: var(--background-color);
+	border-color: var(--link-color);
+	transform: translateY(-2px);
 }
 
 .compare-favorite-item img {
 	width: 100%;
 	aspect-ratio: 16 / 9;
 	object-fit: cover;
-	border-radius: 2px;
+	display: block;
 }
 
 .compare-favorite-title {
@@ -655,14 +670,68 @@ div#menu_sp a {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+	padding: 8px 10px;
 }
 
-.compare-favorite-actions {
+/* 追加済み動画の操作ボタン */
+.compare-controls {
 	display: flex;
-	gap: 6px;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin: 4px 0 20px 0;
+	padding-top: 14px;
+	border-top: 1px solid var(--border-color);
 }
 
-.compare-favorite-actions input[type='number'] {
-	flex: 1;
-	min-width: 0;
+.compare-controls button {
+	padding: 0 16px;
+}
+
+/* 追加済み動画のグリッド */
+#compare-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+	gap: 18px;
+}
+
+.compare-slot {
+	background: var(--background-color);
+	border: 1px solid var(--border-color);
+	border-radius: 6px;
+	overflow: hidden;
+}
+
+.compare-slot-player {
+	width: 100%;
+	aspect-ratio: 16 / 9;
+	background: #000;
+}
+
+.compare-slot-meta {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	padding: 8px 10px;
+	font-size: 13px;
+	color: var(--text-color);
+}
+
+.compare-slot-meta label {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	white-space: nowrap;
+}
+
+.compare-slot-start {
+	width: 70px;
+	height: 26px;
+	padding: 0 6px;
+}
+
+.compare-remove {
+	height: 26px;
+	padding: 0 10px;
+	font-size: 12px;
 }

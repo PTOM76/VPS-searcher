@@ -90,8 +90,9 @@ if (Auth::isLoggedIn()) {
         // お気に入りのボタンは videoId を直接渡してくる。URL欄からの追加は引数無しで呼ばれる
         function add(favoriteVideoId) {
             var videoId = favoriteVideoId;
+            var fromFavorites = videoId !== undefined;
 
-            if (videoId === undefined) {
+            if (!fromFavorites) {
                 var urlInput = document.getElementById('compare-url');
                 videoId = extractVideoId(urlInput.value);
                 if (videoId === null) {
@@ -108,7 +109,7 @@ if (Auth::isLoggedIn()) {
             slot.innerHTML =
                 '<div class="compare-slot-player" id="' + slotId + '"></div>' +
                 '<div class="compare-slot-meta">' +
-                '<label>開始秒数 <input type="number" class="compare-slot-start" min="0" value="0"></label>' +
+                '<label>開始秒数 <input type="number" class="compare-slot-start" min="0" step="0.1" value="0"></label>' +
                 '<button type="button" class="compare-remove">削除</button>' +
                 '</div>';
             document.getElementById('compare-grid').appendChild(slot);
@@ -120,10 +121,13 @@ if (Auth::isLoggedIn()) {
                 remove(slotId);
             });
             slot.querySelector('.compare-slot-start').addEventListener('input', function (event) {
-                entry.startSeconds = Math.max(0, parseInt(event.target.value, 10) || 0);
+                entry.startSeconds = Math.max(0, parseFloat(event.target.value) || 0);
             });
 
             if (apiReady) createPlayer(entry);
+
+            // お気に入りから追加したら、一覧が居座らないようURLタブへ戻す
+            if (fromFavorites) switchTab('url');
         }
 
         function createPlayer(entry) {
