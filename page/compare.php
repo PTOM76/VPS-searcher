@@ -72,7 +72,7 @@ if (Auth::isLoggedIn()) {
                         : 'https://i.ytimg.com/vi/' . $favorite['video_id'] . '/mqdefault.jpg';
                     ?>
                     <button type="button" class="compare-picker-item" onclick="CompareVideos.add('<?php echo htmlspecialchars($favorite['video_id'], ENT_QUOTES); ?>')">
-                        <img src="<?php echo htmlspecialchars($thumbnail); ?>" alt="" loading="lazy">
+                        <img src="<?php echo htmlspecialchars($thumbnail); ?>" alt=""  width="320px" height="180px" style="width:320px;height:180px;object-fit:cover;" loading="lazy">
                         <span class="compare-picker-title"><?php echo htmlspecialchars($favorite['title']); ?></span>
                     </button>
                 <?php endforeach; ?>
