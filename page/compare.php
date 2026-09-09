@@ -73,6 +73,7 @@ if (Auth::isLoggedIn()) {
                     ?>
                     <a class="compare-picker-item" onclick="CompareVideos.add('<?php echo htmlspecialchars($favorite['video_id'], ENT_QUOTES); ?>')">
                         <img src="<?php echo htmlspecialchars($thumbnail); ?>" alt=""  width="320px" height="180px" style="width:320px;height:180px;object-fit:cover;" loading="lazy">
+                        <br />
                         <span class="compare-picker-title"><?php echo htmlspecialchars($favorite['title']); ?></span>
                     </a>
                 <?php endforeach; ?>
