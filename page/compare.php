@@ -162,13 +162,20 @@ if (Auth::isLoggedIn()) {
             // 頭出しを秒数で打つのは手間なので、再生位置をそのまま開始位置に写せるようにする
             slot.querySelector('.compare-card-here').addEventListener('click', function () {
                 if (!entry.player || typeof entry.player.getCurrentTime !== 'function') return;
-                entry.startSeconds = Math.max(0, Math.round(entry.player.getCurrentTime() * 10) / 10);
+
+                // 再生前のプレイヤーは値を返さないことがある。NaN を入れてしまわないよう確かめる
+                var current = entry.player.getCurrentTime();
+                if (typeof current !== 'number' || !isFinite(current)) return;
+
+                entry.startSeconds = Math.max(0, Math.round(current * 10) / 10);
                 offsetInput.value = entry.startSeconds;
             });
 
             slot.querySelector('.compare-card-remove').addEventListener('click', function () {
                 remove(slotId);
             });
+
+            loadTitle(videoId, slot.querySelector('.compare-card-title'));
 
             if (apiReady) createPlayer(entry);
 
@@ -177,23 +184,33 @@ if (Auth::isLoggedIn()) {
             refreshEmptyState();
         }
 
+        /**
+         * 題名を出す。プレイヤーの getVideoData() は onReady が来ないと使えず、
+         * その onReady が発火しない環境があるので、oEmbed から直接取る
+         * (APIキー不要)。取れなかったときは動画IDで代える。
+         */
+        function loadTitle(videoId, titleEl) {
+            var url = 'https://www.youtube.com/oembed?url='
+                + encodeURIComponent('https://www.youtube.com/watch?v=' + videoId) + '&format=json';
+
+            fetch(url)
+                .then(function (res) { return res.ok ? res.json() : Promise.reject(res.status); })
+                .then(function (data) { return data && data.title ? data.title : videoId; })
+                .catch(function () { return videoId; })
+                .then(function (title) {
+                    titleEl.textContent = title;
+                    titleEl.title = title;
+                });
+        }
+
         function createPlayer(entry) {
             // start は整数秒までしか受け付けないため、小数の頭出しは playAll() の seekTo で行う
             entry.player = new YT.Player(entry.slotId, {
                 videoId: entry.videoId,
-                playerVars: { start: Math.floor(entry.startSeconds) },
-                events: {
-                    // どれがどの動画か分からないと比較にならないので、題名が取れたら出す
-                    onReady: function (event) {
-                        var data = typeof event.target.getVideoData === 'function' ? event.target.getVideoData() : null;
-                        var title = data && data.title ? data.title : entry.videoId;
-                        var el = document.getElementById(entry.slotId);
-                        if (el === null) return;
-
-                        var titleEl = el.closest('.compare-card').querySelector('.compare-card-title');
-                        titleEl.textContent = title;
-                        titleEl.title = title;
-                    },
+                playerVars: {
+                    start: Math.floor(entry.startSeconds),
+                    // enablejsapi の postMessage は origin が合っていないと通らないことがある
+                    origin: window.location.origin,
                 },
             });
         }
