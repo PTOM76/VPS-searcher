@@ -28,9 +28,9 @@ if (Auth::isLoggedIn()) {
 
         <div class="compare-bar-right">
             <div class="compare-seg" role="group" aria-label="表示サイズ">
-                <button type="button" class="compare-seg-btn is-active" data-size="syo" onclick="CompareVideos.setSize(this)">小</button>
-                <button type="button" class="compare-seg-btn" data-size="480" onclick="CompareVideos.setSize(this)">中</button>
-                <button type="button" class="compare-seg-btn" data-size="640" onclick="CompareVideos.setSize(this)">大</button>
+                <button type="button" class="compare-seg-btn is-active" data-width="320" onclick="CompareVideos.setSize(320, 180)">小</button>
+                <button type="button" class="compare-seg-btn" data-width="480" onclick="CompareVideos.setSize(480, 270)">中</button>
+                <button type="button" class="compare-seg-btn" data-width="640" onclick="CompareVideos.setSize(640, 360)">大</button>
             </div>
 
             <div class="compare-bar-play">
@@ -113,18 +113,19 @@ if (Auth::isLoggedIn()) {
         }
 
         // 何本並ぶかは画面幅と1枚の大きさで決まる。比較したい本数に合わせて選べるようにする
-        function setSize(button) {
-            console.log(button);
-
-            if (button.dataset.size === 'syo') {
-                            document.getElementById('compare-grid').style.setProperty('width',  '320px');
-                            document.getElementById('compare-grid').style.setProperty('height',  '180px');
-            }
-
+        function setSize(width, height) {
+            // ボタンのアクティブ表示切替 (data-width 属性と判定)
             document.querySelectorAll('.compare-seg-btn').forEach(function (el) {
-                el.classList.toggle('is-active', el === button);
+                el.classList.toggle('is-active', parseInt(el.dataset.width, 10) === width);
             });
-            document.getElementById('compare-grid').style.setProperty('--compare-min', button.dataset.size + 'px');
+
+            // CSS変数を更新 (幅と高さを直接セット)
+            var grid = document.getElementById('compare-grid');
+            grid.style.setProperty('--compare-width', width + 'px');
+            grid.style.setProperty('--compare-height', height + 'px');
+
+            // グリッドの列幅を直接上書き
+            grid.style.gridTemplateColumns = 'repeat(auto-fill, min(' + width + 'px, 100%))';
         }
 
         // お気に入りのボタンは videoId を直接渡してくる。URL欄からの追加は引数無しで呼ばれる
