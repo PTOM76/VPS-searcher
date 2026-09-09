@@ -37,13 +37,17 @@ if (Auth::isLoggedIn()) {
             <p class="compare-help">比較できるお気に入り(YouTube動画)がありません。</p>
         <?php else: ?>
             <div class="compare-favorites-grid">
-                <?php foreach ($compareFavorites as $favorite): ?>
-                    <button type="button" class="compare-favorite-item" onclick="CompareVideos.pickFavorite('<?php echo htmlspecialchars($favorite['video_id'], ENT_QUOTES); ?>')">
+                <?php foreach ($compareFavorites as $index => $favorite): ?>
+                    <div class="compare-favorite-item">
                         <?php if (!empty($favorite['thumbnail'])): ?>
                             <img src="<?php echo htmlspecialchars($favorite['thumbnail']); ?>" alt="" loading="lazy">
                         <?php endif; ?>
-                        <span><?php echo htmlspecialchars($favorite['title']); ?></span>
-                    </button>
+                        <span class="compare-favorite-title"><?php echo htmlspecialchars($favorite['title']); ?></span>
+                        <div class="compare-favorite-actions">
+                            <input type="number" id="compare-fav-start-<?php echo $index; ?>" placeholder="開始秒数" value="0" min="0">
+                            <button type="button" onclick="CompareVideos.addFromFavorite('<?php echo htmlspecialchars($favorite['video_id'], ENT_QUOTES); ?>', 'compare-fav-start-<?php echo $index; ?>')">追加</button>
+                        </div>
+                    </div>
                 <?php endforeach; ?>
             </div>
         <?php endif; ?>
@@ -88,24 +92,7 @@ if (Auth::isLoggedIn()) {
             document.getElementById('compare-tab-favorites').hidden = tab !== 'favorites';
         }
 
-        function pickFavorite(videoId) {
-            // URLタブの入力欄に反映し、開始秒数を決めてから「追加」してもらう
-            switchTab('url');
-            document.getElementById('compare-url').value = videoId;
-            document.getElementById('compare-start').focus();
-        }
-
-        function add() {
-            var urlInput = document.getElementById('compare-url');
-            var startInput = document.getElementById('compare-start');
-
-            var videoId = extractVideoId(urlInput.value);
-            if (videoId === null) {
-                alert('YouTubeのURLまたは動画IDを入力してください');
-                return;
-            }
-
-            var startSeconds = Math.max(0, parseInt(startInput.value, 10) || 0);
+        function addEntry(videoId, startSeconds) {
             var slotId = 'compare-slot-' + (nextSlotId++);
 
             var slot = document.createElement('div');
@@ -122,9 +109,29 @@ if (Auth::isLoggedIn()) {
             entries.push(entry);
 
             if (apiReady) createPlayer(entry);
+        }
+
+        function add() {
+            var urlInput = document.getElementById('compare-url');
+            var startInput = document.getElementById('compare-start');
+
+            var videoId = extractVideoId(urlInput.value);
+            if (videoId === null) {
+                alert('YouTubeのURLまたは動画IDを入力してください');
+                return;
+            }
+
+            addEntry(videoId, Math.max(0, parseInt(startInput.value, 10) || 0));
 
             urlInput.value = '';
             startInput.value = '0';
+        }
+
+        function addFromFavorite(videoId, startInputId) {
+            var startInput = document.getElementById(startInputId);
+            var startSeconds = Math.max(0, parseInt(startInput.value, 10) || 0);
+
+            addEntry(videoId, startSeconds);
         }
 
         function createPlayer(entry) {
@@ -169,6 +176,6 @@ if (Auth::isLoggedIn()) {
             });
         };
 
-        return { add: add, playAll: playAll, pauseAll: pauseAll, clearAll: clearAll, switchTab: switchTab, pickFavorite: pickFavorite };
+        return { add: add, addFromFavorite: addFromFavorite, playAll: playAll, pauseAll: pauseAll, clearAll: clearAll, switchTab: switchTab };
     })();
 </script>

@@ -198,7 +198,8 @@ input[type='submit']:hover, button:hover {
 
 input[type='text'],
 input[type='password'],
-input[type='email'] {
+input[type='email'],
+input[type='number'] {
 	height: 20px;
 	background-color: var(--input-background-color);
 	border: 1px solid var(--input-border-color);
@@ -625,7 +626,7 @@ div#menu_sp a {
 
 .compare-favorites-grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+	grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
 	gap: 10px;
 	margin-bottom: 12px;
 }
@@ -634,13 +635,11 @@ div#menu_sp a {
 	display: flex;
 	flex-direction: column;
 	align-items: stretch;
-	gap: 4px;
-	padding: 6px;
+	gap: 6px;
+	padding: 8px;
 	background: var(--input-background-color);
 	border: 1px solid var(--border-color);
 	border-radius: 4px;
-	cursor: pointer;
-	text-align: left;
 }
 
 .compare-favorite-item img {
@@ -650,10 +649,20 @@ div#menu_sp a {
 	border-radius: 2px;
 }
 
-.compare-favorite-item span {
+.compare-favorite-title {
 	font-size: 12px;
 	color: var(--text-color);
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+}
+
+.compare-favorite-actions {
+	display: flex;
+	gap: 6px;
+}
+
+.compare-favorite-actions input[type='number'] {
+	flex: 1;
+	min-width: 0;
 }
