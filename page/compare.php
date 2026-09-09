@@ -131,9 +131,10 @@ if (Auth::isLoggedIn()) {
         }
 
         function createPlayer(entry) {
+            // start は整数秒までしか受け付けないため、小数の頭出しは playAll() の seekTo で行う
             entry.player = new YT.Player(entry.slotId, {
                 videoId: entry.videoId,
-                playerVars: { start: entry.startSeconds },
+                playerVars: { start: Math.floor(entry.startSeconds) },
             });
         }
 
