@@ -64,10 +64,14 @@ if (Auth::isLoggedIn()) {
         <?php else: ?>
             <div class="compare-favorites-grid">
                 <?php foreach ($compareFavorites as $favorite): ?>
+                    <?php
+                    // サムネイル未保存のお気に入りもあるが、ここはYouTubeに絞ってあるのでIDから導ける
+                    $thumbnail = !empty($favorite['thumbnail'])
+                        ? $favorite['thumbnail']
+                        : 'https://i.ytimg.com/vi/' . $favorite['video_id'] . '/mqdefault.jpg';
+                    ?>
                     <button type="button" class="compare-favorite-item" onclick="CompareVideos.add('<?php echo htmlspecialchars($favorite['video_id'], ENT_QUOTES); ?>')">
-                        <?php if (!empty($favorite['thumbnail'])): ?>
-                            <img src="<?php echo htmlspecialchars($favorite['thumbnail']); ?>" alt="" loading="lazy">
-                        <?php endif; ?>
+                        <img src="<?php echo htmlspecialchars($thumbnail); ?>" alt="" loading="lazy">
                         <span class="compare-favorite-title"><?php echo htmlspecialchars($favorite['title']); ?></span>
                     </button>
                 <?php endforeach; ?>
@@ -134,7 +138,7 @@ if (Auth::isLoggedIn()) {
                 '<div class="compare-slot-bar">' +
                 '<span class="compare-slot-index">' + (entries.length + 1) + '</span>' +
                 '<label class="compare-slot-offset">開始<input type="number" min="0" step="0.1" value="0">秒</label>' +
-                '<button type="button" class="compare-slot-here" title="いま表示している位置を開始位置にする">現在位置</button>' +
+                '<button type="button" class="compare-slot-here" title="いま表示している位置を開始位置にする">現在</button>' +
                 '<button type="button" class="compare-slot-remove" aria-label="削除">×</button>' +
                 '</div>';
 

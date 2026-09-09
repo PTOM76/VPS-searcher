@@ -634,11 +634,24 @@ div#menu_sp a {
 	color: #fff;
 }
 
+.compare-size {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	white-space: nowrap;
+	font-size: 12px;
+	opacity: 0.85;
+}
+
+.compare-size select {
+	height: 30px;
+}
+
 /* 追加済み動画 */
 #compare-grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-	gap: 16px;
+	grid-template-columns: repeat(auto-fill, minmax(var(--compare-min, 260px), 1fr));
+	gap: 14px;
 }
 
 .compare-slot {
@@ -665,6 +678,7 @@ div#menu_sp a {
 	display: flex;
 	align-items: center;
 	gap: 8px;
+	flex-wrap: wrap;
 	padding: 8px 10px;
 	border-top: 1px solid var(--border-color);
 	font-size: 13px;
@@ -694,7 +708,8 @@ div#menu_sp a {
 }
 
 .compare-slot-offset input {
-	width: 64px;
+	width: 60px;
+	min-width: 0;
 	height: 26px;
 	padding: 0 6px;
 	text-align: right;
@@ -707,6 +722,7 @@ div#menu_sp a {
 
 .compare-slot-here {
 	padding: 0 8px;
+	white-space: nowrap;
 }
 
 .compare-slot-remove {
@@ -740,6 +756,11 @@ div#menu_sp a {
 }
 
 /* お気に入りの選択 (モーダル) */
+/* display:flex は UA の [hidden]{display:none} に勝つので、明示的に消す */
+.compare-modal[hidden] {
+	display: none;
+}
+
 .compare-modal {
 	position: fixed;
 	inset: 0;
@@ -760,6 +781,7 @@ div#menu_sp a {
 	position: relative;
 	width: 100%;
 	max-width: 900px;
+	box-sizing: border-box;
 	max-height: 80vh;
 	overflow-y: auto;
 	padding: 14px 16px 16px;
@@ -832,17 +854,28 @@ div#menu_sp a {
 	white-space: nowrap;
 }
 
-@media screen and (max-width: 600px) {
+@media screen and (max-width: 700px) {
 	.compare-toolbar {
 		align-items: stretch;
 	}
 
-	.compare-add,
+	.compare-add {
+		max-width: none;
+		min-width: 0;
+	}
+
 	.compare-playback {
+		margin-left: 0;
+		padding-left: 0;
+		padding-top: 10px;
+		border-left: none;
+		border-top: 1px solid var(--border-color);
+		width: 100%;
 		flex-wrap: wrap;
 	}
 
+	/* 狭い画面で1枚が画面幅まで伸びると比較にならないので、2枚は並ぶようにする */
 	#compare-grid {
-		grid-template-columns: 1fr;
+		grid-template-columns: repeat(auto-fill, minmax(min(var(--compare-min, 260px), 48%), 1fr));
 	}
 }
