@@ -20,6 +20,9 @@
 ### AI
 - Claude Sonnet 3.5 - リファクタリングに使ってるAIエージェント、メンテナンスしやすくなった
 
+## aa
+YouTube動画ダウンロード機能もほしいかもなあ
+
 ### アクセス方法
 ```
 https://example.com/sitemap.xml
