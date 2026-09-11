@@ -14,6 +14,9 @@ require_once __DIR__ . '/../lib/ChreeIdAuth.php';
  * @return void
  */
 function chreeid_fail($reason) {
+    // logs/ は相対パスで作られないことがあるので、確実に残る側にも出す。
+    // この repo の ChreeIdProvisioner も error_log() を使っている
+    error_log('chreeid.login_failed: ' . $reason);
     ErrorHandler::log('chreeid.login_failed: ' . $reason, 'WARNING');
 
     header('Location: ./?do=login&chreeid_error=1');
