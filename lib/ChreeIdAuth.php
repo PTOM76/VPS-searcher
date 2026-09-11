@@ -23,6 +23,18 @@ class ChreeIdAuth {
     /**
      * ChreeID ログインが使える設定になっているか
      */
+    /** 直近の失敗理由。呼び出し側がログに残すために持つ */
+    public $lastError = null;
+
+    /**
+     * ID Token を受け付けなかった理由を控えて null を返す
+     */
+    private function tokenRejected($reason) {
+        $this->lastError = 'id_token_' . $reason;
+
+        return null;
+    }
+
     public static function isConfigured() {
         return defined('CHREEID_CLIENT_ID') && CHREEID_CLIENT_ID !== ''
             && defined('CHREEID_ISSUER') && CHREEID_ISSUER !== '';
@@ -76,6 +88,8 @@ class ChreeIdAuth {
      * @return array|null 失敗したら null
      */
     public function exchange($code, $codeVerifier, $nonce) {
+        $this->lastError = null;
+
         $response = $this->post($this->issuer . '/oauth/token', [
             'grant_type' => 'authorization_code',
             'code' => $code,
@@ -85,7 +99,16 @@ class ChreeIdAuth {
             'code_verifier' => $codeVerifier,
         ]);
 
-        if ($response === null || !isset($response['id_token']) || !is_string($response['id_token'])) {
+        // post() が理由を控えているので上書きしない
+        if ($response === null) {
+            $this->lastError = $this->lastError ?: 'token_endpoint_failed';
+            return null;
+        }
+
+        if (!isset($response['id_token']) || !is_string($response['id_token'])) {
+            // ChreeID は OAuth の形でエラーを返す
+            $this->lastError = 'token_endpoint_error: ' . ($response['error'] ?? 'no_id_token')
+                . ' / ' . ($response['error_description'] ?? '');
             return null;
         }
 
@@ -103,22 +126,22 @@ class ChreeIdAuth {
      */
     private function readIdToken($idToken, $nonce) {
         $parts = explode('.', $idToken);
-        if (count($parts) !== 3) return null;
+        if (count($parts) !== 3) return $this->tokenRejected('malformed');
 
         $payload = base64_decode(strtr($parts[1], '-_', '+/'), true);
-        if ($payload === false) return null;
+        if ($payload === false) return $this->tokenRejected('undecodable');
 
         $claims = json_decode($payload, true);
-        if (!is_array($claims)) return null;
+        if (!is_array($claims)) return $this->tokenRejected('not_json');
 
-        if (($claims['iss'] ?? null) !== $this->issuer) return null;
-        if (($claims['aud'] ?? null) !== $this->clientId) return null;
-        if (($claims['nonce'] ?? null) !== $nonce) return null;
+        if (($claims['iss'] ?? null) !== $this->issuer) return $this->tokenRejected('iss_mismatch');
+        if (($claims['aud'] ?? null) !== $this->clientId) return $this->tokenRejected('aud_mismatch');
+        if (($claims['nonce'] ?? null) !== $nonce) return $this->tokenRejected('nonce_mismatch');
 
         $exp = $claims['exp'] ?? null;
-        if (!is_int($exp) || $exp < time()) return null;
+        if (!is_int($exp) || $exp < time()) return $this->tokenRejected('expired');
 
-        if (!isset($claims['sub']) || !is_string($claims['sub']) || $claims['sub'] === '') return null;
+        if (!isset($claims['sub']) || !is_string($claims['sub']) || $claims['sub'] === '') return $this->tokenRejected('no_sub');
 
         return $claims;
     }
@@ -176,9 +199,19 @@ class ChreeIdAuth {
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
 
-        if ($response === false || $httpCode !== 200) return null;
+        if ($response === false) {
+            $this->lastError = 'unreachable';
+            return null;
+        }
 
         $data = json_decode((string)$response, true);
+
+        // 非200でも本文は捨てない。ChreeID は OAuth の形で理由を返す
+        if ($httpCode !== 200) {
+            $this->lastError = 'http_' . $httpCode . ': '
+                . (is_array($data) ? (($data['error'] ?? '') . ' / ' . ($data['error_description'] ?? '')) : '');
+            return null;
+        }
 
         return is_array($data) ? $data : null;
     }
