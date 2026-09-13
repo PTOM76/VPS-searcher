@@ -63,14 +63,10 @@ class ChreeIdProvisioner {
             throw new \RuntimeException('ChreeID のアカウントを用意できませんでした');
         }
 
-        [$status, $data] = $this->post('/api/v1/service-accounts/claim-tickets', [
-            'client_id' => CHREEID_CLIENT_ID,
-            'client_secret' => CHREEID_CLIENT_SECRET,
-            'service_user_id' => (string)$user['id'],
-        ]);
+        [$status, $data] = $this->send('POST', $this->accountPath($user['id']) . '/claim-tickets');
 
         if ($status === 409) return null;
-        if ($status !== 200 || !is_string($data['claim_url'] ?? null)) {
+        if ($status !== 201 ||!is_string($data['claim_url'] ?? null)) {
             throw new \RuntimeException("ChreeID が {$status} を返しました");
         }
 
@@ -88,11 +84,7 @@ class ChreeIdProvisioner {
         if (!self::isEnabled()) return;
 
         try {
-            $this->post('/api/v1/service-accounts/deactivate', [
-                'client_id' => CHREEID_CLIENT_ID,
-                'client_secret' => CHREEID_CLIENT_SECRET,
-                'service_user_id' => (string)$user['id'],
-            ]);
+            $this->send('DELETE', $this->accountPath($user['id']));
         } catch (\Throwable $e) {
             error_log('chreeid.deactivate_failed: ' . $e->getMessage());
         }
@@ -106,9 +98,6 @@ class ChreeIdProvisioner {
      */
     private function request(array $user) {
         $payload = [
-            'client_id' => CHREEID_CLIENT_ID,
-            'client_secret' => CHREEID_CLIENT_SECRET,
-            'service_user_id' => (string)$user['id'],
             'display_name' => (string)($user['username'] ?? ''),
         ];
 
@@ -122,7 +111,7 @@ class ChreeIdProvisioner {
             $payload['password_hash'] = $user['password'];
         }
 
-        [$status, $data] = $this->post('/api/v1/service-accounts', $payload);
+        [$status, $data] = $this->send('PUT', $this->accountPath($user['id']), $payload);
         if ($status !== 200) {
             throw new \RuntimeException("ChreeID が {$status} を返しました");
         }
@@ -131,25 +120,48 @@ class ChreeIdProvisioner {
     }
 
     /**
-     * フォーム形式で POST して JSON を受け取る
+     * ChreeID 上の、この利用者のサービスアカウントのパス
      *
+     * @param int|string $userId users.json の id
+     * @return string
+     */
+    private function accountPath($userId) {
+        return '/api/v1/service-accounts/' . rawurlencode((string)$userId);
+    }
+
+    /**
+     * ChreeID のサーバ間 API を呼んで JSON を受け取る
+     *
+     * クライアント認証は Basic で送る。本文を持てるメソッドでは、Authorization ヘッダーを
+     * 落とすサーバに備えてフォーム値でも送る (ChreeID はどちらでも受け付ける)。
+     *
+     * @param string $method HTTP メソッド
      * @param string $path ChreeID 上のパス
-     * @param array $params 送る値
+     * @param array $params 送る値。GET では送らない
      * @return array [0: int ステータス, 1: array 本文]
      */
-    private function post($path, array $params) {
-        $ch = curl_init();
-        curl_setopt_array($ch, [
+    private function send($method, $path, array $params = []) {
+        $options = [
             CURLOPT_URL => rtrim(CHREEID_ISSUER, '/') . $path,
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => http_build_query($params),
+            CURLOPT_CUSTOMREQUEST => $method,
+            CURLOPT_USERPWD => CHREEID_CLIENT_ID . ':' . CHREEID_CLIENT_SECRET,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_TIMEOUT => self::TIMEOUT_SECONDS,
             CURLOPT_HTTPHEADER => [
                 'Content-Type: application/x-www-form-urlencoded',
                 'Accept: application/json',
             ],
-        ]);
+        ];
+
+        if ($method !== 'GET') {
+            $options[CURLOPT_POSTFIELDS] = http_build_query($params + [
+                'client_id' => CHREEID_CLIENT_ID,
+                'client_secret' => CHREEID_CLIENT_SECRET,
+            ]);
+        }
+
+        $ch = curl_init();
+        curl_setopt_array($ch, $options);
 
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
