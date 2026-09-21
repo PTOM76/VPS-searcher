@@ -196,6 +196,9 @@ $_lang['ja'] = [
     'compare_deleted' => '比較を削除しました',
     'compare_resume' => '再生',
     'compare_auto_sync' => 'ずれを自動で補正',
+    'compare_mode' => '合わせ方',
+    'compare_mode_base' => '基準位置で合わせる',
+    'compare_mode_start' => '開始位置で合わせる',
 ];
 
 $_lang['en'] = [
@@ -393,6 +396,9 @@ $_lang['en'] = [
     'compare_deleted' => 'Comparison deleted',
     'compare_resume' => 'Resume',
     'compare_auto_sync' => 'Auto-correct drift',
+    'compare_mode' => 'Align by',
+    'compare_mode_base' => 'Reference position',
+    'compare_mode_start' => 'Start position',
 ];
 
 $_lang['zh'] = [
@@ -590,6 +596,9 @@ $_lang['zh'] = [
     'compare_deleted' => '已删除对比',
     'compare_resume' => '继续播放',
     'compare_auto_sync' => '自动校正偏差',
+    'compare_mode' => '对齐方式',
+    'compare_mode_base' => '按基准位置对齐',
+    'compare_mode_start' => '按开始位置对齐',
 ];
 
 $_lang['ko'] = [
@@ -787,4 +796,7 @@ $_lang['ko'] = [
     'compare_deleted' => '비교를 삭제했습니다',
     'compare_resume' => '재생',
     'compare_auto_sync' => '어긋남 자동 보정',
+    'compare_mode' => '맞추는 방법',
+    'compare_mode_base' => '기준 위치로 맞추기',
+    'compare_mode_start' => '시작 위치로 맞추기',
 ];

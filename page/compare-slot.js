@@ -25,8 +25,8 @@ var CompareSlot = (function () {
             '<div class="favorite-actions">' +
             '<label><span class="compare-label-crop"></span> <select class="compare-crop"></select></label> ' +
             '<label><input type="checkbox" class="compare-mute"> <span class="compare-label-mute"></span></label><br>' +
-            '<label><span class="compare-label-start"></span> <input type="number" class="compare-offset" step="0.1" value="0" style="width:5em"></label> ' +
-            '<button type="button" class="compare-here"></button><br>' +
+            '<span class="compare-start-row"><label><span class="compare-label-start"></span> <input type="number" class="compare-offset" step="0.1" value="0" style="width:5em"></label> ' +
+            '<button type="button" class="compare-here"></button><br></span>' +
             '<button type="button" class="compare-left"></button> <button type="button" class="compare-right"></button> ' +
             '<button type="button" class="compare-remove"></button></div>';
 

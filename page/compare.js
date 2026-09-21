@@ -8,6 +8,8 @@ var CompareVideos = (function () {
     var entries = [];
     var apiReady = false;
     var nextSlotId = 0;
+    /** 開始位置の決め方。base: 基準位置 + 基準からの開始位置 / start: 動画ごとに手で決める */
+    var mode = 'base';
     var currentWidth = 320;
 
     /** @param {string} input URL または動画ID */
@@ -59,32 +61,42 @@ var CompareVideos = (function () {
         changed();
     }
 
-    /** 基準位置が決まっている動画は、開始位置を「基準位置 + 基準からの開始位置」にする */
-    function applyStart(entry) {
-        if (entry.manualStart) return;
-        var start = CompareSync.startOf(entry);
-        entry.startSeconds = start;
-        entry.offsetInput.value = start;
+    /**
+     * 実際に使う開始位置を決め直す。
+     * 基準位置モードは「基準位置 + 基準からの開始位置」、開始位置モードは動画ごとに手で決めた値
+     */
+    function refreshStart(entry) {
+        entry.startSeconds = mode === 'start' ? entry.manualSeconds : CompareSync.startOf(entry);
     }
 
     /** 基準位置を調整した時は、合っているか耳で確かめられるようにその位置へ飛ばす */
     function applyBase(entry) {
-        entry.manualStart = false;
-        applyStart(entry);
+        refreshStart(entry);
         changed();
         if (entry.player && typeof entry.player.seekTo === 'function') entry.player.seekTo(Math.max(0, entry.startSeconds), true);
     }
 
     /** @param {number} value 基準からの開始位置 (秒)。マイナスなら基準より前から */
     function setRelative(value) {
-        // 手で決めた開始位置も、全体をずらした分だけ一緒にずらす
-        var delta = value - CompareSync.getRelative();
         CompareSync.setRelative(value);
-        entries.forEach(function (e) {
-            if (!e.manualStart) return applyStart(e);
-            e.startSeconds = Math.round((e.startSeconds + delta) * 10) / 10;
-            e.offsetInput.value = e.startSeconds;
-        });
+        entries.forEach(refreshStart);
+    }
+
+    /**
+     * 開始位置を「基準位置」と「開始位置」のどちらで決めるか。使わない方の入力欄は隠す。
+     * 基準位置から切り替えた時は、その時の開始位置を引き継いで手で微調整できるようにする
+     * @param {string} value base | start
+     */
+    function setMode(value) {
+        if (value === 'start' && mode === 'base') {
+            entries.forEach(function (e) {
+                e.manualSeconds = e.startSeconds;
+                e.offsetInput.value = e.startSeconds;
+            });
+        }
+        mode = value;
+        document.querySelector('.compare-container').classList.toggle('mode-start', value === 'start');
+        entries.forEach(refreshStart);
         changed();
     }
 
@@ -92,9 +104,9 @@ var CompareVideos = (function () {
     function changed() {
         CompareUrl.write({
             videos: entries.map(function (e) {
-                return { id: e.videoId, crop: e.crop, muted: e.muted, start: e.manualStart ? e.startSeconds : null };
+                return { id: e.videoId, crop: e.crop, muted: e.muted, start: mode === 'start' ? e.manualSeconds : null };
             }),
-            rel: CompareSync.getRelative(),
+            mode: mode,
             size: currentWidth,
             join: grid().classList.contains('is-joined'),
         });
@@ -110,8 +122,8 @@ var CompareVideos = (function () {
     function bindSlot(entry, q) {
         var offset = q('.compare-offset');
         offset.addEventListener('input', function () {
-            entry.startSeconds = parseFloat(offset.value) || 0;
-            entry.manualStart = true;
+            entry.manualSeconds = parseFloat(offset.value) || 0;
+            refreshStart(entry);
             changed();
         });
 
@@ -121,9 +133,9 @@ var CompareVideos = (function () {
             // 再生前のプレイヤーは値を返さないことがある。NaN を入れてしまわないよう確かめる
             var current = entry.player.getCurrentTime();
             if (typeof current !== 'number' || !isFinite(current)) return;
-            entry.startSeconds = Math.round(current * 10) / 10;
-            entry.manualStart = true;
-            offset.value = entry.startSeconds;
+            entry.manualSeconds = Math.round(current * 10) / 10;
+            offset.value = entry.manualSeconds;
+            refreshStart(entry);
             changed();
         });
 
@@ -155,7 +167,7 @@ var CompareVideos = (function () {
         var slotId = 'compare-slot-' + (nextSlotId++);
         var built = CompareSlot.build(slotId);
         var entry = {
-            slotId: slotId, videoId: videoId, startSeconds: 0, muted: false, crop: 'full', manualStart: false, player: null,
+            slotId: slotId, videoId: videoId, startSeconds: 0, manualSeconds: 0, muted: false, crop: 'full', player: null,
             slot: built.slot, offsetInput: built.q('.compare-offset'), base: CompareSync.baseOf(videoId),
         };
 
@@ -164,7 +176,7 @@ var CompareVideos = (function () {
         bindSlot(entry, built.q);
         built.slot.appendChild(CompareSync.buildRow(entry, applyBase));
         restoreOptions(entry, built.q, options);
-        applyStart(entry);
+        refreshStart(entry);
         CompareSlot.loadTitle(videoId, built.q('.compare-title'));
         if (apiReady) createPlayer(entry);
 
@@ -181,8 +193,7 @@ var CompareVideos = (function () {
         entry.muted = options.muted;
         q('.compare-mute').checked = options.muted;
         if (options.start === null) return;
-        entry.manualStart = true;
-        entry.startSeconds = options.start;
+        entry.manualSeconds = options.start;
         entry.offsetInput.value = options.start;
     }
 
@@ -191,8 +202,8 @@ var CompareVideos = (function () {
         var state = CompareUrl.read();
         document.getElementById('compare-size').value = state.size;
         document.getElementById('compare-join').checked = state.join;
-        document.getElementById('compare-relative').value = state.rel;
-        CompareSync.setRelative(state.rel);
+        document.querySelector('input[name="compare-mode"][value="' + state.mode + '"]').checked = true;
+        setMode(state.mode);
         setSize(state.size);
         setJoined(state.join);
         state.videos.forEach(function (video) { add(video.id, video); });
@@ -280,6 +291,7 @@ var CompareVideos = (function () {
         setSize: setSize,
         setJoined: setJoined,
         setRelative: setRelative,
+        setMode: setMode,
         loadFromUrl: loadFromUrl,
     };
 })();

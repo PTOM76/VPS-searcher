@@ -104,3 +104,10 @@ a.compare-picker-item {
 a.compare-picker-item:hover {
 	color: var(--link-hover-color);
 }
+
+/* 基準位置モードと開始位置モードで、使わない方の入力欄を隠す */
+.compare-container.mode-start .compare-base-only,
+.compare-container.mode-start .compare-base-row,
+.compare-container:not(.mode-start) .compare-start-row {
+	display: none;
+}

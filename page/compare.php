@@ -64,6 +64,11 @@ $compareText = [
     </div>
     <p><?php echo $lang['compare_join_help']; ?></p>
     <p>
+        <?php echo $lang['compare_mode']; ?>:
+        <label><input type="radio" name="compare-mode" value="base" checked onchange="CompareVideos.setMode(this.value)"> <?php echo $lang['compare_mode_base']; ?></label>
+        <label><input type="radio" name="compare-mode" value="start" onchange="CompareVideos.setMode(this.value)"> <?php echo $lang['compare_mode_start']; ?></label>
+    </p>
+    <p class="compare-base-only">
         <label><?php echo $lang['compare_relative']; ?>: <input type="number" id="compare-relative" step="0.1" value="0" style="width:5em" oninput="CompareVideos.setRelative(parseFloat(this.value) || 0)"></label><br>
         <?php echo $lang['compare_relative_help']; ?>
     </p>
