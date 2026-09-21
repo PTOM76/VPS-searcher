@@ -355,7 +355,7 @@ function renderNavigation($lang, $useLang, $currentUser, $isMatrix = false) {
             
             <?php if ($currentUser): ?>
                 <li class="dropdown pc noborder nav-right">
-                    <a href="<?php echo $pathPrefix; ?>?do=account<?php echo $useLang !== "ja" ? "&lang=" . $useLang : ""; ?>" title="<?php echo htmlspecialchars($currentUser['username']); ?>"><?php echo $lang['mypage']; ?></a>
+                    <a href="<?php echo $pathPrefix; ?>?do=account<?php echo $useLang !== "ja" ? "&lang=" . $useLang : ""; ?>"><?php echo htmlspecialchars($currentUser['username']); ?></a>
                     <div class="dropdown-content dropdown-right">
                         <a href="<?php echo $pathPrefix; ?>?do=account<?php echo $useLang !== "ja" ? "&lang=" . $useLang : ""; ?>"><?php echo $lang['mypage']; ?></a>
                         <a href="<?php echo $pathPrefix; ?>?do=favorites<?php echo $useLang !== "ja" ? "&lang=" . $useLang : ""; ?>"><?php echo $lang['favorites']; ?></a>
@@ -390,7 +390,7 @@ function renderMobileMenu($lang, $useLang, $currentUser, $isMatrix = false) {
             <li><a href="<?= ($isMatrix ? '../' : './matrix/') . ($useLang === "ja" ? "" : $useLang . ".php"); ?><?= isset($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '' ?>"><?= $isMatrix ? $lang['listview'] : $lang['matrixview'] ?></a></li>
             <li class="none"><br /></li>
             <?php if ($currentUser) { ?>
-                <li><a href="<?php echo $pathPrefix; ?>?do=account<?php echo $useLang !== "ja" ? "&lang=" . $useLang : ""; ?>" title="<?php echo htmlspecialchars($currentUser['username']); ?>"><?php echo $lang['mypage']; ?></a></li>
+                <li><a href="<?php echo $pathPrefix; ?>?do=account<?php echo $useLang !== "ja" ? "&lang=" . $useLang : ""; ?>"><?php echo htmlspecialchars($currentUser['username']); ?></a></li>
                 <li><a href="<?php echo $pathPrefix; ?>?do=logout"><?php echo $lang['logout']; ?></a></li>
                 <li class="none"><br /></li>
             <?php } else { ?>
