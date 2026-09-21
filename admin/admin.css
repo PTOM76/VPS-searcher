@@ -1,0 +1,16 @@
+/* 管理画面 (admin/) */
+.admin-container {
+	margin: 16px 8px 8px 8px;
+}
+
+.admin-table {
+	border-collapse: collapse;
+	margin: 10px 0;
+}
+
+.admin-table th, .admin-table td {
+	border: 1px solid var(--border-color);
+	padding: 4px 8px;
+	text-align: left;
+	vertical-align: top;
+}

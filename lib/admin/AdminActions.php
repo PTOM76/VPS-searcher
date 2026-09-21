@@ -44,7 +44,7 @@ class AdminActions {
             case 'data_add': return $this->addEntry(trim($target), (string)($post['type'] ?? ''));
             case 'queue_approve': return $this->approveQueue($target);
             case 'queue_reject': return $this->result(self::queue()->delete($target), 'queue_rejected');
-            case 'user_delete': return $this->result(Auth::adminDeleteUser($target), 'user_deleted');
+            case 'user_delete': return $this->deleteUser($target);
         }
         return $this->text['failed'];
     }
@@ -77,6 +77,12 @@ class AdminActions {
         set_time_limit(0);
         addAdminEntry($url, $type);
         return $this->text['data_added'];
+    }
+
+    /** 自分を消すと管理画面から締め出されるので、画面側で隠すだけでなくここでも止める */
+    private function deleteUser(string $userId): string {
+        if ($userId === ($_SESSION['user_id'] ?? null)) return $this->text['failed'];
+        return $this->result(Auth::adminDeleteUser($userId), 'user_deleted');
     }
 
     /** 投稿キューの1件を登録して、キューからは消す */

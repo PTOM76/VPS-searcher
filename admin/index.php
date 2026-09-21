@@ -43,6 +43,7 @@ if (!AdminAuth::isAdmin()) http_response_code(403);
 
 renderHtmlHead($adminText['title'], $useLang, true);
 ?>
+<link rel="stylesheet" type="text/css" href="admin.css?v=<?php echo filemtime(__DIR__ . '/admin.css'); ?>" />
 <div class="admin-container">
     <div class="favorites-header">
         <h1><?php echo $adminText['title']; ?></h1>
