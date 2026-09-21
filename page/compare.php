@@ -49,6 +49,7 @@ $compareText = [
     'record_saved' => $lang['compare_record_saved'],
     'record_cancelled' => $lang['compare_record_cancelled'],
     'record_unsupported' => $lang['compare_record_unsupported'],
+    'record_opus' => $lang['compare_record_opus'],
 ];
 ?>
 <link rel="stylesheet" type="text/css" href="page/compare.css?v=<?php echo filemtime(__DIR__ . '/compare.css'); ?>" />

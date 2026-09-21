@@ -7,7 +7,12 @@ var CompareMp4 = (function () {
     var FPS = 30;
     var KEYFRAME_EVERY = FPS * 2;
     var VIDEO_BITRATE = 8000000;
-    var AUDIO_BITRATE = 256000;
+    /**
+     * AAC は高い順に試す。Windows の AAC エンコーダ (Media Foundation) は 96/128/160/192 kbps しか受け付けず、
+     * それ以外を指定すると「非対応」になって Opus に落ちる (MP4 の Opus は Windows 標準のプレイヤーで再生できない)
+     */
+    var AAC_BITRATES = [192000, 160000, 128000];
+    var OPUS_BITRATE = 256000;
     /** エンコードが追いつかない時は、メモリを食いつぶさないようにこのフレーム数を超えた分を捨てる */
     var MAX_QUEUE = 10;
     /** H.264 の高いレベルから順に試す (大きい画面ほど高いレベルが要る) */
@@ -33,11 +38,13 @@ var CompareMp4 = (function () {
         return firstSupported(configs, VideoEncoder.isConfigSupported.bind(VideoEncoder));
     }
 
-    /** AAC を優先する。環境によって AAC でエンコードできないので、その時は Opus にする */
+    /** AAC を優先する。どのビットレートでも AAC でエンコードできない環境だけ Opus にする */
     function pickAudioConfig(sampleRate, channels) {
-        var configs = ['mp4a.40.2', 'opus'].map(function (codec) {
-            return { codec: codec, sampleRate: sampleRate, numberOfChannels: channels, bitrate: AUDIO_BITRATE };
-        });
+        var config = function (codec, bitrate) {
+            return { codec: codec, sampleRate: sampleRate, numberOfChannels: channels, bitrate: bitrate };
+        };
+        var configs = AAC_BITRATES.map(function (bitrate) { return config('mp4a.40.2', bitrate); })
+            .concat([config('opus', OPUS_BITRATE)]);
         return firstSupported(configs, AudioEncoder.isConfigSupported.bind(AudioEncoder));
     }
 
@@ -113,6 +120,8 @@ var CompareMp4 = (function () {
         var frameCount = 0;
         var lastFrameAt = 0;
         return {
+            /** Opus なら、再生できないプレイヤーがあることを知らせるため */
+            audioCodec: audioConfig ? audioConfig.codec : null,
             /** 描画のたびに呼ばれる。FPS を超える分と、エンコードが詰まっている時は捨てる */
             addFrame: function () {
                 var now = performance.now();

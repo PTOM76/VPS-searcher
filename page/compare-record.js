@@ -154,6 +154,7 @@ var CompareRecorder = (function () {
             .then(function (created) {
                 writer = created;
                 showStarted();
+                if (created.audioCodec === 'opus') showStatus(TEXT.record_opus);
             })
             // コーデックが使えない等で作れなかった時は MediaRecorder に切り替える
             .catch(function () { startRecorder(canvas); });

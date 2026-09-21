@@ -205,6 +205,7 @@ $_lang['ja'] = [
     'compare_record_unsupported' => 'このブラウザは画面録画に対応していません (PC の Chrome / Edge を使ってください)',
     'compare_save_new' => '新しく保存',
     'compare_overwritten' => '上書きしました',
+    'compare_record_opus' => '録画中… (この環境では音声を AAC にできず Opus で保存します。Windows 標準のプレイヤーでは再生できないことがあります)',
 ];
 
 $_lang['en'] = [
@@ -411,6 +412,7 @@ $_lang['en'] = [
     'compare_record_unsupported' => 'This browser does not support screen recording (use Chrome / Edge on PC)',
     'compare_save_new' => 'Save as new',
     'compare_overwritten' => 'Overwritten',
+    'compare_record_opus' => 'Recording... (AAC is unavailable here, so audio is saved as Opus; the default Windows player may not play it)',
 ];
 
 $_lang['zh'] = [
@@ -617,6 +619,7 @@ $_lang['zh'] = [
     'compare_record_unsupported' => '此浏览器不支持屏幕录制（请使用电脑版 Chrome / Edge）',
     'compare_save_new' => '另存为新对比',
     'compare_overwritten' => '已覆盖',
+    'compare_record_opus' => '录制中…（此环境无法使用 AAC，音频将以 Opus 保存，Windows 自带播放器可能无法播放）',
 ];
 
 $_lang['ko'] = [
@@ -823,4 +826,5 @@ $_lang['ko'] = [
     'compare_record_unsupported' => '이 브라우저는 화면 녹화를 지원하지 않습니다 (PC의 Chrome / Edge를 사용하세요)',
     'compare_save_new' => '새로 저장',
     'compare_overwritten' => '덮어썼습니다',
+    'compare_record_opus' => '녹화 중… (이 환경에서는 AAC를 쓸 수 없어 음성을 Opus로 저장합니다. Windows 기본 플레이어에서는 재생되지 않을 수 있습니다)',
 ];
