@@ -196,8 +196,11 @@ function addJsonEntry(string $file, string $id, string $type): void {
 function handleReport($postData, $lang) {
     global $notice;
     
+    $id = (string)($postData['id'] ?? '');
+    // id はファイル名になるので、動画IDの形でなければ受け付けない (../ 等でディレクトリの外に書かせない)
+    if (preg_match('/^[A-Za-z0-9_-]{1,64}$/', $id) !== 1) return;
+
     FilePaths::ensureDirectoryExists(FilePaths::REPORT_DIR);
-    $id = $postData['id'];
     file_put_contents(FilePaths::REPORT_DIR . $postData['id'] . "-" . time() . ".txt", 
         "ID: {$id}\nURL: https://youtu.be/{$id}\nType: " . $postData['t'] . 
         "\nReason: " . (isset($postData['reason']) ? $postData['reason'] : 'none'));
