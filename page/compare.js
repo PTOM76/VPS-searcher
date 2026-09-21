@@ -12,15 +12,6 @@ var CompareVideos = (function () {
     var mode = 'base';
     var currentWidth = 320;
 
-    /** @param {string} input URL または動画ID */
-    function extractVideoId(input) {
-        input = input.trim();
-        var m = input.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([A-Za-z0-9_-]{11})/);
-        if (m) return m[1];
-        if (/^[A-Za-z0-9_-]{11}$/.test(input)) return input;
-        return null;
-    }
-
     function grid() {
         return document.getElementById('compare-grid');
     }
@@ -69,11 +60,18 @@ var CompareVideos = (function () {
         entry.startSeconds = mode === 'start' ? entry.manualSeconds : CompareSync.startOf(entry);
     }
 
-    /** 基準位置を調整した時は、合っているか耳で確かめられるようにその位置へ飛ばす */
+    /**
+     * 基準位置を調整した時は、合っているか耳で確かめられるようにその位置へ飛ばす。
+     * seekTo() は止まっていない (未再生を含む) プレイヤーを再生し始めるので、再生中でなければ止め直す
+     */
     function applyBase(entry) {
         refreshStart(entry);
         changed();
-        if (entry.player && typeof entry.player.seekTo === 'function') entry.player.seekTo(Math.max(0, entry.startSeconds), true);
+        if (!entry.player || typeof entry.player.seekTo !== 'function') return;
+
+        var wasPlaying = entry.player.getPlayerState() === YT.PlayerState.PLAYING;
+        entry.player.seekTo(Math.max(0, entry.startSeconds), true);
+        if (!wasPlaying) entry.player.pauseVideo();
     }
 
     /** @param {number} value 基準からの開始位置 (秒)。マイナスなら基準より前から */
@@ -159,7 +157,7 @@ var CompareVideos = (function () {
         var videoId = favoriteVideoId;
         if (videoId === undefined) {
             var urlInput = document.getElementById('compare-url');
-            videoId = extractVideoId(urlInput.value);
+            videoId = CompareUrl.extractVideoId(urlInput.value);
             if (videoId === null) return alert(TEXT.invalid_url);
             urlInput.value = '';
         }
@@ -218,6 +216,7 @@ var CompareVideos = (function () {
                 start: Math.max(0, Math.floor(entry.startSeconds)),
                 origin: window.location.origin,
             },
+            events: { onReady: function () { ComparePlayer.warmUp(entry); } },
         });
     }
 
@@ -240,6 +239,8 @@ var CompareVideos = (function () {
     function remove(entry) {
         entries = entries.filter(function (e) { return e !== entry; });
         if (entry.player) entry.player.destroy();
+        // 同時再生の補正処理が entry を持ち続けているので、破棄したプレイヤーを触らせない
+        entry.player = null;
         entry.slot.remove();
         renumber();
         refreshEmptyState();
@@ -266,6 +267,7 @@ var CompareVideos = (function () {
     }
 
     function clearAll() {
+        ComparePlayer.reset(entries);
         entries.slice().forEach(remove);
     }
 

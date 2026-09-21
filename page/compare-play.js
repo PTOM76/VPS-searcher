@@ -179,6 +179,34 @@ var ComparePlayer = (function () {
         entry.player.unMute();
     }
 
+    /**
+     * プレイヤーの読み込みが終わった時点で先に準備 (バッファ) を済ませておく。
+     * 同時再生を押した時に待たずに揃って始められる
+     */
+    function warmUp(entry) {
+        if (!usable(entry) || started) return;
+        entry.warming = prepareOne(entry).then(function () {
+            restoreMute(entry);
+            entry.warmTarget = Math.max(0, entry.startSeconds);
+            entry.warming = null;
+        });
+    }
+
+    /** 先に済ませた準備がまだ使えるか (開始位置が変わっていない・止まったまま) */
+    function isWarm(entry) {
+        var target = Math.max(0, entry.startSeconds);
+        return entry.warmTarget === target
+            && entry.player.getPlayerState() === YT.PlayerState.PAUSED
+            && Math.abs(entry.player.getCurrentTime() - target) < 0.05;
+    }
+
+    /** 準備の途中なら終わるのを待ち (操作がぶつからないように)、使えなければ準備し直す */
+    function prepare(entry) {
+        return Promise.resolve(entry.warming).then(function () {
+            if (!isWarm(entry)) return prepareOne(entry);
+        });
+    }
+
     function startAll(entries) {
         entries.forEach(function (entry) {
             restoreMute(entry);
@@ -198,7 +226,7 @@ var ComparePlayer = (function () {
         started = true;
         setPlaying(true);
 
-        Promise.all(targets.map(prepareOne)).then(function () {
+        Promise.all(targets.map(prepare)).then(function () {
             if (mySession !== session) return;
             startAll(targets);
         });
@@ -234,5 +262,11 @@ var ComparePlayer = (function () {
         autoSync = enabled;
     }
 
-    return { playAll: playAll, pauseAll: pauseAll, toggle: toggle, setAutoSync: setAutoSync };
+    /** クリアした時用。止めて「まだ一度も再生していない」状態に戻す (次の再生は開始位置から) */
+    function reset(entries) {
+        pauseAll(entries);
+        started = false;
+    }
+
+    return { playAll: playAll, pauseAll: pauseAll, toggle: toggle, setAutoSync: setAutoSync, reset: reset, warmUp: warmUp };
 })();

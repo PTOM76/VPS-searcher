@@ -15,6 +15,20 @@ var CompareUrl = (function () {
         return Math.round(value * 10) / 10;
     }
 
+    /**
+     * 貼られた URL から YouTube の動画IDを取り出す。
+     * watch?app=desktop&v=... のように v が先頭でない URL や、shorts / live / embed も受ける
+     * @param {string} input URL または動画ID
+     * @returns {string|null}
+     */
+    function extractVideoId(input) {
+        input = input.trim();
+        if (/^[A-Za-z0-9_-]{11}$/.test(input)) return input;
+        var m = input.match(/youtube\.com\/watch\?(?:.*&)?v=([A-Za-z0-9_-]{11})/)
+            || input.match(/(?:youtu\.be\/|youtube\.com\/(?:embed|shorts|live)\/)([A-Za-z0-9_-]{11})/);
+        return m ? m[1] : null;
+    }
+
     /** @param {{id: string, crop: string, muted: boolean, start: number|null}} video */
     function encodeVideo(video) {
         var fields = [video.id, CROP_TO_CODE[video.crop] || '', video.muted ? 'm' : '', video.start === null ? '' : String(round1(video.start))];
@@ -84,5 +98,5 @@ var CompareUrl = (function () {
             .then(function (data) { return data.message; });
     }
 
-    return { read: read, write: write, copy: copy, save: save };
+    return { read: read, write: write, copy: copy, save: save, extractVideoId: extractVideoId };
 })();
