@@ -4,10 +4,11 @@
  * 各動画のプレイヤー部分だけを切り出して canvas に横一列に並べ、それを録画する。
  * (並べている入れ物ごと切り抜くと、画面幅いっぱいの余白や動画の下の題名・操作欄まで入ってしまう)
  * (Chrome の Region Capture は条件が厳しく切り抜けないことがあるので使わない)
+ * ファイルは CompareMp4 (WebCodecs) で作る。使えないブラウザだけ MediaRecorder で録る (再生位置を変えられないことがある)
  */
 var CompareRecorder = (function () {
     var TEXT = window.COMPARE_TEXT;
-    /** mp4 を優先する。webm は長さが入らず、開けないプレイヤーがある */
+    /** MediaRecorder で録る時の形式。mp4 を優先する (webm は長さが入らず、開けないプレイヤーがある) */
     var MIME_TYPES = [
         'video/mp4;codecs=avc1.640028,mp4a.40.2',
         'video/mp4;codecs=avc1,mp4a.40.2',
@@ -21,6 +22,8 @@ var CompareRecorder = (function () {
     var AUDIO_BITS_PER_SECOND = 256000;
 
     var recorder = null;
+    /** CompareMp4 で録っている時の書き出し先。MediaRecorder の時は null */
+    var writer = null;
     var captured = null;
     var source = null;
     var drawing = false;
@@ -132,13 +135,32 @@ var CompareRecorder = (function () {
             context.fillRect(0, 0, canvas.width, canvas.height);
             if (crop) drawViews(context, slots);
             else context.drawImage(source, 0, 0, canvas.width, canvas.height);
+            if (writer) writer.addFrame();
             requestAnimationFrame(draw);
         })();
-        return canvas.captureStream(FPS);
+        return canvas;
     }
 
-    function startRecorder(canvasStream) {
-        var tracks = canvasStream.getVideoTracks().concat(captured.getAudioTracks());
+    function showStarted() {
+        showRecording(true);
+        showStatus(TEXT.recording);
+    }
+
+    /** 使えれば CompareMp4 (再生位置を変えられる MP4)、だめなら MediaRecorder で録る */
+    function startRecording(canvas) {
+        if (!CompareMp4.supported()) return startRecorder(canvas);
+
+        return CompareMp4.create(canvas, captured.getAudioTracks()[0])
+            .then(function (created) {
+                writer = created;
+                showStarted();
+            })
+            // コーデックが使えない等で作れなかった時は MediaRecorder に切り替える
+            .catch(function () { startRecorder(canvas); });
+    }
+
+    function startRecorder(canvas) {
+        var tracks = canvas.captureStream(FPS).getVideoTracks().concat(captured.getAudioTracks());
         mimeType = pickMimeType();
         chunks = [];
         recorder = new MediaRecorder(new MediaStream(tracks), {
@@ -149,10 +171,11 @@ var CompareRecorder = (function () {
         recorder.ondataavailable = function (event) {
             if (event.data.size > 0) chunks.push(event.data);
         };
-        recorder.onstop = save;
+        recorder.onstop = function () {
+            download(new Blob(chunks, { type: mimeType.split(';')[0] || 'video/webm' }));
+        };
         recorder.start(1000);
-        showRecording(true);
-        showStatus(TEXT.recording);
+        showStarted();
     }
 
     function release() {
@@ -161,6 +184,7 @@ var CompareRecorder = (function () {
         captured = null;
         source = null;
         recorder = null;
+        writer = null;
         showRecording(false);
     }
 
@@ -171,12 +195,11 @@ var CompareRecorder = (function () {
             + '-' + pad(d.getHours()) + pad(d.getMinutes()) + pad(d.getSeconds()) + '.' + extension;
     }
 
-    function save() {
-        var type = mimeType.split(';')[0] || 'video/webm';
-        var url = URL.createObjectURL(new Blob(chunks, { type: type }));
+    function download(blob) {
+        var url = URL.createObjectURL(blob);
         var link = document.createElement('a');
         link.href = url;
-        link.download = fileName(type === 'video/mp4' ? 'mp4' : 'webm');
+        link.download = fileName(blob.type === 'video/mp4' ? 'mp4' : 'webm');
         link.click();
         // クリック直後に解放するとダウンロードが始まらないブラウザがあるので、少し待つ
         setTimeout(function () { URL.revokeObjectURL(url); }, 10000);
@@ -199,7 +222,7 @@ var CompareRecorder = (function () {
                     // ウィンドウ・画面全体を選ばれた時は座標が合わないので切り抜かない。
                     // タブを選んだ時の displaySurface はブラウザによって入らないことがあるので、'browser' かどうかでは判定しない
                     var surface = track.getSettings().displaySurface;
-                    startRecorder(startDrawing(surface !== 'monitor' && surface !== 'window' && views().length > 0));
+                    return startRecording(startDrawing(surface !== 'monitor' && surface !== 'window' && views().length > 0));
                 });
             })
             .catch(function () {
@@ -209,12 +232,18 @@ var CompareRecorder = (function () {
     }
 
     function stop() {
+        if (writer) {
+            var finishing = writer;
+            writer = null;
+            drawing = false;
+            return finishing.stop().then(download);
+        }
         if (recorder && recorder.state !== 'inactive') return recorder.stop();
         release();
     }
 
     function toggle() {
-        if (recorder) return stop();
+        if (recorder || writer) return stop();
         start();
     }
 

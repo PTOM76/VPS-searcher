@@ -132,7 +132,8 @@ $compareText = [
     var COMPARE_TEXT = <?php echo json_encode($compareText, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS); ?>;
     var COMPARE_OFFSETS = <?php echo json_encode((object)SyncOffsets::offsets()); ?>;
 </script>
-<?php foreach (['compare-slot.js', 'compare-sync.js', 'compare-play.js', 'compare-url.js', 'compare-record.js', 'compare.js'] as $script): ?>
+<script src="https://cdn.jsdelivr.net/npm/mp4-muxer@5.2.2/build/mp4-muxer.min.js"></script>
+<?php foreach (['compare-slot.js', 'compare-sync.js', 'compare-play.js', 'compare-url.js', 'compare-mp4.js', 'compare-record.js', 'compare.js'] as $script): ?>
     <script src="page/<?php echo $script; ?>?v=<?php echo filemtime(__DIR__ . '/' . $script); ?>"></script>
 <?php endforeach; ?>
 <script>CompareVideos.loadFromUrl();</script>
