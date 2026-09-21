@@ -576,6 +576,46 @@ div#menu_sp a {
 	display: none;
 }
 
+/* --compare-w はプレイヤー1本分の幅。半分に切り取るときも元の大きさのまま枠で隠す */
+.compare-grid {
+	--compare-w: 320px;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: center;
+}
+
+.compare-slot {
+	width: var(--compare-w);
+	margin: 3px;
+	padding: 8px;
+}
+
+.compare-slot.crop-left, .compare-slot.crop-right {
+	width: calc(var(--compare-w) / 2);
+}
+
+.compare-view {
+	position: relative;
+	overflow: hidden;
+	height: calc(var(--compare-w) * 9 / 16);
+}
+
+.compare-view iframe, .compare-view > div {
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+
+.compare-slot.crop-right .compare-view iframe, .compare-slot.crop-right .compare-view > div {
+	left: calc(var(--compare-w) / -2);
+}
+
+.compare-grid.is-joined .compare-slot {
+	margin: 0;
+	padding: 0 0 8px 0;
+}
+
 /* display:flex は UA の [hidden]{display:none} に勝つので、明示的に消す */
 .compare-modal[hidden] {
 	display: none;

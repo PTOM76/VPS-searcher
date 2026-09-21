@@ -161,6 +161,15 @@ $_lang['ja'] = [
     'remove' => '削除',
     'confirm_remove' => 'お気に入りから削除しますか？',
     'favorites_desc' => 'サムネイルをクリックするとその場で再生します。',
+    'compare_crop' => '表示',
+    'compare_crop_full' => '全体',
+    'compare_crop_left' => '左半分',
+    'compare_crop_right' => '右半分',
+    'compare_mute' => 'ミュート',
+    'compare_move_left' => '← 前へ',
+    'compare_move_right' => '後ろへ →',
+    'compare_join' => 'くっつけて表示',
+    'compare_join_help' => '「くっつけて表示」にすると隙間なく並びます。切り取った状態では再生ボタン等が隠れるので、上の「同時再生」「停止」で操作してください。',
 ];
 
 $_lang['en'] = [
@@ -323,6 +332,15 @@ $_lang['en'] = [
     'remove' => 'Remove',
     'confirm_remove' => 'Remove from favorites?',
     'favorites_desc' => 'Click a thumbnail to play it in place.',
+    'compare_crop' => 'View',
+    'compare_crop_full' => 'Full',
+    'compare_crop_left' => 'Left half',
+    'compare_crop_right' => 'Right half',
+    'compare_mute' => 'Mute',
+    'compare_move_left' => '← Earlier',
+    'compare_move_right' => 'Later →',
+    'compare_join' => 'Join side by side',
+    'compare_join_help' => '"Join side by side" removes the gaps. Cropped players hide their own controls, so use "Play all" and "Pause" above.',
 ];
 
 $_lang['zh'] = [
@@ -485,6 +503,15 @@ $_lang['zh'] = [
     'remove' => '删除',
     'confirm_remove' => '要从收藏中删除吗？',
     'favorites_desc' => '点击缩略图即可在此播放。',
+    'compare_crop' => '显示',
+    'compare_crop_full' => '全部',
+    'compare_crop_left' => '左半边',
+    'compare_crop_right' => '右半边',
+    'compare_mute' => '静音',
+    'compare_move_left' => '← 前移',
+    'compare_move_right' => '后移 →',
+    'compare_join' => '无缝拼接显示',
+    'compare_join_help' => '开启“无缝拼接显示”后视频之间没有间隙。裁剪后播放器自身的按钮会被遮住，请使用上方的“同时播放”“暂停”。',
 ];
 
 $_lang['ko'] = [
@@ -647,4 +674,13 @@ $_lang['ko'] = [
     'remove' => '삭제',
     'confirm_remove' => '즐겨찾기에서 삭제하시겠습니까?',
     'favorites_desc' => '썸네일을 클릭하면 그 자리에서 재생됩니다.',
+    'compare_crop' => '표시',
+    'compare_crop_full' => '전체',
+    'compare_crop_left' => '왼쪽 절반',
+    'compare_crop_right' => '오른쪽 절반',
+    'compare_mute' => '음소거',
+    'compare_move_left' => '← 앞으로',
+    'compare_move_right' => '뒤로 →',
+    'compare_join' => '붙여서 표시',
+    'compare_join_help' => '"붙여서 표시"를 켜면 틈 없이 나란히 표시됩니다. 잘라낸 상태에서는 재생 버튼 등이 가려지므로 위의 "동시 재생", "정지"로 조작하세요.',
 ];

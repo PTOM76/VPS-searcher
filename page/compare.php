@@ -18,6 +18,13 @@ $compareText = [
     'start_seconds' => $lang['compare_start_seconds'],
     'current_pos' => $lang['compare_current_pos'],
     'current_pos_title' => $lang['compare_current_pos_title'],
+    'crop' => $lang['compare_crop'],
+    'crop_full' => $lang['compare_crop_full'],
+    'crop_left' => $lang['compare_crop_left'],
+    'crop_right' => $lang['compare_crop_right'],
+    'mute' => $lang['compare_mute'],
+    'move_left' => $lang['compare_move_left'],
+    'move_right' => $lang['compare_move_right'],
 ];
 ?>
 <div class="compare-container">
@@ -38,9 +45,11 @@ $compareText = [
         <button type="button" onclick="CompareVideos.playAll()"><?php echo $lang['compare_play_all']; ?></button>
         <button type="button" onclick="CompareVideos.pauseAll()"><?php echo $lang['compare_pause_all']; ?></button>
         <button type="button" onclick="CompareVideos.clearAll()"><?php echo $lang['compare_clear']; ?></button>
+        <label><input type="checkbox" id="compare-join" onchange="CompareVideos.setJoined(this.checked)"> <?php echo $lang['compare_join']; ?></label>
     </div>
+    <p><?php echo $lang['compare_join_help']; ?></p>
 
-    <div id="compare-grid" class="favorites-grid"></div>
+    <div id="compare-grid" class="compare-grid"></div>
 
     <p id="compare-empty" class="empty-message"><?php echo $lang['compare_empty']; ?></p>
 </div>
@@ -77,208 +86,8 @@ $compareText = [
     </div>
 </div>
 
-<script src="https://www.youtube.com/iframe_api"></script>
 <script>
-    /** 複数のYouTube動画を、動画ごとの開始位置を保ったまま並べて同時再生する */
-    var CompareVideos = (function () {
-        var TEXT = <?php echo json_encode($compareText, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS); ?>;
-        var entries = [];
-        var apiReady = false;
-        var nextSlotId = 0;
-        var currentWidth = 320;
-
-        /** @param {string} input URL または動画ID */
-        function extractVideoId(input) {
-            input = input.trim();
-            var m = input.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([A-Za-z0-9_-]{11})/);
-            if (m) return m[1];
-            if (/^[A-Za-z0-9_-]{11}$/.test(input)) return input;
-            return null;
-        }
-
-        function openFavorites() {
-            document.getElementById('compare-modal').hidden = false;
-        }
-
-        function closeFavorites() {
-            document.getElementById('compare-modal').hidden = true;
-        }
-
-        function refreshEmptyState() {
-            document.getElementById('compare-empty').hidden = entries.length > 0;
-        }
-
-        /** 何本並ぶかは画面幅と1枚の大きさで決まる。比較したい本数に合わせて選べるようにする */
-        function setSize(width) {
-            currentWidth = width;
-            entries.forEach(function (e) {
-                if (e.player && typeof e.player.setSize === 'function') e.player.setSize(width, width * 9 / 16);
-            });
-            document.querySelectorAll('#compare-grid .favorite-item').forEach(function (el) {
-                el.style.width = width + 'px';
-            });
-        }
-
-        /**
-         * 1本分の枠を作る。文字列はDOM APIで入れる (題名等をinnerHTMLに混ぜない)
-         * @returns {{slot: HTMLElement, title: HTMLElement, offset: HTMLInputElement, here: HTMLButtonElement, remove: HTMLButtonElement}}
-         */
-        function buildSlot(slotId) {
-            var slot = document.createElement('div');
-            slot.className = 'favorite-item';
-            slot.style.width = currentWidth + 'px';
-            slot.innerHTML =
-                '<div id="' + slotId + '"></div>' +
-                '<div class="favorite-title"><span class="compare-no"></span>. <span class="compare-title"></span></div>' +
-                '<div class="favorite-actions"><label><span class="compare-label"></span> ' +
-                '<input type="number" min="0" step="0.1" value="0" style="width:5em"></label> ' +
-                '<button type="button" class="compare-here"></button> <button type="button" class="compare-remove"></button></div>';
-
-            var parts = {
-                slot: slot,
-                title: slot.querySelector('.compare-title'),
-                offset: slot.querySelector('input'),
-                here: slot.querySelector('.compare-here'),
-                remove: slot.querySelector('.compare-remove'),
-            };
-            parts.title.textContent = TEXT.loading;
-            slot.querySelector('.compare-label').textContent = TEXT.start_seconds;
-            parts.here.textContent = TEXT.current_pos;
-            parts.here.title = TEXT.current_pos_title;
-            parts.remove.textContent = TEXT.remove;
-            return parts;
-        }
-
-        /** お気に入りのボタンは videoId を直接渡してくる。URL欄からの追加は引数無しで呼ばれる */
-        function add(favoriteVideoId) {
-            var videoId = favoriteVideoId;
-            if (videoId === undefined) {
-                var urlInput = document.getElementById('compare-url');
-                videoId = extractVideoId(urlInput.value);
-                if (videoId === null) return alert(TEXT.invalid_url);
-                urlInput.value = '';
-            }
-
-            var slotId = 'compare-slot-' + (nextSlotId++);
-            var entry = { slotId: slotId, videoId: videoId, startSeconds: 0, player: null };
-            var parts = buildSlot(slotId);
-
-            document.getElementById('compare-grid').appendChild(parts.slot);
-            entries.push(entry);
-
-            parts.offset.addEventListener('input', function () {
-                entry.startSeconds = Math.max(0, parseFloat(parts.offset.value) || 0);
-            });
-
-            // 頭出しを秒数で打つのは手間なので、再生位置をそのまま開始位置に写せるようにする
-            parts.here.addEventListener('click', function () {
-                if (!entry.player || typeof entry.player.getCurrentTime !== 'function') return;
-                // 再生前のプレイヤーは値を返さないことがある。NaN を入れてしまわないよう確かめる
-                var current = entry.player.getCurrentTime();
-                if (typeof current !== 'number' || !isFinite(current)) return;
-                entry.startSeconds = Math.max(0, Math.round(current * 10) / 10);
-                parts.offset.value = entry.startSeconds;
-            });
-
-            parts.remove.addEventListener('click', function () { remove(slotId); });
-
-            loadTitle(videoId, parts.title);
-            if (apiReady) createPlayer(entry);
-
-            closeFavorites();
-            renumber();
-            refreshEmptyState();
-        }
-
-        /**
-         * 題名を出す。プレイヤーの getVideoData() は onReady が来ないと使えず、
-         * その onReady が発火しない環境があるので、oEmbed から直接取る
-         * (APIキー不要)。取れなかったときは動画IDで代える。
-         */
-        function loadTitle(videoId, titleEl) {
-            var url = 'https://www.youtube.com/oembed?url='
-                + encodeURIComponent('https://www.youtube.com/watch?v=' + videoId) + '&format=json';
-
-            fetch(url)
-                .then(function (res) { return res.ok ? res.json() : Promise.reject(res.status); })
-                .then(function (data) { return data && data.title ? data.title : videoId; })
-                .catch(function () { return videoId; })
-                .then(function (title) {
-                    titleEl.textContent = title;
-                    titleEl.title = title;
-                });
-        }
-
-        function createPlayer(entry) {
-            entry.player = new YT.Player(entry.slotId, {
-                width: currentWidth,
-                height: currentWidth * 9 / 16,
-                videoId: entry.videoId,
-                playerVars: {
-                    start: Math.floor(entry.startSeconds),
-                    origin: window.location.origin,
-                },
-            });
-        }
-
-        function remove(slotId) {
-            entries = entries.filter(function (e) {
-                if (e.slotId !== slotId) return true;
-                if (e.player) e.player.destroy();
-                return false;
-            });
-
-            // destroy() でプレイヤーは元の div に戻るので、同じIDで枠ごと引ける
-            var el = document.getElementById(slotId);
-            if (el) el.closest('.favorite-item').remove();
-
-            renumber();
-            refreshEmptyState();
-        }
-
-        function renumber() {
-            document.querySelectorAll('#compare-grid .compare-no').forEach(function (el, i) {
-                el.textContent = i + 1;
-            });
-        }
-
-        function playAll() {
-            entries.forEach(function (e) {
-                if (!e.player) return;
-                e.player.seekTo(e.startSeconds, true);
-                e.player.playVideo();
-            });
-        }
-
-        function pauseAll() {
-            entries.forEach(function (e) {
-                if (e.player) e.player.pauseVideo();
-            });
-        }
-
-        function clearAll() {
-            entries.slice().forEach(function (e) { remove(e.slotId); });
-        }
-
-        window.onYouTubeIframeAPIReady = function () {
-            apiReady = true;
-            entries.forEach(function (e) {
-                if (!e.player) createPlayer(e);
-            });
-        };
-
-        document.addEventListener('keydown', function (event) {
-            if (event.key === 'Escape') closeFavorites();
-        });
-
-        return {
-            add: add,
-            playAll: playAll,
-            pauseAll: pauseAll,
-            clearAll: clearAll,
-            openFavorites: openFavorites,
-            closeFavorites: closeFavorites,
-            setSize: setSize,
-        };
-    })();
+    var COMPARE_TEXT = <?php echo json_encode($compareText, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS); ?>;
 </script>
+<script src="page/compare.js?v=<?php echo filemtime(__DIR__ . '/compare.js'); ?>"></script>
+<script src="https://www.youtube.com/iframe_api"></script>
