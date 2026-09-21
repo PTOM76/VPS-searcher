@@ -390,6 +390,9 @@ class Auth {
         unset($users[$key]);
         file_put_contents(self::$usersFile, json_encode(array_values($users), JSON_UNESCAPED_UNICODE));
 
+        require_once __DIR__ . '/CompareSaves.php';
+        CompareSaves::deleteAllFor($user['id']);
+
         $favorites = json_decode(file_get_contents(self::$favoritesFile), true);
         if (!isset($favorites[$user['id']])) return;
         unset($favorites[$user['id']]);

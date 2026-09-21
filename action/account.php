@@ -1,6 +1,8 @@
 <?php
 // action/account.php
 
+require_once __DIR__ . '/../lib/CompareSaves.php';
+
 // ログインチェック
 if (!Auth::isLoggedIn()) {
     header('Location: /?do=login');
@@ -74,6 +76,18 @@ if (isset($_POST['action'])) {
             }
             break;
             
+        case 'rename_compare':
+            $renamed = CompareSaves::rename($currentUser['id'], (string)($_POST['compare_id'] ?? ''), (string)($_POST['compare_name'] ?? ''));
+            $message = $renamed ? $lang['compare_renamed'] : $lang['error_occurred'];
+            $messageType = $renamed ? 'success' : 'error';
+            break;
+
+        case 'delete_compare':
+            $deleted = CompareSaves::delete($currentUser['id'], (string)($_POST['compare_id'] ?? ''));
+            $message = $deleted ? $lang['compare_deleted'] : $lang['error_occurred'];
+            $messageType = $deleted ? 'success' : 'error';
+            break;
+
         case 'delete_account':
             $currentPassword = $_POST['current_password'] ?? '';
             $confirmText = $_POST['confirm_text'] ?? '';
@@ -148,6 +162,8 @@ $favoriteCount = count(Auth::getFavorites($currentUser['id']));
             <li><a href="?do=logout"><?php echo $lang['logout']; ?></a></li>
         </ul>
     </div>
+
+    <?php include __DIR__ . '/account_compares.php'; ?>
 
     <?php if ($chreeIdStatus !== 'disabled'): ?>
     <div class="account-section">

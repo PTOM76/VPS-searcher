@@ -75,6 +75,12 @@ switch ($action) {
         echo json_encode(['success' => $saved, 'offset' => $offset]);
         break;
 
+    case 'save_compare':
+        require_once '../lib/CompareSaves.php';
+        $saved = CompareSaves::add($user['id'], (string)($_POST['name'] ?? ''), (string)($_POST['query'] ?? ''));
+        echo json_encode(['success' => $saved, 'message' => $saved ? $lang['compare_saved'] : $lang['compare_save_failed']]);
+        break;
+
     default:
         echo json_encode(['success' => false, 'message' => $lang['error_occurred']]);
         break;

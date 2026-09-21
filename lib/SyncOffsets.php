@@ -1,6 +1,8 @@
 <?php
 // lib/SyncOffsets.php
 
+require_once __DIR__ . '/JsonFileStore.php';
+
 /**
  * 動画比較の基準位置 (動画ごとに Bad Apple!! の「ながれ」が始まる秒数)。
  * 全ユーザー共通の値で、ログインしていれば誰でも書き換えられる。
@@ -18,8 +20,7 @@ class SyncOffsets {
      * @return array<string, array{offset: float, updated_by: string, updated_at: string}>
      */
     public static function all(): array {
-        if (!file_exists(self::FILE)) return [];
-        return json_decode(file_get_contents(self::FILE), true) ?: [];
+        return self::store()->read();
     }
 
     /**
@@ -44,7 +45,7 @@ class SyncOffsets {
     public static function set(string $videoId, ?float $offset, string $username): bool {
         if (!self::isValid($videoId, $offset ?? 0.0)) return false;
 
-        return self::update(function (array $rows) use ($videoId, $offset, $username) {
+        return self::store()->update(function (array $rows) use ($videoId, $offset, $username) {
             if ($offset === null) {
                 unset($rows[$videoId]);
                 return $rows;
@@ -54,26 +55,7 @@ class SyncOffsets {
         });
     }
 
-    /**
-     * 誰でも書けるので同時に保存されうる。読んでから書くまでをロックで囲む
-     *
-     * @param callable $change 今の内容を受け取り、新しい内容を返す
-     * @return bool
-     */
-    private static function update(callable $change): bool {
-        $handle = fopen(self::FILE, 'c+');
-        if ($handle === false) return false;
-
-        try {
-            flock($handle, LOCK_EX);
-            $rows = json_decode(stream_get_contents($handle), true) ?: [];
-            $json = json_encode($change($rows), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-            ftruncate($handle, 0);
-            rewind($handle);
-            return fwrite($handle, $json) !== false;
-        } finally {
-            flock($handle, LOCK_UN);
-            fclose($handle);
-        }
+    private static function store(): JsonFileStore {
+        return new JsonFileStore(self::FILE);
     }
 }

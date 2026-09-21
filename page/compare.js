@@ -42,21 +42,26 @@ var CompareVideos = (function () {
         entries.forEach(function (e) {
             if (e.player && typeof e.player.setSize === 'function') e.player.setSize(width, width * 9 / 16);
         });
+        changed();
     }
 
     /** 隙間なく並べると、切り取った半分同士が1本の動画のように見えて比べやすい */
     function setJoined(joined) {
         grid().classList.toggle('is-joined', joined);
+        changed();
     }
 
     /** @param {string} crop full | left | right */
     function setCrop(entry, crop) {
         entry.slot.classList.remove('crop-full', 'crop-left', 'crop-right');
         entry.slot.classList.add('crop-' + crop);
+        entry.crop = crop;
+        changed();
     }
 
     /** 基準位置が決まっている動画は、開始位置を「基準位置 + 基準からの開始位置」にする */
     function applyStart(entry) {
+        if (entry.manualStart) return;
         var start = CompareSync.startOf(entry);
         if (start === null) return;
         entry.startSeconds = start;
@@ -65,7 +70,9 @@ var CompareVideos = (function () {
 
     /** 基準位置を調整した時は、合っているか耳で確かめられるようにその位置へ飛ばす */
     function applyBase(entry) {
+        entry.manualStart = false;
         applyStart(entry);
+        changed();
         if (entry.player && typeof entry.player.seekTo === 'function') entry.player.seekTo(Math.max(0, entry.startSeconds), true);
     }
 
@@ -73,6 +80,19 @@ var CompareVideos = (function () {
     function setRelative(value) {
         CompareSync.setRelative(value);
         entries.forEach(applyStart);
+        changed();
+    }
+
+    /** 今の状態を URL に写す。URL がそのまま共有・保存の単位になる */
+    function changed() {
+        CompareUrl.write({
+            videos: entries.map(function (e) {
+                return { id: e.videoId, crop: e.crop, muted: e.muted, start: e.manualStart ? e.startSeconds : null };
+            }),
+            rel: CompareSync.getRelative(),
+            size: currentWidth,
+            join: grid().classList.contains('is-joined'),
+        });
     }
 
     function applyMute(entry) {
@@ -81,50 +101,13 @@ var CompareVideos = (function () {
         entry.player.unMute();
     }
 
-    function buildOption(value, label) {
-        var option = document.createElement('option');
-        option.value = value;
-        option.textContent = label;
-        return option;
-    }
-
-    /**
-     * 1本分の枠を作る。文字列はDOM APIで入れる (題名等をinnerHTMLに混ぜない)
-     * @returns {Object} 枠と操作部品
-     */
-    function buildSlot(slotId) {
-        var slot = document.createElement('div');
-        slot.className = 'compare-slot crop-full';
-        slot.innerHTML =
-            '<div class="compare-view"><div id="' + slotId + '"></div></div>' +
-            '<div class="favorite-title"><span class="compare-no"></span>. <span class="compare-title"></span></div>' +
-            '<div class="favorite-actions">' +
-            '<label><span class="compare-label-crop"></span> <select class="compare-crop"></select></label> ' +
-            '<label><input type="checkbox" class="compare-mute"> <span class="compare-label-mute"></span></label><br>' +
-            '<label><span class="compare-label-start"></span> <input type="number" class="compare-offset" step="0.1" value="0" style="width:5em"></label> ' +
-            '<button type="button" class="compare-here"></button><br>' +
-            '<button type="button" class="compare-left"></button> <button type="button" class="compare-right"></button> ' +
-            '<button type="button" class="compare-remove"></button></div>';
-
-        var q = function (sel) { return slot.querySelector(sel); };
-        q('.compare-title').textContent = TEXT.loading;
-        q('.compare-label-crop').textContent = TEXT.crop;
-        q('.compare-label-mute').textContent = TEXT.mute;
-        q('.compare-label-start').textContent = TEXT.start_seconds;
-        q('.compare-here').textContent = TEXT.current_pos;
-        q('.compare-here').title = TEXT.current_pos_title;
-        q('.compare-left').textContent = TEXT.move_left;
-        q('.compare-right').textContent = TEXT.move_right;
-        q('.compare-remove').textContent = TEXT.remove;
-        q('.compare-crop').append(buildOption('full', TEXT.crop_full), buildOption('left', TEXT.crop_left), buildOption('right', TEXT.crop_right));
-        return { slot: slot, q: q };
-    }
-
     /** 枠の操作部品を entry に結び付ける */
     function bindSlot(entry, q) {
         var offset = q('.compare-offset');
         offset.addEventListener('input', function () {
             entry.startSeconds = parseFloat(offset.value) || 0;
+            entry.manualStart = true;
+            changed();
         });
 
         // 頭出しを秒数で打つのは手間なので、再生位置をそのまま開始位置に写せるようにする
@@ -134,21 +117,28 @@ var CompareVideos = (function () {
             var current = entry.player.getCurrentTime();
             if (typeof current !== 'number' || !isFinite(current)) return;
             entry.startSeconds = Math.round(current * 10) / 10;
+            entry.manualStart = true;
             offset.value = entry.startSeconds;
+            changed();
         });
 
         q('.compare-crop').addEventListener('change', function () { setCrop(entry, this.value); });
         q('.compare-mute').addEventListener('change', function () {
             entry.muted = this.checked;
             applyMute(entry);
+            changed();
         });
         q('.compare-left').addEventListener('click', function () { move(entry, -1); });
         q('.compare-right').addEventListener('click', function () { move(entry, 1); });
         q('.compare-remove').addEventListener('click', function () { remove(entry); });
     }
 
-    /** お気に入りのボタンは videoId を直接渡してくる。URL欄からの追加は引数無しで呼ばれる */
-    function add(favoriteVideoId) {
+    /**
+     * お気に入りのボタンは videoId を直接渡してくる。URL欄からの追加は引数無しで呼ばれる
+     * @param {string} [favoriteVideoId]
+     * @param {{crop: string, muted: boolean, start: number|null}} [options] URL から復元する時の状態
+     */
+    function add(favoriteVideoId, options) {
         var videoId = favoriteVideoId;
         if (videoId === undefined) {
             var urlInput = document.getElementById('compare-url');
@@ -158,9 +148,9 @@ var CompareVideos = (function () {
         }
 
         var slotId = 'compare-slot-' + (nextSlotId++);
-        var built = buildSlot(slotId);
+        var built = CompareSlot.build(slotId);
         var entry = {
-            slotId: slotId, videoId: videoId, startSeconds: 0, muted: false, player: null,
+            slotId: slotId, videoId: videoId, startSeconds: 0, muted: false, crop: 'full', manualStart: false, player: null,
             slot: built.slot, offsetInput: built.q('.compare-offset'), base: CompareSync.baseOf(videoId),
         };
 
@@ -168,6 +158,7 @@ var CompareVideos = (function () {
         entries.push(entry);
         bindSlot(entry, built.q);
         built.slot.appendChild(CompareSync.buildRow(entry, applyBase));
+        restoreOptions(entry, built.q, options);
         applyStart(entry);
         loadTitle(videoId, built.q('.compare-title'));
         if (apiReady) createPlayer(entry);
@@ -175,6 +166,31 @@ var CompareVideos = (function () {
         closeFavorites();
         renumber();
         refreshEmptyState();
+        changed();
+    }
+
+    function restoreOptions(entry, q, options) {
+        if (!options) return;
+        q('.compare-crop').value = options.crop;
+        setCrop(entry, options.crop);
+        entry.muted = options.muted;
+        q('.compare-mute').checked = options.muted;
+        if (options.start === null) return;
+        entry.manualStart = true;
+        entry.startSeconds = options.start;
+        entry.offsetInput.value = options.start;
+    }
+
+    /** URL パラメータの比較を並べ直す。ページ読み込み時に1回だけ呼ぶ */
+    function loadFromUrl() {
+        var state = CompareUrl.read();
+        document.getElementById('compare-size').value = state.size;
+        document.getElementById('compare-join').checked = state.join;
+        document.getElementById('compare-relative').value = state.rel;
+        CompareSync.setRelative(state.rel);
+        setSize(state.size);
+        setJoined(state.join);
+        state.videos.forEach(function (video) { add(video.id, video); });
     }
 
     /**
@@ -221,6 +237,7 @@ var CompareVideos = (function () {
         entries[index] = entries[target];
         entries[target] = entry;
         renumber();
+        changed();
     }
 
     function remove(entry) {
@@ -229,6 +246,7 @@ var CompareVideos = (function () {
         entry.slot.remove();
         renumber();
         refreshEmptyState();
+        changed();
     }
 
     function renumber() {
@@ -271,5 +289,6 @@ var CompareVideos = (function () {
         setSize: setSize,
         setJoined: setJoined,
         setRelative: setRelative,
+        loadFromUrl: loadFromUrl,
     };
 })();

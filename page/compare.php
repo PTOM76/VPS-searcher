@@ -35,6 +35,7 @@ $compareText = [
     'base_login' => $lang['compare_base_login'],
     'base_title' => $lang['compare_base_title'],
     'save_failed' => $lang['error_occurred'],
+    'url_copied' => $lang['compare_url_copied'],
 ];
 ?>
 <link rel="stylesheet" type="text/css" href="page/compare.css?v=<?php echo filemtime(__DIR__ . '/compare.css'); ?>" />
@@ -62,6 +63,16 @@ $compareText = [
     <p>
         <label><?php echo $lang['compare_relative']; ?>: <input type="number" id="compare-relative" step="0.1" value="0" style="width:5em" onchange="CompareVideos.setRelative(parseFloat(this.value) || 0)"></label><br>
         <?php echo $lang['compare_relative_help']; ?>
+    </p>
+    <p>
+        <button type="button" onclick="CompareUrl.copy(document.getElementById('compare-share-status'), COMPARE_TEXT.url_copied)"><?php echo $lang['compare_copy_url']; ?></button>
+        <?php if (Auth::isLoggedIn()): ?>
+            <input type="text" id="compare-save-name" size="24" maxlength="100" placeholder="<?php echo htmlspecialchars($lang['compare_save_name']); ?>">
+            <button type="button" onclick="CompareUrl.save(document.getElementById('compare-save-name').value).then(function (m) { document.getElementById('compare-share-status').textContent = m; })"><?php echo $lang['compare_save']; ?></button>
+        <?php else: ?>
+            <?php echo $lang['compare_save_login']; ?>
+        <?php endif; ?>
+        <span id="compare-share-status"></span>
     </p>
 
     <div id="compare-grid" class="compare-grid"></div>
@@ -105,7 +116,8 @@ $compareText = [
     var COMPARE_TEXT = <?php echo json_encode($compareText, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS); ?>;
     var COMPARE_OFFSETS = <?php echo json_encode((object)SyncOffsets::offsets()); ?>;
 </script>
-<?php foreach (['compare-sync.js', 'compare-play.js', 'compare.js'] as $script): ?>
+<?php foreach (['compare-slot.js', 'compare-sync.js', 'compare-play.js', 'compare-url.js', 'compare.js'] as $script): ?>
     <script src="page/<?php echo $script; ?>?v=<?php echo filemtime(__DIR__ . '/' . $script); ?>"></script>
 <?php endforeach; ?>
+<script>CompareVideos.loadFromUrl();</script>
 <script src="https://www.youtube.com/iframe_api"></script>
