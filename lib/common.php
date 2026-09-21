@@ -18,32 +18,6 @@ function handleAnalytics() {
 }
 
 /**
- * プレイリスト管理API処理
- */
-function handlePlaylistAPI() {
-    if (isset($_GET[getSecretValue('PASS')])) {
-        addPlaylist(PlaylistConfig::VPS_PLAYLIST_ID, "vps", false, true);
-        addPlaylist(PlaylistConfig::MATERIAL_PLAYLIST_ID, "material", false, true);
-    }
-
-    if (isset($_GET['replace_' . getSecretValue('PASS')])) {
-        if (isset($_GET['vps_nexttoken'])) 
-            $next = addPlaylist(PlaylistConfig::VPS_PLAYLIST_ID, "vps", $_GET['vps_nexttoken'], false);
-        else 
-            $next = addPlaylist(PlaylistConfig::VPS_PLAYLIST_ID, "vps", false, false);
-        if (isset($_GET['material_nexttoken'])) 
-            $next2 = addPlaylist(PlaylistConfig::MATERIAL_PLAYLIST_ID, "material", $_GET['material_nexttoken'], false);
-        else 
-            $next2 = addPlaylist(PlaylistConfig::MATERIAL_PLAYLIST_ID, "material", false, false);
-        echo 'vps_nexttoken: ' . $next . ' , ';
-        echo 'material_nexttoken: ' . $next2;
-        exit;
-    }
-
-    if (isset($_GET["update2_" . getSecretValue('PASS')])) refreshPlaylists(true);
-}
-
-/**
  * 登録済みの再生リストを取り直す
  *
  * @param bool $full true なら次ページも辿って全件取り直す
@@ -67,7 +41,7 @@ function handleFileUpdates() {
     if (!file_exists(FilePaths::TIME_TXT)) return refreshPlaylists();
 
     $time = (int) file_get_contents(FilePaths::TIME_TXT);
-    if ($time + AppConstants::UPDATE_INTERVAL < time() || isset($_GET['update_' . getSecretValue('PASS')])) refreshPlaylists();
+    if ($time + AppConstants::UPDATE_INTERVAL < time()) refreshPlaylists();
 }
 
 /**
@@ -99,9 +73,6 @@ function handlePostRequests($lang) {
     switch ($_POST['do']) {
         case 'post':
             handlePublicPost($url, $url_type, $lang);
-            break;
-        case 'post_' . getenv('PASS'):
-            handleAdminPost($url, $url_type, $lang);
             break;
         case 'report':
             handleReport($_POST, $lang);
@@ -140,16 +111,6 @@ function handlePublicPost($url, $url_type, $lang) {
             $notice .= $lang['sended_vd'];
             break;
     }
-}
-
-/**
- * 管理者の投稿処理
- */
-function handleAdminPost($url, $url_type, $lang) {
-    global $notice;
-
-    addAdminEntry($url, $_POST['t']);
-    $notice .= $url_type === 'playlist' ? $lang['added_pl'] : $lang['added_vd'];
 }
 
 /**

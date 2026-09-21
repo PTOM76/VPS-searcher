@@ -12,9 +12,6 @@ require_once './lib/common.php';
 // アナリティクス処理
 handleAnalytics();
 
-// プレイリスト管理API処理
-handlePlaylistAPI();
-
 // ファイル更新処理
 handleFileUpdates();
 
@@ -49,8 +46,6 @@ renderMobileMenu($lang, $useLang, $currentUser);
 <?php
 if (isset($_GET['post'])) {
     include 'page/post.php';
-} else if (isset($_GET['post_' . getenv('PASS')])) {
-    include 'page/post_admin.php';
 } else if (isset($_GET['report'])) {
     include 'page/report.php';
 } else if (isset($_GET['info'])) {

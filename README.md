@@ -57,7 +57,7 @@ https://example.com/genxml.php?type=atom&limit=30
 ├── {lang}.php            # 各言語用エントリーポイント
 ├── config.ini.php        # 設定ファイル
 ├── lang.ini.php          # 言語設定
-├── secret.ini.php        # 秘匿情報 (つべのAPIキーのAPI_KEY、管理用のPASSとか)
+├── secret.ini.php        # 秘匿情報 (つべのAPIキーのAPI_KEY、ChreeIDのクライアント情報とか)
 ├── blacklist.json        # ブラックリスト
 ├── time.txt              # 更新時刻記録
 ├── lib/                  # ライブラリディレクトリ
@@ -68,7 +68,6 @@ https://example.com/genxml.php?type=atom&limit=30
 ├── page/                 # コンテンツページ
 │   ├── info.php          # 情報ページ
 │   ├── post.php          # 投稿ページ
-│   ├── post_admin.php    # 管理者投稿ページ
 │   └── report.php        # 報告ページ
 ├── action/               # ユーザーアクション
 │   ├── login.php         # ログイン
