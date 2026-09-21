@@ -270,6 +270,11 @@ div.matrix_box {
 	background-color: #111;
 }
 
+/* 右端のメニューは左揃えだと画面外にはみ出すので、右端に揃える */
+.dropdown-content.dropdown-right {
+	right: 0;
+}
+
 div#navi .dropdown-content a img {
 	width: 24px;
 	height: 24px;

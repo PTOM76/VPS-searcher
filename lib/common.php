@@ -309,7 +309,7 @@ function renderHtmlHead($title, $useLang = "ja", $isMatrix = false) {
 
         <script src="<?php echo $pathPrefix; ?>darkmode.js"></script>
         <script src="<?php echo $pathPrefix; ?>main.js"></script>
-        <link rel="stylesheet" type="text/css" href="<?php echo $pathPrefix; ?>main.css" />
+        <link rel="stylesheet" type="text/css" href="<?php echo $pathPrefix; ?>main.css?v=<?php echo filemtime(__DIR__ . '/../main.css'); ?>" />
         <script>
             window.isLoggedIn = <?php echo $currentUser ? 'true' : 'false'; ?>;
             window.translations = {
@@ -354,8 +354,14 @@ function renderNavigation($lang, $useLang, $currentUser, $isMatrix = false) {
             <li class="nav-spacer noborder"></li>
             
             <?php if ($currentUser): ?>
-                <li class="pc noborder nav-right"><a href="<?php echo $pathPrefix; ?>?do=account<?php echo $useLang !== "ja" ? "&lang=" . $useLang : ""; ?>" title="<?php echo htmlspecialchars($currentUser['username']); ?>"><?php echo $lang['mypage']; ?></a></li>
-                <li class="pc nav-right"><a href="<?php echo $pathPrefix; ?>?do=logout"><?php echo $lang['logout']; ?></a></li>
+                <li class="dropdown pc noborder nav-right">
+                    <a href="<?php echo $pathPrefix; ?>?do=account<?php echo $useLang !== "ja" ? "&lang=" . $useLang : ""; ?>" title="<?php echo htmlspecialchars($currentUser['username']); ?>"><?php echo $lang['mypage']; ?></a>
+                    <div class="dropdown-content dropdown-right">
+                        <a href="<?php echo $pathPrefix; ?>?do=account<?php echo $useLang !== "ja" ? "&lang=" . $useLang : ""; ?>"><?php echo $lang['mypage']; ?></a>
+                        <a href="<?php echo $pathPrefix; ?>?do=favorites<?php echo $useLang !== "ja" ? "&lang=" . $useLang : ""; ?>"><?php echo $lang['favorites']; ?></a>
+                        <a href="<?php echo $pathPrefix; ?>?do=logout"><?php echo $lang['logout']; ?></a>
+                    </div>
+                </li>
             <?php else: ?>
                 <li class="pc noborder nav-right"><a href="<?php echo $pathPrefix; ?>?do=login<?php echo $useLang !== "ja" ? "&lang=" . $useLang : ""; ?>"><?php echo $lang['login']; ?></a></li>
             <?php endif; ?>
