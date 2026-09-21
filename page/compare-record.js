@@ -162,8 +162,10 @@ var CompareRecorder = (function () {
                 // ブラウザ側の「共有を停止」で止められた時も保存する
                 track.addEventListener('ended', stop);
                 return playSource(stream).then(function () {
-                    // 切り抜けるのはこのタブを選ばれた時だけ (別の画面では座標が合わない)
-                    startRecorder(startDrawing(track.getSettings().displaySurface === 'browser'));
+                    // ウィンドウ・画面全体を選ばれた時は座標が合わないので切り抜かない。
+                    // タブを選んだ時の displaySurface はブラウザによって入らないことがあるので、'browser' かどうかでは判定しない
+                    var surface = track.getSettings().displaySurface;
+                    startRecorder(startDrawing(surface !== 'monitor' && surface !== 'window'));
                 });
             })
             .catch(function () {
