@@ -36,6 +36,8 @@ $compareText = [
     'base_title' => $lang['compare_base_title'],
     'save_failed' => $lang['error_occurred'],
     'url_copied' => $lang['compare_url_copied'],
+    'pause' => $lang['compare_pause_all'],
+    'resume' => $lang['compare_resume'],
 ];
 ?>
 <link rel="stylesheet" type="text/css" href="page/compare.css?v=<?php echo filemtime(__DIR__ . '/compare.css'); ?>" />
@@ -55,7 +57,7 @@ $compareText = [
             <option value="640"><?php echo $lang['compare_size_l']; ?></option>
         </select>
         <button type="button" onclick="CompareVideos.playAll()"><?php echo $lang['compare_play_all']; ?></button>
-        <button type="button" onclick="CompareVideos.pauseAll()"><?php echo $lang['compare_pause_all']; ?></button>
+        <button type="button" id="compare-toggle" onclick="CompareVideos.togglePause()"><?php echo $lang['compare_pause_all']; ?></button>
         <button type="button" onclick="CompareVideos.clearAll()"><?php echo $lang['compare_clear']; ?></button>
         <label><input type="checkbox" id="compare-join" onchange="CompareVideos.setJoined(this.checked)"> <?php echo $lang['compare_join']; ?></label>
     </div>

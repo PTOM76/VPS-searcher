@@ -264,6 +264,10 @@ var CompareVideos = (function () {
         ComparePlayer.pauseAll(entries);
     }
 
+    function togglePause() {
+        ComparePlayer.toggle(entries);
+    }
+
     function clearAll() {
         entries.slice().forEach(remove);
     }
@@ -283,6 +287,7 @@ var CompareVideos = (function () {
         add: add,
         playAll: playAll,
         pauseAll: pauseAll,
+        togglePause: togglePause,
         clearAll: clearAll,
         openFavorites: openFavorites,
         closeFavorites: closeFavorites,
