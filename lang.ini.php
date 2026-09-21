@@ -199,6 +199,13 @@ $_lang['ja'] = [
     'compare_mode' => '合わせ方',
     'compare_mode_base' => '基準位置で合わせる',
     'compare_mode_start' => '開始位置で合わせる',
+    'compare_record_start' => '録画開始',
+    'compare_record_stop' => '録画停止',
+    'compare_recording' => '録画中… (「録画停止」で保存します)',
+    'compare_record_saved' => '録画を保存しました',
+    'compare_record_cancelled' => '録画を開始できませんでした',
+    'compare_record_unsupported' => 'このブラウザは画面録画に対応していません (PC の Chrome / Edge を使ってください)',
+    'compare_record_help' => '「録画開始」を押すとブラウザが共有する画面を聞いてくるので、このタブを選んでください。音声も録るには「タブの音声も共有」にチェックを入れてください。Chrome / Edge では動画が並んでいる部分だけを録画します (画面の外にはみ出た部分は写りません)。',
 ];
 
 $_lang['en'] = [
@@ -399,6 +406,13 @@ $_lang['en'] = [
     'compare_mode' => 'Align by',
     'compare_mode_base' => 'Reference position',
     'compare_mode_start' => 'Start position',
+    'compare_record_start' => 'Start recording',
+    'compare_record_stop' => 'Stop recording',
+    'compare_recording' => 'Recording... (press "Stop recording" to save)',
+    'compare_record_saved' => 'Recording saved',
+    'compare_record_cancelled' => 'Could not start recording',
+    'compare_record_unsupported' => 'This browser does not support screen recording (use Chrome / Edge on PC)',
+    'compare_record_help' => 'When you press "Start recording", the browser asks which screen to share: choose this tab. Enable "Also share tab audio" to record sound. In Chrome / Edge only the area with the videos is recorded (anything scrolled off screen is not captured).',
 ];
 
 $_lang['zh'] = [
@@ -599,6 +613,13 @@ $_lang['zh'] = [
     'compare_mode' => '对齐方式',
     'compare_mode_base' => '按基准位置对齐',
     'compare_mode_start' => '按开始位置对齐',
+    'compare_record_start' => '开始录制',
+    'compare_record_stop' => '停止录制',
+    'compare_recording' => '录制中…（点击“停止录制”保存）',
+    'compare_record_saved' => '已保存录制',
+    'compare_record_cancelled' => '无法开始录制',
+    'compare_record_unsupported' => '此浏览器不支持屏幕录制（请使用电脑版 Chrome / Edge）',
+    'compare_record_help' => '点击“开始录制”后浏览器会询问要共享的画面，请选择此标签页。若要录制声音，请勾选“同时共享标签页音频”。在 Chrome / Edge 中只录制视频所在的区域（超出屏幕的部分不会被录下）。',
 ];
 
 $_lang['ko'] = [
@@ -799,4 +820,11 @@ $_lang['ko'] = [
     'compare_mode' => '맞추는 방법',
     'compare_mode_base' => '기준 위치로 맞추기',
     'compare_mode_start' => '시작 위치로 맞추기',
+    'compare_record_start' => '녹화 시작',
+    'compare_record_stop' => '녹화 정지',
+    'compare_recording' => '녹화 중… ("녹화 정지"를 누르면 저장됩니다)',
+    'compare_record_saved' => '녹화를 저장했습니다',
+    'compare_record_cancelled' => '녹화를 시작할 수 없습니다',
+    'compare_record_unsupported' => '이 브라우저는 화면 녹화를 지원하지 않습니다 (PC의 Chrome / Edge를 사용하세요)',
+    'compare_record_help' => '"녹화 시작"을 누르면 브라우저가 공유할 화면을 묻습니다. 이 탭을 선택하세요. 소리도 녹화하려면 "탭 오디오도 공유"를 체크하세요. Chrome / Edge에서는 동영상이 놓인 부분만 녹화됩니다 (화면 밖으로 벗어난 부분은 찍히지 않습니다).',
 ];

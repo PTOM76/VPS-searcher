@@ -38,6 +38,12 @@ $compareText = [
     'url_copied' => $lang['compare_url_copied'],
     'pause' => $lang['compare_pause_all'],
     'resume' => $lang['compare_resume'],
+    'record_start' => $lang['compare_record_start'],
+    'record_stop' => $lang['compare_record_stop'],
+    'recording' => $lang['compare_recording'],
+    'record_saved' => $lang['compare_record_saved'],
+    'record_cancelled' => $lang['compare_record_cancelled'],
+    'record_unsupported' => $lang['compare_record_unsupported'],
 ];
 ?>
 <link rel="stylesheet" type="text/css" href="page/compare.css?v=<?php echo filemtime(__DIR__ . '/compare.css'); ?>" />
@@ -82,6 +88,11 @@ $compareText = [
         <?php endif; ?>
         <span id="compare-share-status"></span>
     </p>
+    <p>
+        <button type="button" id="compare-record" onclick="CompareRecorder.toggle()"><?php echo $lang['compare_record_start']; ?></button>
+        <span id="compare-record-status"></span><br>
+        <?php echo $lang['compare_record_help']; ?>
+    </p>
 
     <div id="compare-grid" class="compare-grid"></div>
 
@@ -124,7 +135,7 @@ $compareText = [
     var COMPARE_TEXT = <?php echo json_encode($compareText, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS); ?>;
     var COMPARE_OFFSETS = <?php echo json_encode((object)SyncOffsets::offsets()); ?>;
 </script>
-<?php foreach (['compare-slot.js', 'compare-sync.js', 'compare-play.js', 'compare-url.js', 'compare.js'] as $script): ?>
+<?php foreach (['compare-slot.js', 'compare-sync.js', 'compare-play.js', 'compare-url.js', 'compare-record.js', 'compare.js'] as $script): ?>
     <script src="page/<?php echo $script; ?>?v=<?php echo filemtime(__DIR__ . '/' . $script); ?>"></script>
 <?php endforeach; ?>
 <script>CompareVideos.loadFromUrl();</script>
