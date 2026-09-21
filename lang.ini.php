@@ -170,6 +170,16 @@ $_lang['ja'] = [
     'compare_move_right' => '後ろへ →',
     'compare_join' => 'くっつけて表示',
     'compare_join_help' => '「くっつけて表示」にすると隙間なく並びます。切り取った状態では再生ボタン等が隠れるので、上の「同時再生」「停止」で操作してください。',
+    'compare_relative' => '基準からの開始位置(秒)',
+    'compare_relative_help' => '基準は Bad Apple!! の「流れてく 時の中ででも」の「ながれ」の頭です。各動画の基準位置は全員共通で保存されていて、ここで全体の開始位置をまとめてずらせます (マイナスなら基準より前から)。',
+    'compare_base' => '基準位置(秒)',
+    'compare_base_unset' => '未設定',
+    'compare_base_here' => '現在位置を基準に',
+    'compare_base_save' => '保存',
+    'compare_base_saved' => '保存しました',
+    'compare_base_cleared' => '基準位置を削除しました',
+    'compare_base_login' => '基準位置の保存にはログインが必要です',
+    'compare_base_title' => '「ながれ」の頭の位置。動画が「ながれ」より後から始まる場合はマイナス。全ユーザー共通で保存されます (空にして保存すると削除)',
 ];
 
 $_lang['en'] = [
@@ -341,6 +351,16 @@ $_lang['en'] = [
     'compare_move_right' => 'Later →',
     'compare_join' => 'Join side by side',
     'compare_join_help' => '"Join side by side" removes the gaps. Cropped players hide their own controls, so use "Play all" and "Pause" above.',
+    'compare_relative' => 'Start relative to reference (sec)',
+    'compare_relative_help' => 'The reference is the start of "nagare" in Bad Apple!! ("Nagareteku toki no naka de demo"). Each video\'s reference position is shared by everyone, and this shifts the start of all videos at once (negative = before the reference).',
+    'compare_base' => 'Reference (sec)',
+    'compare_base_unset' => 'Not set',
+    'compare_base_here' => 'Use current position',
+    'compare_base_save' => 'Save',
+    'compare_base_saved' => 'Saved',
+    'compare_base_cleared' => 'Reference position removed',
+    'compare_base_login' => 'Log in to save reference positions',
+    'compare_base_title' => 'Where "nagare" starts; negative if the video begins after it. Shared by all users (save an empty value to remove)',
 ];
 
 $_lang['zh'] = [
@@ -512,6 +532,16 @@ $_lang['zh'] = [
     'compare_move_right' => '后移 →',
     'compare_join' => '无缝拼接显示',
     'compare_join_help' => '开启“无缝拼接显示”后视频之间没有间隙。裁剪后播放器自身的按钮会被遮住，请使用上方的“同时播放”“暂停”。',
+    'compare_relative' => '相对基准的开始位置(秒)',
+    'compare_relative_help' => '基准是 Bad Apple!!「流れてく 時の中ででも」中「ながれ」的开头。各视频的基准位置由所有人共享，可在此统一调整所有视频的开始位置（负数表示从基准之前开始）。',
+    'compare_base' => '基准位置(秒)',
+    'compare_base_unset' => '未设置',
+    'compare_base_here' => '以当前位置为基准',
+    'compare_base_save' => '保存',
+    'compare_base_saved' => '已保存',
+    'compare_base_cleared' => '已删除基准位置',
+    'compare_base_login' => '保存基准位置需要登录',
+    'compare_base_title' => '「ながれ」开头的位置，视频在其之后才开始时为负数。所有用户共享（保存空值即删除）',
 ];
 
 $_lang['ko'] = [
@@ -683,4 +713,14 @@ $_lang['ko'] = [
     'compare_move_right' => '뒤로 →',
     'compare_join' => '붙여서 표시',
     'compare_join_help' => '"붙여서 표시"를 켜면 틈 없이 나란히 표시됩니다. 잘라낸 상태에서는 재생 버튼 등이 가려지므로 위의 "동시 재생", "정지"로 조작하세요.',
+    'compare_relative' => '기준에서의 시작 위치(초)',
+    'compare_relative_help' => '기준은 Bad Apple!!의 「流れてく 時の中ででも」 중 「ながれ」의 시작입니다. 각 동영상의 기준 위치는 모두가 공유하며, 여기서 전체 시작 위치를 한꺼번에 옮길 수 있습니다 (음수면 기준보다 앞에서 시작).',
+    'compare_base' => '기준 위치(초)',
+    'compare_base_unset' => '미설정',
+    'compare_base_here' => '현재 위치를 기준으로',
+    'compare_base_save' => '저장',
+    'compare_base_saved' => '저장했습니다',
+    'compare_base_cleared' => '기준 위치를 삭제했습니다',
+    'compare_base_login' => '기준 위치를 저장하려면 로그인하세요',
+    'compare_base_title' => '「ながれ」가 시작되는 위치. 동영상이 그보다 늦게 시작하면 음수. 모든 사용자가 공유합니다 (빈 값으로 저장하면 삭제)',
 ];

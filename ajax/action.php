@@ -62,6 +62,19 @@ switch ($action) {
         }
         break;
         
+    case 'set_sync_offset':
+        // 空で送られたら基準位置を消す
+        require_once '../lib/SyncOffsets.php';
+        $videoId = (string)($_POST['video_id'] ?? '');
+        $rawOffset = trim((string)($_POST['offset'] ?? ''));
+        $offset = $rawOffset === '' ? null : (float)$rawOffset;
+
+        $saved = is_numeric($rawOffset) || $rawOffset === ''
+            ? SyncOffsets::set($videoId, $offset, $user['username'])
+            : false;
+        echo json_encode(['success' => $saved, 'offset' => $offset]);
+        break;
+
     default:
         echo json_encode(['success' => false, 'message' => $lang['error_occurred']]);
         break;
