@@ -60,6 +60,7 @@ $compareText = [
         <button type="button" id="compare-toggle" onclick="CompareVideos.togglePause()"><?php echo $lang['compare_pause_all']; ?></button>
         <button type="button" onclick="CompareVideos.clearAll()"><?php echo $lang['compare_clear']; ?></button>
         <label><input type="checkbox" id="compare-join" onchange="CompareVideos.setJoined(this.checked)"> <?php echo $lang['compare_join']; ?></label>
+        <label><input type="checkbox" id="compare-auto-sync" checked onchange="ComparePlayer.setAutoSync(this.checked)"> <?php echo $lang['compare_auto_sync']; ?></label>
     </div>
     <p><?php echo $lang['compare_join_help']; ?></p>
     <p>

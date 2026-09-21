@@ -12,15 +12,17 @@ var ComparePlayer = (function () {
     var PREPARE_TIMEOUT_MS = 8000;
     /** 再生位置を見に行く間隔。見積もりの精度はこの細かさで決まる */
     var TRACK_INTERVAL_MS = 50;
-    /** ずれを判定する間隔 */
-    var CHECK_INTERVAL_MS = 500;
-    /** 再生直後や位置を飛ばした直後はプレイヤーが揺れるので、この間は判定しない */
-    var SETTLE_MS = 1500;
-    /** これ未満のずれは直さない / 速度で寄せきったとみなす */
-    var TOLERANCE_S = 0.03;
-    /** これを超えるずれは速度では寄せきれないので位置を飛ばす */
-    var SEEK_THRESHOLD_S = 0.5;
-    var NUDGE_RATE = 0.05;
+    /** ずれを測る間隔 */
+    var CHECK_INTERVAL_MS = 100;
+    /**
+     * 1回ごとの測定は見積もりの誤差 (数十 ms) を含むので、直近この回数分の中央値で判断する。
+     * 1回ずつで判断すると誤差に反応して直し続け、かえってずれる
+     */
+    var SAMPLES = 10;
+    /** 再生直後や位置を飛ばした直後はプレイヤーが揺れるので、この間は測らない */
+    var SETTLE_MS = 3000;
+    /** これを超えてずれ続けた時だけ位置を合わせる。見積もりの誤差より十分大きくしておく */
+    var THRESHOLD_S = 0.15;
 
     var trackTimer = null;
     var checkTimer = null;
@@ -29,6 +31,7 @@ var ComparePlayer = (function () {
     var session = 0;
     var started = false;
     var playing = false;
+    var autoSync = true;
 
     function usable(entry) {
         return entry.player && typeof entry.player.seekTo === 'function' && typeof entry.player.getPlayerState === 'function';
@@ -67,40 +70,26 @@ var ComparePlayer = (function () {
         return entry.clock.reported + (performance.now() - entry.clock.at) / 1000 * rate;
     }
 
-    /** YouTube 側が 1.05 倍などの細かい速度に対応しているか (対応していなければ位置を飛ばすしかない) */
-    function canNudge(entry) {
-        if (typeof entry.player.getAvailablePlaybackRates !== 'function') return false;
-        return entry.player.getAvailablePlaybackRates().indexOf(1 + NUDGE_RATE) >= 0;
-    }
-
-    function setRate(entry, rate) {
-        if (entry.player.getPlaybackRate() !== rate) entry.player.setPlaybackRate(rate);
+    function median(values) {
+        var sorted = values.slice().sort(function (x, y) { return x - y; });
+        return sorted[Math.floor(sorted.length / 2)];
     }
 
     /**
      * @param {Object} entry
-     * @param {number} drift 基準より進んでいる秒数 (マイナスなら遅れ)
+     * @param {number} drift 多数派より進んでいる秒数 (マイナスなら遅れ)
      * @param {number} expected 本来いるべき位置
      */
     function correct(entry, drift, expected) {
-        var nudge = canNudge(entry);
-        if (Math.abs(drift) < TOLERANCE_S) {
-            if (nudge) setRate(entry, 1);
-            entry.strikes = 0;
-            return;
-        }
-        // 一度だけのずれは見積もりの誤差かもしれないので、続いた時だけ直す
-        entry.strikes = (entry.strikes || 0) + 1;
-        if (entry.strikes < 2) return;
-
-        if (nudge && Math.abs(drift) < SEEK_THRESHOLD_S) return setRate(entry, drift > 0 ? 1 - NUDGE_RATE : 1 + NUDGE_RATE);
-        if (!nudge && Math.abs(drift) < 0.1) return;
-        if (expected < 0) return;
+        entry.drifts.push(drift);
+        if (entry.drifts.length > SAMPLES) entry.drifts.shift();
+        if (entry.drifts.length < SAMPLES) return;
+        if (Math.abs(median(entry.drifts)) < THRESHOLD_S || expected < 0) return;
 
         entry.player.seekTo(expected, true);
         entry.clock = null;
+        entry.drifts = [];
         entry.settleUntil = performance.now() + SETTLE_MS;
-        entry.strikes = 0;
     }
 
     /**
@@ -109,19 +98,20 @@ var ComparePlayer = (function () {
      */
     function check(entries) {
         var now = performance.now();
+        if (!autoSync) return;
         var targets = entries.filter(function (e) { return isPlaying(e) && e.clock && !(e.settleUntil > now); });
         if (targets.length < 2) return;
 
         var elapsed = targets.map(function (e) { return estimate(e) - e.startSeconds; });
-        var median = elapsed.slice().sort(function (a, b) { return a - b; })[Math.floor(elapsed.length / 2)];
-        targets.forEach(function (e, i) { correct(e, elapsed[i] - median, e.startSeconds + median); });
+        var center = median(elapsed);
+        targets.forEach(function (e, i) { correct(e, elapsed[i] - center, e.startSeconds + center); });
     }
 
     function startWatching(entries) {
         var settleUntil = performance.now() + SETTLE_MS;
         entries.forEach(function (e) {
             e.clock = null;
-            e.strikes = 0;
+            e.drifts = [];
             e.settleUntil = settleUntil;
         });
         trackTimer = setInterval(function () { entries.filter(isPlaying).forEach(track); }, TRACK_INTERVAL_MS);
@@ -205,5 +195,10 @@ var ComparePlayer = (function () {
         resumeAll(entries);
     }
 
-    return { playAll: playAll, pauseAll: pauseAll, toggle: toggle };
+    /** @param {boolean} enabled 自動補正するか */
+    function setAutoSync(enabled) {
+        autoSync = enabled;
+    }
+
+    return { playAll: playAll, pauseAll: pauseAll, toggle: toggle, setAutoSync: setAutoSync };
 })();
