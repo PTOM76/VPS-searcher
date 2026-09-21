@@ -27,6 +27,7 @@ $compareText = [
     'move_right' => $lang['compare_move_right'],
 ];
 ?>
+<link rel="stylesheet" type="text/css" href="page/compare.css?v=<?php echo filemtime(__DIR__ . '/compare.css'); ?>" />
 <div class="compare-container">
     <h2><?php echo $lang['compare']; ?></h2>
     <p><?php echo $lang['compare_help']; ?></p>
