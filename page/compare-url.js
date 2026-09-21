@@ -1,7 +1,7 @@
 /**
  * 動画比較の状態 ⇔ URL パラメータ。
  *
- *   ?compare&v=ID~l~m~12.5,ID2&size=480&join=1&mode=start
+ *   ?compare&v=ID~l~m~12.5,ID2&size=480&join=0&mode=start
  *
  * v の各要素は「動画ID~切り取り(l/r)~ミュート(m)~開始位置」で、後ろの既定値は省く。
  * 開始位置は mode=start (動画ごとに手で決める) の時だけ入る。書式は lib/CompareQuery.php と揃えること。
@@ -50,7 +50,7 @@ var CompareUrl = (function () {
         var parts = ['compare'];
         if (state.videos.length > 0) parts.push('v=' + state.videos.map(encodeVideo).join(','));
         if (state.size !== 320) parts.push('size=' + state.size);
-        if (state.join) parts.push('join=1');
+        if (!state.join) parts.push('join=0');
         if (state.mode === 'start') parts.push('mode=start');
 
         // 言語をパラメータで指定している時は引き継ぐ (en.php 等はパスの側に入っている)
@@ -68,7 +68,7 @@ var CompareUrl = (function () {
         return {
             videos: videos,
             size: SIZES.indexOf(size) >= 0 ? size : 320,
-            join: params.get('join') === '1',
+            join: params.get('join') !== '0',
             mode: params.get('mode') === 'start' ? 'start' : 'base',
         };
     }

@@ -1,15 +1,30 @@
 /**
  * 比較画面の録画。
- * YouTube の iframe の中身はページから取り出せないので、ブラウザのタブ共有 (getDisplayMedia) でタブごと録り、
- * 対応ブラウザ (Chrome / Edge) では動画が並んでいる範囲に切り抜く (Region Capture)。
+ * YouTube の iframe の中身はページから取り出せないので、ブラウザのタブ共有 (getDisplayMedia) でタブごと受け取り、
+ * 動画が並んでいる範囲だけを canvas に描き写して、それを録画する。
+ * (Chrome の Region Capture は条件が厳しく切り抜けないことがあるので使わない)
  */
 var CompareRecorder = (function () {
     var TEXT = window.COMPARE_TEXT;
-    var MIME_TYPES = ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'];
+    /** mp4 を優先する。webm は長さが入らず、開けないプレイヤーがある */
+    var MIME_TYPES = [
+        'video/mp4;codecs=avc1.640028,mp4a.40.2',
+        'video/mp4;codecs=avc1,mp4a.40.2',
+        'video/mp4',
+        'video/webm;codecs=vp9,opus',
+        'video/webm;codecs=vp8,opus',
+        'video/webm',
+    ];
+    var FPS = 30;
+    var VIDEO_BITS_PER_SECOND = 8000000;
+    var AUDIO_BITS_PER_SECOND = 256000;
 
     var recorder = null;
-    var stream = null;
+    var captured = null;
+    var source = null;
+    var drawing = false;
     var chunks = [];
+    var mimeType = '';
 
     function supported() {
         return !!(navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia && window.MediaRecorder);
@@ -23,17 +38,6 @@ var CompareRecorder = (function () {
         document.getElementById('compare-record').textContent = recording ? TEXT.record_stop : TEXT.record_start;
     }
 
-    /**
-     * 動画が並んでいる範囲だけに切り抜く。
-     * 切り抜けない (非対応ブラウザ・別のタブを選ばれた) 時はタブ全体のまま録るので、失敗は握って先へ進める
-     */
-    function cropToGrid(track) {
-        if (!window.CropTarget || typeof track.cropTo !== 'function') return Promise.resolve();
-        return CropTarget.fromElement(document.getElementById('compare-grid'))
-            .then(function (target) { return track.cropTo(target); })
-            .catch(function () {});
-    }
-
     function pickMimeType() {
         for (var i = 0; i < MIME_TYPES.length; i++) {
             if (MediaRecorder.isTypeSupported(MIME_TYPES[i])) return MIME_TYPES[i];
@@ -41,38 +45,73 @@ var CompareRecorder = (function () {
         return '';
     }
 
-    function releaseStream() {
-        if (stream) stream.getTracks().forEach(function (track) { track.stop(); });
-        stream = null;
-        recorder = null;
-        showRecording(false);
+    /** タブの音声にはマイク向けの処理がかかって音が悪くなるので、全部切る */
+    function requestCapture() {
+        return navigator.mediaDevices.getDisplayMedia({
+            video: { frameRate: FPS },
+            audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false, channelCount: 2, sampleRate: 48000 },
+            preferCurrentTab: true,
+            selfBrowserSurface: 'include',
+            systemAudio: 'include',
+        });
     }
 
-    function fileName() {
-        var d = new Date();
-        var pad = function (n) { return String(n).padStart(2, '0'); };
-        return 'compare-' + d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate())
-            + '-' + pad(d.getHours()) + pad(d.getMinutes()) + pad(d.getSeconds()) + '.webm';
+    /** 受け取った映像を再生する (見えない) video。ここから canvas に描き写す */
+    function playSource(stream) {
+        source = document.createElement('video');
+        source.muted = true;
+        source.srcObject = stream;
+        return source.play().then(function () {
+            if (source.videoWidth > 0) return;
+            return new Promise(function (resolve) { source.onloadedmetadata = resolve; });
+        });
     }
 
-    function save() {
-        var url = URL.createObjectURL(new Blob(chunks, { type: 'video/webm' }));
-        var link = document.createElement('a');
-        link.href = url;
-        link.download = fileName();
-        link.click();
-        // クリック直後に解放するとダウンロードが始まらないブラウザがあるので、少し待つ
-        setTimeout(function () { URL.revokeObjectURL(url); }, 10000);
+    /**
+     * タブ内の CSS ピクセルの範囲を、受け取った映像のピクセルの範囲に直す。
+     * タブの映像はウィンドウの表示領域そのままなので、幅の比で拡大すればよい
+     */
+    function gridRegion() {
+        var rect = document.getElementById('compare-grid').getBoundingClientRect();
+        var scale = source.videoWidth / window.innerWidth;
+        return { x: rect.left * scale, y: rect.top * scale, w: rect.width * scale, h: rect.height * scale };
+    }
 
+    /** H.264 は幅・高さが偶数でないと作れない */
+    function even(value) {
+        return Math.max(2, Math.round(value / 2) * 2);
+    }
+
+    /**
+     * 動画の範囲だけを描き写す canvas。大きさは録画を始めた時の範囲で固定する (途中で変えるとエンコーダが壊れる)
+     * @param {boolean} crop false なら受け取った映像をそのまま描く (このタブ以外を選ばれた時)
+     */
+    function startDrawing(crop) {
+        var first = crop ? gridRegion() : { w: source.videoWidth, h: source.videoHeight };
+        var canvas = document.createElement('canvas');
+        canvas.width = even(first.w);
+        canvas.height = even(first.h);
+        var context = canvas.getContext('2d');
+
+        drawing = true;
+        (function draw() {
+            if (!drawing) return;
+            var r = crop ? gridRegion() : { x: 0, y: 0, w: source.videoWidth, h: source.videoHeight };
+            context.drawImage(source, r.x, r.y, r.w, r.h, 0, 0, canvas.width, canvas.height);
+            requestAnimationFrame(draw);
+        })();
+        return canvas.captureStream(FPS);
+    }
+
+    function startRecorder(canvasStream) {
+        var tracks = canvasStream.getVideoTracks().concat(captured.getAudioTracks());
+        mimeType = pickMimeType();
         chunks = [];
-        releaseStream();
-        showStatus(TEXT.record_saved);
-    }
-
-    function startRecorder() {
-        var mimeType = pickMimeType();
-        chunks = [];
-        recorder = new MediaRecorder(stream, mimeType ? { mimeType: mimeType } : undefined);
+        recorder = new MediaRecorder(new MediaStream(tracks), {
+            mimeType: mimeType || undefined,
+            videoBitsPerSecond: VIDEO_BITS_PER_SECOND,
+            audioBitsPerSecond: AUDIO_BITS_PER_SECOND,
+        });
         recorder.ondataavailable = function (event) {
             if (event.data.size > 0) chunks.push(event.data);
         };
@@ -82,27 +121,60 @@ var CompareRecorder = (function () {
         showStatus(TEXT.recording);
     }
 
+    function release() {
+        drawing = false;
+        if (captured) captured.getTracks().forEach(function (track) { track.stop(); });
+        captured = null;
+        source = null;
+        recorder = null;
+        showRecording(false);
+    }
+
+    function fileName(extension) {
+        var d = new Date();
+        var pad = function (n) { return String(n).padStart(2, '0'); };
+        return 'compare-' + d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate())
+            + '-' + pad(d.getHours()) + pad(d.getMinutes()) + pad(d.getSeconds()) + '.' + extension;
+    }
+
+    function save() {
+        var type = mimeType.split(';')[0] || 'video/webm';
+        var url = URL.createObjectURL(new Blob(chunks, { type: type }));
+        var link = document.createElement('a');
+        link.href = url;
+        link.download = fileName(type === 'video/mp4' ? 'mp4' : 'webm');
+        link.click();
+        // クリック直後に解放するとダウンロードが始まらないブラウザがあるので、少し待つ
+        setTimeout(function () { URL.revokeObjectURL(url); }, 10000);
+
+        chunks = [];
+        release();
+        showStatus(TEXT.record_saved);
+    }
+
     function start() {
         if (!supported()) return showStatus(TEXT.record_unsupported);
 
-        navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 30 }, audio: true, preferCurrentTab: true, selfBrowserSurface: 'include' })
-            .then(function (captured) {
-                stream = captured;
+        requestCapture()
+            .then(function (stream) {
+                captured = stream;
                 var track = stream.getVideoTracks()[0];
                 // ブラウザ側の「共有を停止」で止められた時も保存する
                 track.addEventListener('ended', stop);
-                return cropToGrid(track);
+                return playSource(stream).then(function () {
+                    // 切り抜けるのはこのタブを選ばれた時だけ (別の画面では座標が合わない)
+                    startRecorder(startDrawing(track.getSettings().displaySurface === 'browser'));
+                });
             })
-            .then(startRecorder)
             .catch(function () {
-                releaseStream();
+                release();
                 showStatus(TEXT.record_cancelled);
             });
     }
 
     function stop() {
         if (recorder && recorder.state !== 'inactive') return recorder.stop();
-        releaseStream();
+        release();
     }
 
     function toggle() {

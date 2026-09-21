@@ -4,7 +4,7 @@
 /**
  * 動画比較の状態を表す URL パラメータ。
  *
- *   ?compare&v=ID~l~m~12.5,ID2&size=480&join=1&mode=start
+ *   ?compare&v=ID~l~m~12.5,ID2&size=480&join=0&mode=start
  *
  * v の各要素は「動画ID~切り取り(l/r)~ミュート(m)~開始位置」で、後ろの既定値は省かれる。
  * 開始位置は mode=start (動画ごとに手で決める) の時だけ入る。書式は page/compare-url.js と揃えること。
@@ -28,7 +28,7 @@ class CompareQuery {
 
         $parts = ['compare', 'v=' . implode(',', $videos)];
         if (in_array($params['size'] ?? '', self::SIZES, true) && $params['size'] !== '320') $parts[] = 'size=' . $params['size'];
-        if (($params['join'] ?? '') === '1') $parts[] = 'join=1';
+        if (($params['join'] ?? '') === '0') $parts[] = 'join=0';
         if (($params['mode'] ?? '') === 'start') $parts[] = 'mode=start';
 
         return implode('&', $parts);

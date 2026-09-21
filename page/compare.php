@@ -49,7 +49,6 @@ $compareText = [
 <link rel="stylesheet" type="text/css" href="page/compare.css?v=<?php echo filemtime(__DIR__ . '/compare.css'); ?>" />
 <div class="compare-container">
     <h2><?php echo $lang['compare']; ?></h2>
-    <p><?php echo $lang['compare_help']; ?></p>
 
     <div class="compare-bar">
         <input type="text" id="compare-url" size="36" placeholder="<?php echo htmlspecialchars($lang['compare_url_placeholder']); ?>" onkeydown="if (event.key === 'Enter') CompareVideos.add()">
@@ -65,10 +64,9 @@ $compareText = [
         <button type="button" onclick="CompareVideos.playAll()"><?php echo $lang['compare_play_all']; ?></button>
         <button type="button" id="compare-toggle" onclick="CompareVideos.togglePause()"><?php echo $lang['compare_pause_all']; ?></button>
         <button type="button" onclick="CompareVideos.clearAll()"><?php echo $lang['compare_clear']; ?></button>
-        <label><input type="checkbox" id="compare-join" onchange="CompareVideos.setJoined(this.checked)"> <?php echo $lang['compare_join']; ?></label>
+        <label><input type="checkbox" id="compare-join" checked onchange="CompareVideos.setJoined(this.checked)"> <?php echo $lang['compare_join']; ?></label>
         <label><input type="checkbox" id="compare-auto-sync" checked onchange="ComparePlayer.setAutoSync(this.checked)"> <?php echo $lang['compare_auto_sync']; ?></label>
     </div>
-    <p><?php echo $lang['compare_join_help']; ?></p>
     <p>
         <?php echo $lang['compare_mode']; ?>:
         <label><input type="radio" name="compare-mode" value="base" checked onchange="CompareVideos.setMode(this.value)"> <?php echo $lang['compare_mode_base']; ?></label>
@@ -90,8 +88,7 @@ $compareText = [
     </p>
     <p>
         <button type="button" id="compare-record" onclick="CompareRecorder.toggle()"><?php echo $lang['compare_record_start']; ?></button>
-        <span id="compare-record-status"></span><br>
-        <?php echo $lang['compare_record_help']; ?>
+        <span id="compare-record-status"></span>
     </p>
 
     <div id="compare-grid" class="compare-grid"></div>
