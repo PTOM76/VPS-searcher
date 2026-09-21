@@ -55,6 +55,26 @@ var CompareVideos = (function () {
         entry.slot.classList.add('crop-' + crop);
     }
 
+    /** 基準位置が決まっている動画は、開始位置を「基準位置 + 基準からの開始位置」にする */
+    function applyStart(entry) {
+        var start = CompareSync.startOf(entry);
+        if (start === null) return;
+        entry.startSeconds = start;
+        entry.offsetInput.value = start;
+    }
+
+    /** 基準位置を調整した時は、合っているか耳で確かめられるようにその位置へ飛ばす */
+    function applyBase(entry) {
+        applyStart(entry);
+        if (entry.player && typeof entry.player.seekTo === 'function') entry.player.seekTo(Math.max(0, entry.startSeconds), true);
+    }
+
+    /** @param {number} value 基準からの開始位置 (秒)。マイナスなら基準より前から */
+    function setRelative(value) {
+        CompareSync.setRelative(value);
+        entries.forEach(applyStart);
+    }
+
     function applyMute(entry) {
         if (!entry.player || typeof entry.player.mute !== 'function') return;
         if (entry.muted) return entry.player.mute();
@@ -81,7 +101,7 @@ var CompareVideos = (function () {
             '<div class="favorite-actions">' +
             '<label><span class="compare-label-crop"></span> <select class="compare-crop"></select></label> ' +
             '<label><input type="checkbox" class="compare-mute"> <span class="compare-label-mute"></span></label><br>' +
-            '<label><span class="compare-label-start"></span> <input type="number" class="compare-offset" min="0" step="0.1" value="0" style="width:5em"></label> ' +
+            '<label><span class="compare-label-start"></span> <input type="number" class="compare-offset" step="0.1" value="0" style="width:5em"></label> ' +
             '<button type="button" class="compare-here"></button><br>' +
             '<button type="button" class="compare-left"></button> <button type="button" class="compare-right"></button> ' +
             '<button type="button" class="compare-remove"></button></div>';
@@ -104,7 +124,7 @@ var CompareVideos = (function () {
     function bindSlot(entry, q) {
         var offset = q('.compare-offset');
         offset.addEventListener('input', function () {
-            entry.startSeconds = Math.max(0, parseFloat(offset.value) || 0);
+            entry.startSeconds = parseFloat(offset.value) || 0;
         });
 
         // 頭出しを秒数で打つのは手間なので、再生位置をそのまま開始位置に写せるようにする
@@ -113,7 +133,7 @@ var CompareVideos = (function () {
             // 再生前のプレイヤーは値を返さないことがある。NaN を入れてしまわないよう確かめる
             var current = entry.player.getCurrentTime();
             if (typeof current !== 'number' || !isFinite(current)) return;
-            entry.startSeconds = Math.max(0, Math.round(current * 10) / 10);
+            entry.startSeconds = Math.round(current * 10) / 10;
             offset.value = entry.startSeconds;
         });
 
@@ -139,11 +159,16 @@ var CompareVideos = (function () {
 
         var slotId = 'compare-slot-' + (nextSlotId++);
         var built = buildSlot(slotId);
-        var entry = { slotId: slotId, videoId: videoId, startSeconds: 0, muted: false, player: null, slot: built.slot };
+        var entry = {
+            slotId: slotId, videoId: videoId, startSeconds: 0, muted: false, player: null,
+            slot: built.slot, offsetInput: built.q('.compare-offset'), base: CompareSync.baseOf(videoId),
+        };
 
         grid().appendChild(built.slot);
         entries.push(entry);
         bindSlot(entry, built.q);
+        built.slot.appendChild(CompareSync.buildRow(entry, applyBase));
+        applyStart(entry);
         loadTitle(videoId, built.q('.compare-title'));
         if (apiReady) createPlayer(entry);
 
@@ -177,7 +202,7 @@ var CompareVideos = (function () {
             height: currentWidth * 9 / 16,
             videoId: entry.videoId,
             playerVars: {
-                start: Math.floor(entry.startSeconds),
+                start: Math.max(0, Math.floor(entry.startSeconds)),
                 origin: window.location.origin,
             },
         });
@@ -214,19 +239,11 @@ var CompareVideos = (function () {
     }
 
     function playAll() {
-        entries.forEach(function (e) {
-            if (!e.player || typeof e.player.seekTo !== 'function') return;
-            // 読み込み直後はプレイヤー側の音量状態が既定に戻っていることがあるので、再生のたびに合わせ直す
-            applyMute(e);
-            e.player.seekTo(e.startSeconds, true);
-            e.player.playVideo();
-        });
+        ComparePlayer.playAll(entries);
     }
 
     function pauseAll() {
-        entries.forEach(function (e) {
-            if (e.player && typeof e.player.pauseVideo === 'function') e.player.pauseVideo();
-        });
+        ComparePlayer.pauseAll(entries);
     }
 
     function clearAll() {
@@ -253,5 +270,6 @@ var CompareVideos = (function () {
         closeFavorites: closeFavorites,
         setSize: setSize,
         setJoined: setJoined,
+        setRelative: setRelative,
     };
 })();

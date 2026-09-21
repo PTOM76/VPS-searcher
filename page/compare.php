@@ -1,5 +1,6 @@
 <?php
 // page/compare.php
+require_once __DIR__ . '/../lib/SyncOffsets.php';
 // 複数のYouTube動画を、動画ごとに開始位置を合わせて同時再生する
 
 // お気に入りはYouTube以外(ニコニコ動画等)も混在しうるため、
@@ -25,6 +26,15 @@ $compareText = [
     'mute' => $lang['compare_mute'],
     'move_left' => $lang['compare_move_left'],
     'move_right' => $lang['compare_move_right'],
+    'base' => $lang['compare_base'],
+    'base_unset' => $lang['compare_base_unset'],
+    'base_here' => $lang['compare_base_here'],
+    'base_save' => $lang['compare_base_save'],
+    'base_saved' => $lang['compare_base_saved'],
+    'base_cleared' => $lang['compare_base_cleared'],
+    'base_login' => $lang['compare_base_login'],
+    'base_title' => $lang['compare_base_title'],
+    'save_failed' => $lang['error_occurred'],
 ];
 ?>
 <link rel="stylesheet" type="text/css" href="page/compare.css?v=<?php echo filemtime(__DIR__ . '/compare.css'); ?>" />
@@ -49,6 +59,10 @@ $compareText = [
         <label><input type="checkbox" id="compare-join" onchange="CompareVideos.setJoined(this.checked)"> <?php echo $lang['compare_join']; ?></label>
     </div>
     <p><?php echo $lang['compare_join_help']; ?></p>
+    <p>
+        <label><?php echo $lang['compare_relative']; ?>: <input type="number" id="compare-relative" step="0.1" value="0" style="width:5em" onchange="CompareVideos.setRelative(parseFloat(this.value) || 0)"></label><br>
+        <?php echo $lang['compare_relative_help']; ?>
+    </p>
 
     <div id="compare-grid" class="compare-grid"></div>
 
@@ -89,6 +103,9 @@ $compareText = [
 
 <script>
     var COMPARE_TEXT = <?php echo json_encode($compareText, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS); ?>;
+    var COMPARE_OFFSETS = <?php echo json_encode((object)SyncOffsets::offsets()); ?>;
 </script>
-<script src="page/compare.js?v=<?php echo filemtime(__DIR__ . '/compare.js'); ?>"></script>
+<?php foreach (['compare-sync.js', 'compare-play.js', 'compare.js'] as $script): ?>
+    <script src="page/<?php echo $script; ?>?v=<?php echo filemtime(__DIR__ . '/' . $script); ?>"></script>
+<?php endforeach; ?>
 <script src="https://www.youtube.com/iframe_api"></script>
