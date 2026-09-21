@@ -1,7 +1,8 @@
 /**
  * 比較画面の録画。
  * YouTube の iframe の中身はページから取り出せないので、ブラウザのタブ共有 (getDisplayMedia) でタブごと受け取り、
- * 動画が並んでいる範囲だけを canvas に描き写して、それを録画する。
+ * 各動画のプレイヤー部分だけを切り出して canvas に横一列に並べ、それを録画する。
+ * (並べている入れ物ごと切り抜くと、画面幅いっぱいの余白や動画の下の題名・操作欄まで入ってしまう)
  * (Chrome の Region Capture は条件が厳しく切り抜けないことがあるので使わない)
  */
 var CompareRecorder = (function () {
@@ -67,12 +68,19 @@ var CompareRecorder = (function () {
         });
     }
 
+    /** 表示している順 (compare.js は並べ替えを CSS の order で行う) のプレイヤー部分 */
+    function views() {
+        return Array.prototype.slice.call(document.querySelectorAll('#compare-grid .compare-view')).sort(function (x, y) {
+            return (parseInt(x.parentNode.style.order, 10) || 0) - (parseInt(y.parentNode.style.order, 10) || 0);
+        });
+    }
+
     /**
-     * タブ内の CSS ピクセルの範囲を、受け取った映像のピクセルの範囲に直す。
+     * 要素の範囲を、受け取った映像のピクセルの範囲に直す。
      * タブの映像はウィンドウの表示領域そのままなので、幅の比で拡大すればよい
      */
-    function gridRegion() {
-        var rect = document.getElementById('compare-grid').getBoundingClientRect();
+    function regionOf(element) {
+        var rect = element.getBoundingClientRect();
         var scale = source.videoWidth / window.innerWidth;
         return { x: rect.left * scale, y: rect.top * scale, w: rect.width * scale, h: rect.height * scale };
     }
@@ -83,21 +91,47 @@ var CompareRecorder = (function () {
     }
 
     /**
-     * 動画の範囲だけを描き写す canvas。大きさは録画を始めた時の範囲で固定する (途中で変えるとエンコーダが壊れる)
-     * @param {boolean} crop false なら受け取った映像をそのまま描く (このタブ以外を選ばれた時)
+     * 各プレイヤーを左から順に隙間なく描く。
+     * canvas の大きさは録画を始めた時で固定する (途中で変えるとエンコーダが壊れる) ので、
+     * 始めた時の各プレイヤーの幅を覚えておき、その枠に収めて描く
+     */
+    function layoutAtStart() {
+        return views().map(function (view) {
+            var r = regionOf(view);
+            return { w: r.w, h: r.h };
+        });
+    }
+
+    function drawViews(context, slots) {
+        var x = 0;
+        views().forEach(function (view, i) {
+            if (!slots[i]) return;
+            var r = regionOf(view);
+            context.drawImage(source, r.x, r.y, r.w, r.h, x, 0, slots[i].w, slots[i].h);
+            x += slots[i].w;
+        });
+    }
+
+    /**
+     * @param {boolean} crop false なら受け取った映像をそのまま描く (ウィンドウ・画面全体を選ばれた時)
      */
     function startDrawing(crop) {
-        var first = crop ? gridRegion() : { w: source.videoWidth, h: source.videoHeight };
+        var slots = crop ? layoutAtStart() : [];
+        var width = crop ? slots.reduce(function (sum, s) { return sum + s.w; }, 0) : source.videoWidth;
+        var height = crop ? Math.max.apply(null, slots.map(function (s) { return s.h; }).concat([0])) : source.videoHeight;
+
         var canvas = document.createElement('canvas');
-        canvas.width = even(first.w);
-        canvas.height = even(first.h);
+        canvas.width = even(width);
+        canvas.height = even(height);
         var context = canvas.getContext('2d');
 
         drawing = true;
         (function draw() {
             if (!drawing) return;
-            var r = crop ? gridRegion() : { x: 0, y: 0, w: source.videoWidth, h: source.videoHeight };
-            context.drawImage(source, r.x, r.y, r.w, r.h, 0, 0, canvas.width, canvas.height);
+            context.fillStyle = '#000';
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            if (crop) drawViews(context, slots);
+            else context.drawImage(source, 0, 0, canvas.width, canvas.height);
             requestAnimationFrame(draw);
         })();
         return canvas.captureStream(FPS);
@@ -165,7 +199,7 @@ var CompareRecorder = (function () {
                     // ウィンドウ・画面全体を選ばれた時は座標が合わないので切り抜かない。
                     // タブを選んだ時の displaySurface はブラウザによって入らないことがあるので、'browser' かどうかでは判定しない
                     var surface = track.getSettings().displaySurface;
-                    startRecorder(startDrawing(surface !== 'monitor' && surface !== 'window'));
+                    startRecorder(startDrawing(surface !== 'monitor' && surface !== 'window' && views().length > 0));
                 });
             })
             .catch(function () {
