@@ -23,13 +23,24 @@ class CompareSaves {
     }
 
     /**
-     * @param string $query 先頭の ? を除いた比較ページのクエリ文字列
-     * @return bool 保存できたか (名前が空・動画が無い・上限に達している時は false)
+     * @param array $list listFor() の結果
+     * @return string 見つからなければ空文字
      */
-    public static function add(string $userId, string $name, string $query): bool {
+    public static function nameOf(array $list, string $id): string {
+        foreach ($list as $row) {
+            if ($row['id'] === $id) return $row['name'];
+        }
+        return '';
+    }
+
+    /**
+     * @param string $query 先頭の ? を除いた比較ページのクエリ文字列
+     * @return string|null 保存した比較のID。名前が空・動画が無い・上限に達している時は null
+     */
+    public static function add(string $userId, string $name, string $query): ?string {
         $name = self::normalizeName($name);
         $query = CompareQuery::normalize($query);
-        if ($name === '' || $query === null) return false;
+        if ($name === '' || $query === null) return null;
 
         $row = ['id' => bin2hex(random_bytes(8)), 'name' => $name, 'query' => $query, 'created_at' => date('Y-m-d H:i:s')];
         $added = false;
@@ -39,7 +50,25 @@ class CompareSaves {
             $added = true;
             return $rows;
         });
-        return $saved && $added;
+        return $saved && $added ? $row['id'] : null;
+    }
+
+    /**
+     * 保存済みの比較を、今の比較で上書きする
+     *
+     * @param string $query 先頭の ? を除いた比較ページのクエリ文字列
+     */
+    public static function overwrite(string $userId, string $id, string $name, string $query): bool {
+        $name = self::normalizeName($name);
+        $query = CompareQuery::normalize($query);
+        if ($name === '' || $query === null) return false;
+
+        return self::change($userId, $id, function (array $row) use ($name, $query) {
+            $row['name'] = $name;
+            $row['query'] = $query;
+            $row['updated_at'] = date('Y-m-d H:i:s');
+            return $row;
+        });
     }
 
     public static function rename(string $userId, string $id, string $name): bool {

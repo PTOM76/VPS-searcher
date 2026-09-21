@@ -1,6 +1,11 @@
 <?php
 // page/compare.php
 require_once __DIR__ . '/../lib/SyncOffsets.php';
+require_once __DIR__ . '/../lib/CompareSaves.php';
+
+$savedCompares = Auth::isLoggedIn() ? CompareSaves::listFor($currentUser['id']) : [];
+// マイページから開いた比較は、その保存分を上書き先として選んでおく
+$openedSaveId = (string)($_GET['saved'] ?? '');
 // 複数のYouTube動画を、動画ごとに開始位置を合わせて同時再生する
 
 // お気に入りはYouTube以外(ニコニコ動画等)も混在しうるため、
@@ -79,8 +84,14 @@ $compareText = [
     <p>
         <button type="button" onclick="CompareUrl.copy(document.getElementById('compare-share-status'), COMPARE_TEXT.url_copied)"><?php echo $lang['compare_copy_url']; ?></button>
         <?php if (Auth::isLoggedIn()): ?>
-            <input type="text" id="compare-save-name" size="24" maxlength="100" placeholder="<?php echo htmlspecialchars($lang['compare_save_name']); ?>">
-            <button type="button" onclick="CompareUrl.save(document.getElementById('compare-save-name').value).then(function (m) { document.getElementById('compare-share-status').textContent = m; })"><?php echo $lang['compare_save']; ?></button>
+            <select id="compare-save-target" onchange="document.getElementById('compare-save-name').value = this.value === '' ? '' : this.options[this.selectedIndex].text">
+                <option value=""><?php echo $lang['compare_save_new']; ?></option>
+                <?php foreach ($savedCompares as $saved): ?>
+                    <option value="<?php echo htmlspecialchars($saved['id']); ?>"<?php echo $saved['id'] === $openedSaveId ? ' selected' : ''; ?>><?php echo htmlspecialchars($saved['name']); ?></option>
+                <?php endforeach; ?>
+            </select>
+            <input type="text" id="compare-save-name" size="24" maxlength="100" placeholder="<?php echo htmlspecialchars($lang['compare_save_name']); ?>" value="<?php echo htmlspecialchars(CompareSaves::nameOf($savedCompares, $openedSaveId)); ?>">
+            <button type="button" onclick="CompareUrl.saveFromForm()"><?php echo $lang['compare_save']; ?></button>
         <?php else: ?>
             <?php echo $lang['compare_save_login']; ?>
         <?php endif; ?>

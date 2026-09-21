@@ -179,6 +179,11 @@ var ComparePlayer = (function () {
         entry.player.unMute();
     }
 
+    /** ミュートの切り替え。プレイヤーの用意が済んでいなければ、再生を始める時に restoreMute() で反映される */
+    function applyMute(entry) {
+        if (entry.player && typeof entry.player.mute === 'function') restoreMute(entry);
+    }
+
     /**
      * プレイヤーの読み込みが終わった時点で先に準備 (バッファ) を済ませておく。
      * 同時再生を押した時に待たずに揃って始められる
@@ -268,5 +273,5 @@ var ComparePlayer = (function () {
         started = false;
     }
 
-    return { playAll: playAll, pauseAll: pauseAll, toggle: toggle, setAutoSync: setAutoSync, reset: reset, warmUp: warmUp };
+    return { playAll: playAll, pauseAll: pauseAll, toggle: toggle, setAutoSync: setAutoSync, reset: reset, warmUp: warmUp, applyMute: applyMute };
 })();

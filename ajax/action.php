@@ -77,8 +77,19 @@ switch ($action) {
 
     case 'save_compare':
         require_once '../lib/CompareSaves.php';
-        $saved = CompareSaves::add($user['id'], (string)($_POST['name'] ?? ''), (string)($_POST['query'] ?? ''));
-        echo json_encode(['success' => $saved, 'message' => $saved ? $lang['compare_saved'] : $lang['compare_save_failed']]);
+        $compareId = (string)($_POST['compare_id'] ?? '');
+        $name = (string)($_POST['name'] ?? '');
+        $query = (string)($_POST['query'] ?? '');
+        // 新しく保存した時は、続けて上書きできるように作ったIDを返す
+        if ($compareId === '') {
+            $newId = CompareSaves::add($user['id'], $name, $query);
+            $saved = $newId !== null;
+            $compareId = (string)$newId;
+        } else {
+            $saved = CompareSaves::overwrite($user['id'], $compareId, $name, $query);
+        }
+        $done = empty($_POST['compare_id']) ? $lang['compare_saved'] : $lang['compare_overwritten'];
+        echo json_encode(['success' => $saved, 'compare_id' => $compareId, 'message' => $saved ? $done : $lang['compare_save_failed']]);
         break;
 
     default:

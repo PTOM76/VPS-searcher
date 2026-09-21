@@ -27,6 +27,10 @@ var CompareSync = (function () {
         relative = value;
     }
 
+    function getRelative() {
+        return relative;
+    }
+
     /**
      * @param {string} videoId
      * @param {number|null} value null なら消す
@@ -117,5 +121,5 @@ var CompareSync = (function () {
         return saveButton;
     }
 
-    return { baseOf: baseOf, startOf: startOf, setRelative: setRelative, buildRow: buildRow };
+    return { baseOf: baseOf, startOf: startOf, setRelative: setRelative, getRelative: getRelative, buildRow: buildRow };
 })();

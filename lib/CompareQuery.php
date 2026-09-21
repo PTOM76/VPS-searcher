@@ -4,10 +4,10 @@
 /**
  * 動画比較の状態を表す URL パラメータ。
  *
- *   ?compare&v=ID~l~m~12.5,ID2&size=480&join=0&mode=start
+ *   ?compare&v=ID~l~m~12.5,ID2&rel=-5&size=480&join=0&mode=start
  *
  * v の各要素は「動画ID~切り取り(l/r)~ミュート(m)~開始位置」で、後ろの既定値は省かれる。
- * 開始位置は mode=start (動画ごとに手で決める) の時だけ入る。書式は page/compare-url.js と揃えること。
+ * 開始位置は mode=start (動画ごとに手で決める) の時だけ、rel (基準からの開始位置) はそれ以外の時だけ入る。書式は page/compare-url.js と揃えること。
  */
 class CompareQuery {
     private const MAX_VIDEOS = 20;
@@ -27,9 +27,12 @@ class CompareQuery {
         if ($videos === []) return null;
 
         $parts = ['compare', 'v=' . implode(',', $videos)];
+        $startMode = ($params['mode'] ?? '') === 'start';
+        $rel = $params['rel'] ?? '';
+        if (!$startMode && is_numeric($rel) && (float)$rel !== 0.0 && abs((float)$rel) <= self::MAX_SECONDS) $parts[] = 'rel=' . round((float)$rel, 2);
         if (in_array($params['size'] ?? '', self::SIZES, true) && $params['size'] !== '320') $parts[] = 'size=' . $params['size'];
         if (($params['join'] ?? '') === '0') $parts[] = 'join=0';
-        if (($params['mode'] ?? '') === 'start') $parts[] = 'mode=start';
+        if ($startMode) $parts[] = 'mode=start';
 
         return implode('&', $parts);
     }

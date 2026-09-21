@@ -13,7 +13,7 @@ $savedCompares = CompareSaves::listFor($currentUser['id']);
             <?php foreach ($savedCompares as $compare): ?>
                 <tr>
                     <td>
-                        <a href="./?<?php echo htmlspecialchars($compare['query'] . $langQuery); ?>"><?php echo htmlspecialchars($compare['name']); ?></a>
+                        <a href="./?<?php echo htmlspecialchars($compare['query'] . '&saved=' . $compare['id'] . $langQuery); ?>"><?php echo htmlspecialchars($compare['name']); ?></a>
                         (<?php echo sprintf($lang['compare_video_count'], CompareQuery::countVideos($compare['query'])); ?>)
                     </td>
                     <td><?php echo htmlspecialchars($compare['created_at']); ?></td>

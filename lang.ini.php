@@ -203,6 +203,8 @@ $_lang['ja'] = [
     'compare_record_saved' => '録画を保存しました',
     'compare_record_cancelled' => '録画を開始できませんでした',
     'compare_record_unsupported' => 'このブラウザは画面録画に対応していません (PC の Chrome / Edge を使ってください)',
+    'compare_save_new' => '新しく保存',
+    'compare_overwritten' => '上書きしました',
 ];
 
 $_lang['en'] = [
@@ -407,6 +409,8 @@ $_lang['en'] = [
     'compare_record_saved' => 'Recording saved',
     'compare_record_cancelled' => 'Could not start recording',
     'compare_record_unsupported' => 'This browser does not support screen recording (use Chrome / Edge on PC)',
+    'compare_save_new' => 'Save as new',
+    'compare_overwritten' => 'Overwritten',
 ];
 
 $_lang['zh'] = [
@@ -611,6 +615,8 @@ $_lang['zh'] = [
     'compare_record_saved' => '已保存录制',
     'compare_record_cancelled' => '无法开始录制',
     'compare_record_unsupported' => '此浏览器不支持屏幕录制（请使用电脑版 Chrome / Edge）',
+    'compare_save_new' => '另存为新对比',
+    'compare_overwritten' => '已覆盖',
 ];
 
 $_lang['ko'] = [
@@ -815,4 +821,6 @@ $_lang['ko'] = [
     'compare_record_saved' => '녹화를 저장했습니다',
     'compare_record_cancelled' => '녹화를 시작할 수 없습니다',
     'compare_record_unsupported' => '이 브라우저는 화면 녹화를 지원하지 않습니다 (PC의 Chrome / Edge를 사용하세요)',
+    'compare_save_new' => '새로 저장',
+    'compare_overwritten' => '덮어썼습니다',
 ];

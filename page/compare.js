@@ -78,6 +78,7 @@ var CompareVideos = (function () {
     function setRelative(value) {
         CompareSync.setRelative(value);
         entries.forEach(refreshStart);
+        changed();
     }
 
     /**
@@ -105,15 +106,10 @@ var CompareVideos = (function () {
                 return { id: e.videoId, crop: e.crop, muted: e.muted, start: mode === 'start' ? e.manualSeconds : null };
             }),
             mode: mode,
+            rel: CompareSync.getRelative(),
             size: currentWidth,
             join: grid().classList.contains('is-joined'),
         });
-    }
-
-    function applyMute(entry) {
-        if (!entry.player || typeof entry.player.mute !== 'function') return;
-        if (entry.muted) return entry.player.mute();
-        entry.player.unMute();
     }
 
     /** 枠の操作部品を entry に結び付ける */
@@ -140,7 +136,7 @@ var CompareVideos = (function () {
         q('.compare-crop').addEventListener('change', function () { setCrop(entry, this.value); });
         q('.compare-mute').addEventListener('change', function () {
             entry.muted = this.checked;
-            applyMute(entry);
+            ComparePlayer.applyMute(entry);
             changed();
         });
         q('.compare-left').addEventListener('click', function () { move(entry, -1); });
@@ -201,6 +197,8 @@ var CompareVideos = (function () {
         document.getElementById('compare-size').value = state.size;
         document.getElementById('compare-join').checked = state.join;
         document.querySelector('input[name="compare-mode"][value="' + state.mode + '"]').checked = true;
+        document.getElementById('compare-relative').value = state.rel;
+        CompareSync.setRelative(state.rel);
         setMode(state.mode);
         setSize(state.size);
         setJoined(state.join);
