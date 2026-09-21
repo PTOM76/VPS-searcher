@@ -70,6 +70,8 @@ class Auth {
 
         foreach ($users as $user) {
             if ($user['username'] === $username && !empty($user['password']) && password_verify($password, $user['password'])) {
+                // パスワードでのログインは ChreeID の検証を経ていないので、管理者判定を持ち越さない
+                unset($_SESSION['chreeid_email']);
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['username'] = $user['username'];
 
@@ -155,6 +157,7 @@ class Auth {
      * @return void
      */
     public static function loginAsUser(array $user) {
+        unset($_SESSION['chreeid_email']);
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['username'] = $user['username'];
     }
@@ -357,21 +360,8 @@ class Auth {
         foreach ($users as $key => $user) {
             if ($user['id'] === $userId) {
                 if (!empty($user['password']) && password_verify($currentPassword, $user['password'])) {
-                    // ChreeID 側のサービスアカウントも止める (物理削除はしない)
-                    require_once __DIR__ . '/ChreeIdProvisioner.php';
-                    (new ChreeIdProvisioner())->deactivate($user);
+                    self::purgeUser($users, $key);
 
-                    // ユーザーを削除
-                    unset($users[$key]);
-                    file_put_contents(self::$usersFile, json_encode(array_values($users), JSON_UNESCAPED_UNICODE));
-                    
-                    // お気に入りも削除
-                    $favorites = json_decode(file_get_contents(self::$favoritesFile), true);
-                    if (isset($favorites[$userId])) {
-                        unset($favorites[$userId]);
-                        file_put_contents(self::$favoritesFile, json_encode($favorites, JSON_UNESCAPED_UNICODE));
-                    }
-                    
                     // セッションを削除
                     session_destroy();
                     
@@ -385,6 +375,67 @@ class Auth {
         return ['success' => false, 'message' => $lang['error_occurred']];
     }
     
+    /**
+     * ユーザーと、そのお気に入りを消す。ChreeID 側のサービスアカウントも止める (物理削除はしない)
+     *
+     * @param array $users users.json の中身
+     * @param int|string $key 消すユーザーの添字
+     * @return void
+     */
+    private static function purgeUser(array $users, $key): void {
+        $user = $users[$key];
+        require_once __DIR__ . '/ChreeIdProvisioner.php';
+        (new ChreeIdProvisioner())->deactivate($user);
+
+        unset($users[$key]);
+        file_put_contents(self::$usersFile, json_encode(array_values($users), JSON_UNESCAPED_UNICODE));
+
+        $favorites = json_decode(file_get_contents(self::$favoritesFile), true);
+        if (!isset($favorites[$user['id']])) return;
+        unset($favorites[$user['id']]);
+        file_put_contents(self::$favoritesFile, json_encode($favorites, JSON_UNESCAPED_UNICODE));
+    }
+
+    /**
+     * 管理画面用のユーザー一覧。パスワードハッシュは外に出さない
+     *
+     * @return array<int, array{id: string, username: string, email: string, created_at: string, chree_id: ?string, favorites: int}>
+     */
+    public static function getAllUsers(): array {
+        self::init();
+        $users = json_decode(file_get_contents(self::$usersFile), true);
+        $favorites = json_decode(file_get_contents(self::$favoritesFile), true);
+
+        return array_map(function ($user) use ($favorites) {
+            return [
+                'id' => $user['id'],
+                'username' => $user['username'],
+                'email' => $user['email'],
+                'created_at' => $user['created_at'] ?? '',
+                'chree_id' => $user['chree_id'] ?? null,
+                'favorites' => count($favorites[$user['id']] ?? []),
+            ];
+        }, $users);
+    }
+
+    /**
+     * 管理者がユーザーを消す。本人確認 (パスワード) は管理画面側の入室判定で代える
+     *
+     * @param string $userId
+     * @return bool 消せたか
+     */
+    public static function adminDeleteUser(string $userId): bool {
+        self::init();
+        $users = json_decode(file_get_contents(self::$usersFile), true);
+
+        foreach ($users as $key => $user) {
+            if ($user['id'] !== $userId) continue;
+            self::purgeUser($users, $key);
+            return true;
+        }
+        return false;
+    }
+
     public static function getUserDetails($userId) {
         self::init();
         

@@ -27,7 +27,8 @@ function chreeid_fail($reason) {
 $state = $_SESSION['chreeid_state'] ?? '';
 $nonce = $_SESSION['chreeid_nonce'] ?? '';
 $codeVerifier = $_SESSION['chreeid_code_verifier'] ?? '';
-unset($_SESSION['chreeid_state'], $_SESSION['chreeid_nonce'], $_SESSION['chreeid_code_verifier']);
+$returnPath = $_SESSION['chreeid_return'] ?? '';
+unset($_SESSION['chreeid_state'], $_SESSION['chreeid_nonce'], $_SESSION['chreeid_code_verifier'], $_SESSION['chreeid_return']);
 
 // ChreeID 側が拒否した。error_description に理由が入っている
 if (isset($_GET['error'])) {
@@ -60,5 +61,11 @@ if ($user === null || !isset($user['id'])) {
 
 Auth::loginAsUser($user);
 
-header('Location: ./');
+// 管理画面の入室判定に使う。users.json のメールは本人が書き換えられるので、
+// ChreeID が検証済みと言ったこのログインのメールだけを覚えておく
+if (($claims['email_verified'] ?? false) === true && is_string($claims['email'] ?? null)) {
+    $_SESSION['chreeid_email'] = strtolower($claims['email']);
+}
+
+header('Location: ./' . $returnPath);
 exit;

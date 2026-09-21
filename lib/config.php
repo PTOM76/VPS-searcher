@@ -48,6 +48,14 @@ class FilePaths {
 }
 
 /**
+ * 管理画面 (admin/) の設定
+ */
+class AdminConfig {
+    /** 管理画面に入れる ChreeID のメールアドレス。ChreeID 側で検証済みのものだけを信用する */
+    const EMAIL = 'admin@pitan76.net';
+}
+
+/**
  * URL正規表現パターン
  */
 class UrlPatterns {

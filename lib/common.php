@@ -40,13 +40,23 @@ function handlePlaylistAPI() {
         exit;
     }
 
-    if (isset($_GET["update2_" . getSecretValue('PASS')])) {
-        if (file_exists(FilePaths::PLAYLISTS_JSON)) {
-            $playlists = json_decode(file_get_contents(FilePaths::PLAYLISTS_JSON), true);
-            foreach($playlists as $id => $data) {
-                addPlaylist($id, $data['type'], false, false, true);
-            }
-        }
+    if (isset($_GET["update2_" . getSecretValue('PASS')])) refreshPlaylists(true);
+}
+
+/**
+ * 登録済みの再生リストを取り直す
+ *
+ * @param bool $full true なら次ページも辿って全件取り直す
+ * @return void
+ */
+function refreshPlaylists(bool $full = false): void {
+    file_put_contents(FilePaths::TIME_TXT, time());
+    if (!file_exists(FilePaths::PLAYLISTS_JSON)) return;
+
+    $playlists = json_decode(file_get_contents(FilePaths::PLAYLISTS_JSON), true);
+    foreach ($playlists as $id => $data) {
+        if ($full) addPlaylist($id, $data['type'], false, false, true);
+        else addPlaylist($id, $data['type']);
     }
 }
 
@@ -54,26 +64,10 @@ function handlePlaylistAPI() {
  * ファイル更新処理
  */
 function handleFileUpdates() {
-    if (file_exists(FilePaths::TIME_TXT)) {
-        $time = (int) file_get_contents(FilePaths::TIME_TXT);
-        if ($time + AppConstants::UPDATE_INTERVAL < time() || isset($_GET['update_' . getSecretValue('PASS')])) {
-            file_put_contents(FilePaths::TIME_TXT, time());
-            if (file_exists(FilePaths::PLAYLISTS_JSON)) {
-                $playlists = json_decode(file_get_contents(FilePaths::PLAYLISTS_JSON), true);
-                foreach($playlists as $id => $data) {
-                    addPlaylist($id, $data['type']);
-                }
-            }
-        }
-    } else {
-        file_put_contents(FilePaths::TIME_TXT, time());
-        if (file_exists(FilePaths::PLAYLISTS_JSON)) {
-            $playlists = json_decode(file_get_contents(FilePaths::PLAYLISTS_JSON), true);
-            foreach($playlists as $id => $data) {
-                addPlaylist($id, $data['type']);
-            }
-        }
-    }
+    if (!file_exists(FilePaths::TIME_TXT)) return refreshPlaylists();
+
+    $time = (int) file_get_contents(FilePaths::TIME_TXT);
+    if ($time + AppConstants::UPDATE_INTERVAL < time() || isset($_GET['update_' . getSecretValue('PASS')])) refreshPlaylists();
 }
 
 /**
@@ -153,40 +147,47 @@ function handlePublicPost($url, $url_type, $lang) {
  */
 function handleAdminPost($url, $url_type, $lang) {
     global $notice;
-    
-    switch ($url_type) {
+
+    addAdminEntry($url, $_POST['t']);
+    $notice .= $url_type === 'playlist' ? $lang['added_pl'] : $lang['added_vd'];
+}
+
+/**
+ * 管理者として再生リスト・動画を登録する。管理画面からも呼ぶ
+ *
+ * @param string $url 再生リスト / YouTube / ニコニコ動画 のURL
+ * @param string $type vps | material
+ * @return void
+ */
+function addAdminEntry(string $url, string $type): void {
+    switch (getUrlType($url)) {
         case "playlist":
-            $playlist_id = preg_replace(UrlPatterns::PLAYLIST_ID, '$1', $url);
-            $array = [];
-            if (file_exists(FilePaths::PLAYLISTS_JSON))
-                $array = json_decode(file_get_contents(FilePaths::PLAYLISTS_JSON), true);
-            $array[$playlist_id] = ["type" => $_POST['t']];
-            file_put_contents(FilePaths::PLAYLISTS_JSON, json_encode($array));
-            addPlaylist($playlist_id, $_POST['t']);
-            $notice .= $lang['added_pl'];
+            $playlistId = preg_replace(UrlPatterns::PLAYLIST_ID, '$1', $url);
+            addJsonEntry(FilePaths::PLAYLISTS_JSON, $playlistId, $type);
+            addPlaylist($playlistId, $type);
             break;
-            
+
         case "nicovideo":
-            $video_id = preg_replace(UrlPatterns::NICOVIDEO_ID, '$1', $url);
-            $array = [];
-            if (file_exists(FilePaths::NC_VIDEOS_JSON))
-                $array = json_decode(file_get_contents(FilePaths::NC_VIDEOS_JSON), true);
-            $array[$video_id] = ["type" => $_POST['t']];
-            file_put_contents(FilePaths::NC_VIDEOS_JSON, json_encode($array));
-            addNicovideo($video_id, $_POST['t']);
-            $notice .= $lang['added_vd'];
+            $videoId = preg_replace(UrlPatterns::NICOVIDEO_ID, '$1', $url);
+            addJsonEntry(FilePaths::NC_VIDEOS_JSON, $videoId, $type);
+            addNicovideo($videoId, $type);
             break;
-            
+
         case "youtube":
-            $video_id = preg_replace(UrlPatterns::YOUTUBE_ID, '$1', $url);
-            $array = [];
-            if (file_exists(FilePaths::YT_VIDEOS_JSON))
-                $array = json_decode(file_get_contents(FilePaths::YT_VIDEOS_JSON), true);
-            $array[$video_id] = ["type" => $_POST['t']];
-            file_put_contents(FilePaths::YT_VIDEOS_JSON, json_encode($array));
-            $notice .= $lang['added_vd'];
+            addJsonEntry(FilePaths::YT_VIDEOS_JSON, preg_replace(UrlPatterns::YOUTUBE_ID, '$1', $url), $type);
             break;
     }
+}
+
+/**
+ * ID => ["type" => ...] 形式の JSON に1件足す
+ *
+ * @return void
+ */
+function addJsonEntry(string $file, string $id, string $type): void {
+    $array = file_exists($file) ? json_decode(file_get_contents($file), true) : [];
+    $array[$id] = ["type" => $type];
+    file_put_contents($file, json_encode($array));
 }
 
 /**

@@ -17,6 +17,8 @@ $codeVerifier = ChreeIdAuth::generateCodeVerifier();
 $_SESSION['chreeid_state'] = $state;
 $_SESSION['chreeid_nonce'] = $nonce;
 $_SESSION['chreeid_code_verifier'] = $codeVerifier;
+// 戻り先は決め打ちの値だけ受け付ける (任意のURLを受けるとオープンリダイレクトになる)
+$_SESSION['chreeid_return'] = ($_GET['return'] ?? '') === 'admin' ? 'admin/' : '';
 
 $chreeIdAuth = new ChreeIdAuth();
 
