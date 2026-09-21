@@ -67,8 +67,8 @@ $compareText = [
                         ? $favorite['thumbnail']
                         : 'https://i.ytimg.com/vi/' . $favorite['video_id'] . '/mqdefault.jpg';
                     ?>
-                    <a class="favorite-item compare-picker-item" href="javascript:void(0)" onclick="CompareVideos.add('<?php echo htmlspecialchars($favorite['video_id'], ENT_QUOTES); ?>')">
-                        <img src="<?php echo htmlspecialchars($thumbnail); ?>" alt="" width="320" height="180" style="width:320px;height:180px;object-fit:cover;" loading="lazy">
+                    <a class="favorite-item compare-picker-item" style="width:240px" href="javascript:void(0)" onclick="CompareVideos.add('<?php echo htmlspecialchars($favorite['video_id'], ENT_QUOTES); ?>')">
+                        <img src="<?php echo htmlspecialchars($thumbnail); ?>" alt="" width="240" height="135" style="width:240px;height:135px;object-fit:cover;" loading="lazy">
                         <div class="favorite-title"><?php echo htmlspecialchars($favorite['title']); ?></div>
                     </a>
                 <?php endforeach; ?>
