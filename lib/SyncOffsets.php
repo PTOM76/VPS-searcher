@@ -50,7 +50,7 @@ class SyncOffsets {
                 unset($rows[$videoId]);
                 return $rows;
             }
-            $rows[$videoId] = ['offset' => round($offset, 1), 'updated_by' => $username, 'updated_at' => date('Y-m-d H:i:s')];
+            $rows[$videoId] = ['offset' => round($offset, 2), 'updated_by' => $username, 'updated_at' => date('Y-m-d H:i:s')];
             return $rows;
         });
     }

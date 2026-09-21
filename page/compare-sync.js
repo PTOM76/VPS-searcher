@@ -6,11 +6,11 @@
 var CompareSync = (function () {
     var TEXT = window.COMPARE_TEXT;
     var offsets = window.COMPARE_OFFSETS || {};
-    var NUDGES = [-1, -0.1, 0.1, 1];
+    var NUDGES = [-1, -0.1, -0.01, 0.01, 0.1, 1];
     var relative = 0;
 
-    function round1(value) {
-        return Math.round(value * 10) / 10;
+    function round2(value) {
+        return Math.round(value * 100) / 100;
     }
 
     /** @returns {number|null} 未設定なら null */
@@ -20,7 +20,7 @@ var CompareSync = (function () {
 
     /** 基準位置が未設定の動画は、動画の頭を基準とみなす (全体をずらす操作が効かないと分かりにくいため) */
     function startOf(entry) {
-        return round1((entry.base === null ? 0 : entry.base) + relative);
+        return round2((entry.base === null ? 0 : entry.base) + relative);
     }
 
     function setRelative(value) {
@@ -71,7 +71,7 @@ var CompareSync = (function () {
         label.textContent = TEXT.base + ' ';
         var input = document.createElement('input');
         input.type = 'number';
-        input.step = '0.1';
+        input.step = '0.01';
         input.style.width = '5em';
         input.placeholder = TEXT.base_unset;
         input.value = entry.base === null ? '' : entry.base;
@@ -87,19 +87,19 @@ var CompareSync = (function () {
         }
 
         input.addEventListener('change', function () {
-            setBase(input.value.trim() === '' ? null : round1(parseFloat(input.value) || 0));
+            setBase(input.value.trim() === '' ? null : round2(parseFloat(input.value) || 0));
         });
 
         row.appendChild(label);
         NUDGES.forEach(function (delta) {
             row.append(' ', button((delta > 0 ? '+' : '') + delta, function () {
-                setBase(round1((entry.base === null ? 0 : entry.base) + delta));
+                setBase(round2((entry.base === null ? 0 : entry.base) + delta));
             }));
         });
         row.appendChild(document.createElement('br'));
         row.append(button(TEXT.base_here, function () {
             if (!entry.player || typeof entry.player.getCurrentTime !== 'function') return;
-            setBase(round1(entry.player.getCurrentTime()));
+            setBase(round2(entry.player.getCurrentTime()));
         }), ' ', buildSaveButton(entry, status), ' ', status);
         return row;
     }

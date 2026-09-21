@@ -131,7 +131,7 @@ var CompareVideos = (function () {
             // 再生前のプレイヤーは値を返さないことがある。NaN を入れてしまわないよう確かめる
             var current = entry.player.getCurrentTime();
             if (typeof current !== 'number' || !isFinite(current)) return;
-            entry.manualSeconds = Math.round(current * 10) / 10;
+            entry.manualSeconds = Math.round(current * 100) / 100;
             offset.value = entry.manualSeconds;
             refreshStart(entry);
             changed();

@@ -11,8 +11,8 @@ var CompareUrl = (function () {
     var CODE_TO_CROP = { l: 'left', r: 'right' };
     var SIZES = [320, 480, 640];
 
-    function round1(value) {
-        return Math.round(value * 10) / 10;
+    function round2(value) {
+        return Math.round(value * 100) / 100;
     }
 
     /**
@@ -31,7 +31,7 @@ var CompareUrl = (function () {
 
     /** @param {{id: string, crop: string, muted: boolean, start: number|null}} video */
     function encodeVideo(video) {
-        var fields = [video.id, CROP_TO_CODE[video.crop] || '', video.muted ? 'm' : '', video.start === null ? '' : String(round1(video.start))];
+        var fields = [video.id, CROP_TO_CODE[video.crop] || '', video.muted ? 'm' : '', video.start === null ? '' : String(round2(video.start))];
         while (fields.length > 1 && fields[fields.length - 1] === '') fields.pop();
         return fields.join('~');
     }

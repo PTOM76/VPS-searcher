@@ -61,7 +61,7 @@ class CompareQuery {
             $id,
             in_array($crop, ['l', 'r'], true) ? $crop : '',
             $mute === 'm' ? 'm' : '',
-            is_numeric($start) && abs((float)$start) <= self::MAX_SECONDS ? (string)round((float)$start, 1) : '',
+            is_numeric($start) && abs((float)$start) <= self::MAX_SECONDS ? (string)round((float)$start, 2) : '',
         ];
         // 後ろの既定値は省く (URL を短くするため。compare-url.js と同じ規則)
         while (count($out) > 1 && end($out) === '') array_pop($out);
