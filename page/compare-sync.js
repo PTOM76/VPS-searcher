@@ -18,9 +18,9 @@ var CompareSync = (function () {
         return Object.prototype.hasOwnProperty.call(offsets, videoId) ? offsets[videoId] : null;
     }
 
-    /** @returns {number|null} 基準位置が未設定なら null (開始位置は手で決めてもらう) */
+    /** 基準位置が未設定の動画は、動画の頭を基準とみなす (全体をずらす操作が効かないと分かりにくいため) */
     function startOf(entry) {
-        return entry.base === null ? null : round1(entry.base + relative);
+        return round1((entry.base === null ? 0 : entry.base) + relative);
     }
 
     function setRelative(value) {

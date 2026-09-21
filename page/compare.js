@@ -63,7 +63,6 @@ var CompareVideos = (function () {
     function applyStart(entry) {
         if (entry.manualStart) return;
         var start = CompareSync.startOf(entry);
-        if (start === null) return;
         entry.startSeconds = start;
         entry.offsetInput.value = start;
     }
@@ -78,8 +77,14 @@ var CompareVideos = (function () {
 
     /** @param {number} value 基準からの開始位置 (秒)。マイナスなら基準より前から */
     function setRelative(value) {
+        // 手で決めた開始位置も、全体をずらした分だけ一緒にずらす
+        var delta = value - CompareSync.getRelative();
         CompareSync.setRelative(value);
-        entries.forEach(applyStart);
+        entries.forEach(function (e) {
+            if (!e.manualStart) return applyStart(e);
+            e.startSeconds = Math.round((e.startSeconds + delta) * 10) / 10;
+            e.offsetInput.value = e.startSeconds;
+        });
         changed();
     }
 
@@ -160,7 +165,7 @@ var CompareVideos = (function () {
         built.slot.appendChild(CompareSync.buildRow(entry, applyBase));
         restoreOptions(entry, built.q, options);
         applyStart(entry);
-        loadTitle(videoId, built.q('.compare-title'));
+        CompareSlot.loadTitle(videoId, built.q('.compare-title'));
         if (apiReady) createPlayer(entry);
 
         closeFavorites();
@@ -191,25 +196,6 @@ var CompareVideos = (function () {
         setSize(state.size);
         setJoined(state.join);
         state.videos.forEach(function (video) { add(video.id, video); });
-    }
-
-    /**
-     * 題名を出す。プレイヤーの getVideoData() は onReady が来ないと使えず、
-     * その onReady が発火しない環境があるので、oEmbed から直接取る
-     * (APIキー不要)。取れなかったときは動画IDで代える。
-     */
-    function loadTitle(videoId, titleEl) {
-        var url = 'https://www.youtube.com/oembed?url='
-            + encodeURIComponent('https://www.youtube.com/watch?v=' + videoId) + '&format=json';
-
-        fetch(url)
-            .then(function (res) { return res.ok ? res.json() : Promise.reject(res.status); })
-            .then(function (data) { return data && data.title ? data.title : videoId; })
-            .catch(function () { return videoId; })
-            .then(function (title) {
-                titleEl.textContent = title;
-                titleEl.title = title;
-            });
     }
 
     function createPlayer(entry) {

@@ -44,5 +44,24 @@ var CompareSlot = (function () {
         return { slot: slot, q: q };
     }
 
-    return { build: build };
+    /**
+     * 題名を出す。プレイヤーの getVideoData() は onReady が来ないと使えず、
+     * その onReady が発火しない環境があるので、oEmbed から直接取る
+     * (APIキー不要)。取れなかったときは動画IDで代える。
+     */
+    function loadTitle(videoId, titleEl) {
+        var url = 'https://www.youtube.com/oembed?url='
+            + encodeURIComponent('https://www.youtube.com/watch?v=' + videoId) + '&format=json';
+
+        fetch(url)
+            .then(function (res) { return res.ok ? res.json() : Promise.reject(res.status); })
+            .then(function (data) { return data && data.title ? data.title : videoId; })
+            .catch(function () { return videoId; })
+            .then(function (title) {
+                titleEl.textContent = title;
+                titleEl.title = title;
+            });
+    }
+
+    return { build: build, loadTitle: loadTitle };
 })();

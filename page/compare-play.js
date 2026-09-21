@@ -23,6 +23,8 @@ var ComparePlayer = (function () {
     var SETTLE_MS = 3000;
     /** これを超えてずれ続けた時だけ位置を合わせる。見積もりの誤差より十分大きくしておく */
     var THRESHOLD_S = 0.15;
+    /** 読み込みが終わらない動画を待つ上限。これを過ぎたら測定を諦める */
+    var SEEK_TIMEOUT_MS = 5000;
 
     var trackTimer = null;
     var checkTimer = null;
@@ -32,6 +34,11 @@ var ComparePlayer = (function () {
     var started = false;
     var playing = false;
     var autoSync = true;
+    /**
+     * 位置を飛ばしてから実際に動き出すまでの秒数 (読み込み時間) の見込み。
+     * 飛ばしている間も他の動画は進むので、この分だけ先に飛ばす。実測するたびに更新する
+     */
+    var seekLatencyS = 0.2;
 
     function usable(entry) {
         return entry.player && typeof entry.player.seekTo === 'function' && typeof entry.player.getPlayerState === 'function';
@@ -86,10 +93,33 @@ var ComparePlayer = (function () {
         if (entry.drifts.length < SAMPLES) return;
         if (Math.abs(median(entry.drifts)) < THRESHOLD_S || expected < 0) return;
 
-        entry.player.seekTo(expected, true);
+        var target = expected + seekLatencyS;
+        entry.player.seekTo(target, true);
+        entry.seek = { target: target, at: performance.now() };
         entry.clock = null;
         entry.drifts = [];
-        entry.settleUntil = performance.now() + SETTLE_MS;
+        // 落ち着くまでの待ちは、読み込みが終わって動き出してから数える (watchSeek)
+        entry.settleUntil = Infinity;
+    }
+
+    /**
+     * 飛ばした動画が動き出したかを見て、読み込み時間を測る。
+     * 読み込み中は状態が「再生中」のままでも位置が進まないので、飛び先を越えたかで判断し、
+     * 越えた分 (動き出してから経った時間) を差し引く
+     */
+    function watchSeek(entry) {
+        if (!entry.seek) return;
+        var now = performance.now();
+        var waited = (now - entry.seek.at) / 1000;
+        var progressed = entry.player.getCurrentTime() - entry.seek.target;
+
+        if (isPlaying(entry) && progressed > 0 && progressed < waited) {
+            seekLatencyS = (seekLatencyS + (waited - progressed)) / 2;
+        } else if (now - entry.seek.at < SEEK_TIMEOUT_MS) {
+            return;
+        }
+        entry.seek = null;
+        entry.settleUntil = now + SETTLE_MS;
     }
 
     /**
@@ -112,9 +142,13 @@ var ComparePlayer = (function () {
         entries.forEach(function (e) {
             e.clock = null;
             e.drifts = [];
+            e.seek = null;
             e.settleUntil = settleUntil;
         });
-        trackTimer = setInterval(function () { entries.filter(isPlaying).forEach(track); }, TRACK_INTERVAL_MS);
+        trackTimer = setInterval(function () {
+            entries.filter(usable).forEach(watchSeek);
+            entries.filter(isPlaying).forEach(track);
+        }, TRACK_INTERVAL_MS);
         checkTimer = setInterval(function () { check(entries); }, CHECK_INTERVAL_MS);
     }
 

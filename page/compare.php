@@ -64,7 +64,7 @@ $compareText = [
     </div>
     <p><?php echo $lang['compare_join_help']; ?></p>
     <p>
-        <label><?php echo $lang['compare_relative']; ?>: <input type="number" id="compare-relative" step="0.1" value="0" style="width:5em" onchange="CompareVideos.setRelative(parseFloat(this.value) || 0)"></label><br>
+        <label><?php echo $lang['compare_relative']; ?>: <input type="number" id="compare-relative" step="0.1" value="0" style="width:5em" oninput="CompareVideos.setRelative(parseFloat(this.value) || 0)"></label><br>
         <?php echo $lang['compare_relative_help']; ?>
     </p>
     <p>
