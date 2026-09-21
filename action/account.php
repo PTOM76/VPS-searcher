@@ -113,9 +113,42 @@ if (!empty($userDetails['chree_id'])) {
 } elseif (ChreeIdProvisioner::isEnabled()) {
     $chreeIdStatus = 'not_provisioned';
 }
+
+$langQuery = $useLang !== 'ja' ? '&lang=' . $useLang : '';
+$favoriteCount = count(Auth::getFavorites($currentUser['id']));
 ?>
 
-<div class="auth-container">
+<div class="mypage-container">
+    <div class="favorites-header">
+        <h1><?php echo $lang['mypage']; ?></h1>
+    </div>
+
+    <?php if (!empty($message)): ?>
+        <div class="message <?php echo $messageType; ?>">
+            <?php echo htmlspecialchars($message); ?>
+        </div>
+    <?php endif; ?>
+
+    <div class="account-section">
+        <h2><?php echo $lang['user_info']; ?></h2>
+        <table class="mypage-info">
+            <tr><th><?php echo $lang['username']; ?></th><td><?php echo htmlspecialchars($userDetails['username']); ?></td></tr>
+            <tr><th><?php echo $lang['email']; ?></th><td><?php echo htmlspecialchars($userDetails['email']); ?></td></tr>
+            <?php if (!empty($userDetails['created_at'])): ?>
+                <tr><th><?php echo $lang['registered_at']; ?></th><td><?php echo htmlspecialchars($userDetails['created_at']); ?></td></tr>
+            <?php endif; ?>
+        </table>
+    </div>
+
+    <div class="account-section">
+        <h2><?php echo $lang['quick_links']; ?></h2>
+        <ul class="mypage-links">
+            <li><a href="?do=favorites<?php echo $langQuery; ?>"><?php echo $lang['view_favorites']; ?></a> (<?php echo sprintf($lang['favorites_count'], $favoriteCount); ?>)</li>
+            <li><a href="?compare<?php echo $langQuery; ?>"><?php echo $lang['compare']; ?></a></li>
+            <li><a href="?do=logout"><?php echo $lang['logout']; ?></a></li>
+        </ul>
+    </div>
+
     <?php if ($chreeIdStatus !== 'disabled'): ?>
     <div class="account-section">
         <h2>ChreeID連携</h2>
@@ -132,21 +165,9 @@ if (!empty($userDetails['chree_id'])) {
     </div>
     <?php endif; ?>
 
-    <div class="account-section">
-        <h2><?php echo $lang['favorites']; ?></h2>
-        お気に入りに入れたものは以下のリンクから確認できます。
-        <p><a href="?do=favorites"><?php echo $lang['favorites']; ?></a></p>
-    </div>
-
-    <div class="auth-header">
+    <div class="favorites-header">
         <h1><?php echo $lang['account_settings']; ?></h1>
     </div>
-
-    <?php if (!empty($message)): ?>
-        <div class="message <?php echo $messageType; ?>">
-            <?php echo htmlspecialchars($message); ?>
-        </div>
-    <?php endif; ?>
 
     <div class="account-section">
         <h2><?php echo $lang['change_password']; ?></h2>

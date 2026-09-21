@@ -58,7 +58,7 @@
 <h3>Internal Links</h3>
 <ul>
     <li><a href="./?statistics">統計データ</a></li>
-    <li><a href="./?compare">動画比較</a></li>
+    <li><a href="./?compare"><?php echo $lang['compare']; ?></a></li>
     <li><a href="./ai/">AIによるタイトルラベリングツール</a></li>
     <li><a href="./?post">データ送信</a></li>
 </ul>

@@ -23,12 +23,20 @@ if (isset($_POST['remove_favorite'])) {
 
 // お気に入り一覧を取得
 $favorites = Auth::getFavorites($user['id']);
+$langQuery = $useLang !== 'ja' ? '&lang=' . $useLang : '';
 ?>
 
 <div class="favorites-container">
     <div class="favorites-header">
-        <h1><?php echo $lang['favorites'] ?? 'お気に入り動画'; ?></h1>
-        <a href="./" class="plain"><?php echo $lang['back'] ?? '戻る'; ?></a>
+        <h1><?php echo $lang['favorites']; ?></h1>
+        <p>
+            <?php echo sprintf($lang['favorites_count'], count($favorites)); ?>
+            | <a href="?do=account<?php echo $langQuery; ?>"><?php echo $lang['mypage']; ?></a>
+            | <a href="?compare<?php echo $langQuery; ?>"><?php echo $lang['compare']; ?></a>
+        </p>
+        <?php if (!empty($favorites)): ?>
+            <p><?php echo $lang['favorites_desc']; ?></p>
+        <?php endif; ?>
     </div>
 
     <?php if (!empty($message)): ?>
@@ -39,15 +47,23 @@ $favorites = Auth::getFavorites($user['id']);
 
     <?php if (empty($favorites)): ?>
         <div class="empty-message">
-            <h3><?php echo $lang['no_favorites'] ?? 'お気に入りがありません'; ?></h3>
-            <p><?php echo $lang['no_favorites_desc'] ?? '動画をお気に入りに追加すると、ここに表示されます。'; ?></p>
+            <h3><?php echo $lang['no_favorites']; ?></h3>
+            <p><?php echo $lang['no_favorites_desc']; ?></p>
         </div>
     <?php else: ?>
         <div class="favorites-grid">
             <?php foreach ($favorites as $favorite): ?>
                 <div class="favorite-item">
-                    <?php if (!empty($favorite['thumbnail'])): ?>
-                        <img src="<?php echo htmlspecialchars($favorite['thumbnail']); ?>" 
+                    <?php
+                    // 古いお気に入りはサムネイル未保存のことがある。YouTubeならIDから導ける
+                    $thumbnail = $favorite['thumbnail'] ?? '';
+                    if (empty($thumbnail) && preg_match('/^[A-Za-z0-9_-]{11}$/', $favorite['video_id'])) $thumbnail = 'https://i.ytimg.com/vi/' . $favorite['video_id'] . '/mqdefault.jpg';
+                    ?>
+                    <?php if (!empty($thumbnail)): ?>
+                        <img src="<?php echo htmlspecialchars($thumbnail); ?>" 
+                             class="favorite-thumbnail"
+                             loading="lazy"
+                             title="<?php echo htmlspecialchars($lang['favorites_desc']); ?>"
                              alt="Thumbnail" 
                              width="320"
                              height="180"
@@ -68,14 +84,14 @@ $favorites = Auth::getFavorites($user['id']);
                     <?php endif; ?>
                     
                     <div class="favorite-date">
-                        <?php echo $lang['added_date'] ?? '追加日'; ?>: <?php echo htmlspecialchars($favorite['added_at']); ?>
+                        <?php echo $lang['added_date']; ?>: <?php echo htmlspecialchars($favorite['added_at']); ?>
                     </div>
                     
                     <div class="favorite-actions">
-                        <a href="./?title=1&q=<?php echo urlencode($favorite['title']); ?>"><?php echo $lang['search_view'] ?? '検索で見る'; ?></a>
+                        <a href="./?title=1&q=<?php echo urlencode($favorite['title']); ?>"><?php echo $lang['search_view']; ?></a>
                         <form method="POST">
                             <input type="hidden" name="video_id" value="<?php echo htmlspecialchars($favorite['video_id']); ?>">
-                            <input type="submit" name="remove_favorite" value="<?php echo $lang['remove'] ?? '削除'; ?>" onclick="return confirm('<?php echo $lang['confirm_remove'] ?? 'お気に入りから削除しますか？'; ?>')">
+                            <input type="submit" name="remove_favorite" value="<?php echo $lang['remove']; ?>" onclick="return confirm('<?php echo htmlspecialchars(addslashes($lang['confirm_remove']), ENT_QUOTES); ?>')">
                         </form>
                     </div>
                 </div>
