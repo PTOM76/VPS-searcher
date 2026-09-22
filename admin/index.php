@@ -22,7 +22,7 @@ Auth::setLanguage($lang);
 $adminText = $_adminLang[$useLang];
 $currentUser = Auth::getCurrentUser();
 
-const ADMIN_TABS = ['reports', 'blacklist', 'data', 'users'];
+const ADMIN_TABS = ['reports', 'blacklist', 'data', 'users', 'stats'];
 $tab = in_array($_GET['tab'] ?? '', ADMIN_TABS, true) ? $_GET['tab'] : 'reports';
 
 if (AdminAuth::isAdmin() && $_SERVER['REQUEST_METHOD'] === 'POST') {
