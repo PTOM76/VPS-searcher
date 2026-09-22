@@ -11,7 +11,7 @@ $days = in_array((int)($_GET['days'] ?? 0), STATS_PERIODS, true) ? (int)$_GET['d
 $analytics = new SearchAnalytics($days);
 
 $index = file_exists(FilePaths::INDEX_JSON) ? json_decode(file_get_contents(FilePaths::INDEX_JSON), true) : [];
-$typeCounts = array_count_values(array_map(fn($v) => (string)($v['type'] ?? ''), $index));
+$typeCounts = array_count_values(array_map(function ($v) { return (string)($v['type'] ?? ''); }, $index));
 $latest = reset($index);
 $latestId = key($index);
 ?>

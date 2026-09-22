@@ -27,9 +27,9 @@ if (isset($_POST['do'])) {
     $url = $_POST['url'];
 
     $url_type = "none";
-    if (false !== strpos($url, 'list=') || str_starts_with($url, 'PL')) {
+    if (false !== strpos($url, 'list=') || strpos($url, 'PL') === 0) {
         $url_type = "playlist";
-    } else if (false !== strpos($url, 'watch/sm') || str_starts_with($url, 'sm')) {
+    } else if (false !== strpos($url, 'watch/sm') || strpos($url, 'sm') === 0) {
         $url_type = "nicovideo";
     }
 }

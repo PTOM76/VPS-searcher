@@ -42,7 +42,7 @@ class SearchAnalytics {
      * @return array<int, array{date: string, uri: string, word: string}>
      */
     public function recent(int $limit): array {
-        return array_slice(array_values(array_filter($this->entries, fn($e) => $e['word'] !== '')), 0, $limit);
+        return array_slice(array_values(array_filter($this->entries, function ($e) { return $e['word'] !== ''; })), 0, $limit);
     }
 
     /**

@@ -63,7 +63,7 @@ function handleFileUpdates() {
  * URL種別の判定
  */
 function getUrlType($url) {
-    if (false !== strpos($url, 'list=') || str_starts_with($url, 'PL')) {
+    if (false !== strpos($url, 'list=') || strpos($url, 'PL') === 0) {
         return "playlist";
     } else if (NicoVideo::matches($url)) {
         return "nicovideo";
