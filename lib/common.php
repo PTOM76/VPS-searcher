@@ -2,6 +2,7 @@
 // 共通関数とユーティリティ
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/error_handler.php';
+require_once __DIR__ . '/YoutubeVideo.php';
 
 /**
  * アナリティクス処理
@@ -25,9 +26,12 @@ function handleAnalytics() {
  */
 function refreshPlaylists(bool $full = false): void {
     file_put_contents(FilePaths::TIME_TXT, time());
-    if (!file_exists(FilePaths::PLAYLISTS_JSON)) return;
 
-    $playlists = json_decode(file_get_contents(FilePaths::PLAYLISTS_JSON), true);
+    // playlists.json が消えても既定の再生リストだけは取り込み続ける (無いと何も更新されず time.txt だけ進む)
+    $playlists = [];
+    foreach (PlaylistConfig::getDefaultPlaylists() as $id => $type) $playlists[$id] = ['type' => $type];
+    if (file_exists(FilePaths::PLAYLISTS_JSON)) $playlists = array_merge($playlists, json_decode(file_get_contents(FilePaths::PLAYLISTS_JSON), true) ?: []);
+
     foreach ($playlists as $id => $data) {
         if ($full) addPlaylist($id, $data['type'], false, false, true);
         else addPlaylist($id, $data['type']);
@@ -118,26 +122,29 @@ function handlePublicPost($url, $url_type, $lang) {
  *
  * @param string $url 再生リスト / YouTube / ニコニコ動画 のURL
  * @param string $type vps | material
- * @return void
+ * @return bool 登録できたら true
  */
-function addAdminEntry(string $url, string $type): void {
+function addAdminEntry(string $url, string $type): bool {
     switch (getUrlType($url)) {
         case "playlist":
             $playlistId = preg_replace(UrlPatterns::PLAYLIST_ID, '$1', $url);
             addJsonEntry(FilePaths::PLAYLISTS_JSON, $playlistId, $type);
             addPlaylist($playlistId, $type);
-            break;
+            return true;
 
         case "nicovideo":
             $videoId = preg_replace(UrlPatterns::NICOVIDEO_ID, '$1', $url);
             addJsonEntry(FilePaths::NC_VIDEOS_JSON, $videoId, $type);
             addNicovideo($videoId, $type);
-            break;
+            return true;
 
         case "youtube":
-            addJsonEntry(FilePaths::YT_VIDEOS_JSON, preg_replace(UrlPatterns::YOUTUBE_ID, '$1', $url), $type);
-            break;
+            $videoId = YoutubeVideo::parseId($url);
+            if ($videoId === null || !YoutubeVideo::add($videoId, $type)) return false;
+            addJsonEntry(FilePaths::YT_VIDEOS_JSON, $videoId, $type);
+            return true;
     }
+    return true;
 }
 
 /**
@@ -603,7 +610,7 @@ function addPlaylist($playlist_id, $type, $nextPageToken = false, $only = false,
             'publishedAt' => strtotime($video_output->items[0]->snippet->publishedAt),
             'view' => $video_output->items[0]->statistics->viewCount,
             'like' => $video_output->items[0]->statistics->likeCount,
-            'tags' => (array) $video_output->items[0]->snippet->tags,
+            'tags' => (array) ($video_output->items[0]->snippet->tags ?? []),
             'type' => $type,
             'status' => $video_output->items[0]->status->privacyStatus,
         ];
@@ -613,11 +620,14 @@ function addPlaylist($playlist_id, $type, $nextPageToken = false, $only = false,
     array_multisort(array_column($index, 'publishedAt'), SORT_DESC, $index);
     
     file_put_contents(FilePaths::INDEX_JSON, json_encode($index, JSON_UNESCAPED_UNICODE));
+    // 次ページは再帰で辿るので、持ったままだと階層ごとに index が積み上がって memory_limit を超える
+    $nextPageToken = $output->nextPageToken ?? null;
+    unset($index, $output, $video_output);
 
-    if ((!$only || $nextWithOnly) && isset($output->nextPageToken)) {
-        addPlaylist($playlist_id, $type, $output->nextPageToken);
-    } else if (isset($output->nextPageToken)) {
-        return $output->nextPageToken;
+    if ((!$only || $nextWithOnly) && $nextPageToken !== null) {
+        addPlaylist($playlist_id, $type, $nextPageToken);
+    } else if ($nextPageToken !== null) {
+        return $nextPageToken;
     }
 }
 

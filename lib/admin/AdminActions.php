@@ -75,8 +75,7 @@ class AdminActions {
         if ($url === '' || !in_array($type, ['vps', 'material'], true)) return $this->text['failed'];
 
         set_time_limit(0);
-        addAdminEntry($url, $type);
-        return $this->text['data_added'];
+        return $this->result(addAdminEntry($url, $type), 'data_added');
     }
 
     /** 自分を消すと管理画面から締め出されるので、画面側で隠すだけでなくここでも止める */
