@@ -26,9 +26,15 @@ const ADMIN_TABS = ['reports', 'blacklist', 'data', 'users', 'stats'];
 $tab = in_array($_GET['tab'] ?? '', ADMIN_TABS, true) ? $_GET['tab'] : 'reports';
 
 if (AdminAuth::isAdmin() && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    $_SESSION['admin_flash'] = AdminAuth::verifyCsrf((string)($_POST['csrf'] ?? ''))
-        ? (new AdminActions($adminText))->handle($_POST)
-        : $adminText['csrf_failed'];
+    try {
+        $_SESSION['admin_flash'] = AdminAuth::verifyCsrf((string)($_POST['csrf'] ?? ''))
+            ? (new AdminActions($adminText))->handle($_POST)
+            : $adminText['csrf_failed'];
+    } catch (Throwable $e) {
+        // 500 で真っ白にせず、原因を画面とログに残して管理画面に戻す
+        ErrorHandler::log($e->getMessage() . "\n" . $e->getTraceAsString());
+        $_SESSION['admin_flash'] = $adminText['failed'] . ': ' . $e->getMessage();
+    }
     // 再読み込みで同じ操作が二重に走らないよう、結果を持って GET に戻す
     header('Location: ./?tab=' . $tab);
     exit;

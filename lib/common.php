@@ -3,6 +3,7 @@
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/error_handler.php';
 require_once __DIR__ . '/YoutubeVideo.php';
+require_once __DIR__ . '/NicoVideo.php';
 
 /**
  * アナリティクス処理
@@ -64,7 +65,7 @@ function handleFileUpdates() {
 function getUrlType($url) {
     if (false !== strpos($url, 'list=') || str_starts_with($url, 'PL')) {
         return "playlist";
-    } else if (false !== strpos($url, 'watch/sm') || str_starts_with($url, 'sm')) {
+    } else if (NicoVideo::matches($url)) {
         return "nicovideo";
     } else {
         return "youtube";
@@ -110,7 +111,7 @@ function handlePublicPost($url, $url_type, $lang) {
             break;
             
         case "nicovideo":
-            $video_id = preg_replace(UrlPatterns::NICOVIDEO_ID, '$1', $url);
+            $video_id = NicoVideo::parseId($url);
             FilePaths::ensureDirectoryExists(FilePaths::QUEUE_DIR);
             file_put_contents(FilePaths::QUEUE_DIR . "nc_" . $video_id . ".txt", 
                 "ID: {$video_id}\nURL: " . $_POST['url'] . "\nType: " . $_POST['t']);
@@ -143,9 +144,9 @@ function addAdminEntry(string $url, string $type): bool {
             return true;
 
         case "nicovideo":
-            $videoId = preg_replace(UrlPatterns::NICOVIDEO_ID, '$1', $url);
+            $videoId = NicoVideo::parseId($url);
+            if ($videoId === null || !NicoVideo::add($videoId, $type)) return false;
             addJsonEntry(FilePaths::NC_VIDEOS_JSON, $videoId, $type);
-            addNicovideo($videoId, $type);
             return true;
 
         case "youtube":
@@ -511,40 +512,6 @@ function renderFooter($lang, $useLang, $isMatrix = false) {
 <strong>XML/Feed:</strong> <a href="{$pathPrefix}sitemap.xml">Sitemap</a> | <a href="{$pathPrefix}rss.xml">RSS</a> | <a href="{$pathPrefix}feed.atom">Atom</a><br />
 Copyright {$copyrightYears} © {$author}.</span>
 EOD;
-}
-
-function addNicovideo($video_id, $type) {
-    $api_url = "https://ext.nicovideo.jp/api/getthumbinfo/" . $video_id;
-    $xml = file_get_contents($api_url);
-    $array = json_decode(json_encode(simplexml_load_string($xml)), true);
-
-    $index = [];
-    if (file_exists(FilePaths::INDEX_JSON))
-        $index = json_decode(file_get_contents(FilePaths::INDEX_JSON), true);
-      
-    $thumb = $array['thumb'];
-
-    $index[$video_id] = [
-        'is_nicovideo' => true,
-        'title' => $thumb['title'],
-        'description' => $thumb['description'],
-        'channelId' => $thumb['user_id'],
-        'channelTitle' => $thumb['user_nickname'],
-        'publishedAt' => strtotime($thumb['first_retrieve']),
-        'view' => $thumb['view_counter'],
-        'tags' => array_values($thumb['tags']),
-        'type' => $type,
-    ];
-
-    // サムネイル保存処理
-    FilePaths::ensureDirectoryExists(FilePaths::CACHE_THUMB_DIR);
-    file_put_contents(FilePaths::CACHE_THUMB_DIR . $video_id . ".jpg", file_get_contents($thumb['thumbnail_url']));
-
-    $index = ((array) $index);
-    array_multisort(array_column($index, 'publishedAt'), SORT_DESC, $index);
-        
-    file_put_contents(FilePaths::INDEX_JSON, json_encode($index, JSON_UNESCAPED_UNICODE));
-    return;
 }
 
 function addPlaylist($playlist_id, $type, $nextPageToken = false, $only = false, $nextWithOnly = false) {

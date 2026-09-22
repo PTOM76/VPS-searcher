@@ -59,12 +59,17 @@ class YoutubeVideo {
         $url = "https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics,status&key=" . API_KEY . "&id=" . urlencode($videoId);
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        // 本番サーバは CA 証明書で検証が通らないため、addPlaylist() と同じく検証を切る
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
         $body = curl_exec($ch);
         $error = curl_error($ch);
         curl_close($ch);
         if ($body === false) throw new RuntimeException("YouTube API fetch failed: {$videoId} ({$error})");
 
         $json = json_decode($body);
+        // quota 切れ等を「動画が無い」と区別して管理画面に出す
+        if (isset($json->error)) throw new RuntimeException("YouTube API error: " . strip_tags((string)$json->error->message));
         return $json->items[0] ?? null;
     }
 }

@@ -59,8 +59,7 @@ class AdminConfig {
  * URL正規表現パターン
  */
 class UrlPatterns {
-    const PLAYLIST_ID = '/.*?&list\=(.*?)/u';
-    const NICOVIDEO_ID = '/.*?(sm.*?)/u';
+    const PLAYLIST_ID = '/.*?[?&]list=([A-Za-z0-9_-]+).*/u';
     const YOUTUBE_ID = '/.*?watch\?v\=(.*?)/u';
 }
 
