@@ -12,6 +12,9 @@ require_once './lib/common.php';
 // アナリティクス処理
 handleAnalytics();
 
+// 新着取り込み (cron 用 URL)
+handlePlaylistAPI();
+
 // ファイル更新処理
 handleFileUpdates();
 

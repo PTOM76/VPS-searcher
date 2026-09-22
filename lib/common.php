@@ -34,8 +34,18 @@ function refreshPlaylists(bool $full = false): void {
 
     foreach ($playlists as $id => $data) {
         if ($full) addPlaylist($id, $data['type'], false, false, true);
-        else addPlaylist($id, $data['type']);
+        // 通常更新は1ページ目の未登録分だけ。全ページ×全動画で videos API を叩くと重く、quota も尽きる
+        else addPlaylist($id, $data['type'], false, true);
     }
+}
+
+/**
+ * ?<PASS> で新着だけ取り込む。cron から叩いている URL なので残す
+ *
+ * @return void
+ */
+function handlePlaylistAPI(): void {
+    if (isset($_GET[getSecretValue('PASS')])) refreshPlaylists();
 }
 
 /**
