@@ -764,30 +764,42 @@ function filterVideos($index, $queryParams) {
         }
     }
 
+    // 比較用の正規化(漢数字→数字、全角→半角、カタカナ→ひらがな、小文字化)
+    $normalize = function ($text) {
+        return mb_strtolower(mb_convert_kana(kan2num((string)$text), "Hc"));
+    };
+    $normalizedWords = array_map($normalize, $words);
+    $useTitle = isset($queryParams['title']) && $queryParams['title'] === "1";
+    $useExpl = isset($queryParams['expl']) && $queryParams['expl'] === "1";
+    $useAuthor = isset($queryParams['author']) && $queryParams['author'] === "1";
+    $useTag = isset($queryParams['tag']) && $queryParams['tag'] === "1";
+
     $filtered = [];
     foreach ($index as $id => $data) {
         $continue = false;
-        foreach ($words as $word) {
-            if (!isset($queryParams['method']) || $queryParams['method'] === "and") {
-                if (
-                       (!isset($queryParams['title']) || $queryParams['title'] !== "1" || false === strpos(mb_strtolower(mb_convert_kana(kan2num($data['title']), "Hc")), mb_strtolower(mb_convert_kana(kan2num($word), "Hc"))))
-                    && (!isset($queryParams['expl']) || $queryParams['expl'] !== "1" || false === strpos(mb_strtolower($data['description']), mb_strtolower($word)))
-                    && (!isset($queryParams['author']) || $queryParams['author'] !== "1" || false === strpos(mb_strtolower($data['channelTitle']), mb_strtolower($word))) 
-                    && (!isset($queryParams['tag']) || $queryParams['tag'] !== "1" || false === strpos(mb_strtolower(implode(",", $data['tags'])), mb_strtolower($word)))
-                ) {
-                    $continue = true;
+        if (count($normalizedWords) > 0) {
+            $haystacks = [];
+            if ($useTitle) $haystacks[] = $normalize($data['title'] ?? '');
+            if ($useExpl) $haystacks[] = $normalize($data['description'] ?? '');
+            if ($useAuthor) $haystacks[] = $normalize($data['channelTitle'] ?? '');
+            if ($useTag) $haystacks[] = $normalize(implode(",", $data['tags'] ?? []));
+        }
+        foreach ($normalizedWords as $word) {
+            $found = false;
+            foreach ($haystacks as $haystack) {
+                if (false !== strpos($haystack, $word)) {
+                    $found = true;
+                    break;
                 }
             }
+            if ($found) continue;
+
+            if (!isset($queryParams['method']) || $queryParams['method'] === "and") {
+                $continue = true;
+            }
             if (isset($queryParams['method']) && $queryParams['method'] === "or") {
-                if (
-                       (!isset($queryParams['title']) || $queryParams['title'] !== "1" || false === strpos(mb_strtolower(mb_convert_kana(kan2num($data['title']), "Hc")), mb_strtolower(mb_convert_kana(kan2num($word), "Hc"))))
-                    && (!isset($queryParams['expl']) || $queryParams['expl'] !== "1" || false === strpos(mb_strtolower($data['description']), mb_strtolower($word)))
-                    && (!isset($queryParams['author']) || $queryParams['author'] !== "1" || false === strpos(mb_strtolower($data['channelTitle']), mb_strtolower($word)))
-                    && (!isset($queryParams['tag']) || $queryParams['tag'] !== "1" || false === strpos(mb_strtolower(implode(",", $data['tags'])), mb_strtolower($word)))
-                ) {
-                    if ($continue === false) $continue = 0;
-                    ++$continue;
-                }
+                if ($continue === false) $continue = 0;
+                ++$continue;
             }
         }
 
