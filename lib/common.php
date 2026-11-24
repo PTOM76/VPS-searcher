@@ -754,7 +754,19 @@ function loadAndSortIndex($queryParams, $isMatrix = false) {
 function filterVideos($index, $queryParams) {
     $words = [];
     if (!empty($queryParams['q'])) {
+        // " を含む場合は、" で囲まれたフレーズを1つの単語として扱う
+        if (strpos($queryParams['q'], '"') !== false) {
+            $queryParams['q'] = preg_replace_callback('/"([^"]+)"/', function ($matches) {
+                return str_replace(' ', '___SPACE___', $matches[1]);
+            }, $queryParams['q']);
+        }
+
         $words = explode(" ", $queryParams['q']);
+
+        // " で囲まれたフレーズを元に戻す
+        $words = array_map(function ($word) {
+            return str_replace('___SPACE___', ' ', $word);
+        }, $words);
     }
 
     $filtered = [];
