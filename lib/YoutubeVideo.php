@@ -32,7 +32,8 @@ class YoutubeVideo {
 
         $index = file_exists(FilePaths::INDEX_JSON) ? json_decode(file_get_contents(FilePaths::INDEX_JSON), true) : [];
         $index[$videoId] = self::toEntry($video, $type);
-        array_multisort(array_column($index, 'publishedAt'), SORT_DESC, $index);
+        $publishedAtColumn = array_column($index, 'publishedAt');
+        array_multisort($publishedAtColumn, SORT_DESC, $index);
         file_put_contents(FilePaths::INDEX_JSON, json_encode($index, JSON_UNESCAPED_UNICODE));
         return true;
     }

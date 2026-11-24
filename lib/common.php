@@ -221,9 +221,18 @@ function time_elapsed_string($datetime, $full = false) {
     $ago->setTimestamp($datetime);
     $diff = $now->diff($ago);
 
-    $diff->w = floor($diff->d / 7);
-    $diff->d -= $diff->w * 7;
-  
+    $weeks = (int)floor($diff->d / 7);
+    $days = $diff->d - $weeks * 7;
+    $values = array(
+        'y' => $diff->y,
+        'm' => $diff->m,
+        'w' => $weeks,
+        'd' => $days,
+        'h' => $diff->h,
+        'i' => $diff->i,
+        's' => $diff->s,
+    );
+
     $string = array(
         'y' => $lang['year'],
         'm' => $lang['month'],
@@ -235,8 +244,8 @@ function time_elapsed_string($datetime, $full = false) {
     );
 
     foreach ($string as $k => &$v) {
-        if ($diff->$k) {
-            $v = $diff->$k . '' . $v . ($diff->$k > 1 ? ($useLang === "en" ? 's ' : '') : '');
+        if ($values[$k]) {
+            $v = $values[$k] . '' . $v . ($values[$k] > 1 ? ($useLang === "en" ? 's ' : '') : '');
         } else {
             unset($string[$k]);
         }
@@ -594,7 +603,9 @@ function addPlaylist($playlist_id, $type, $nextPageToken = false, $only = false,
     }
 
     $index = ((array) $index);
-    array_multisort(array_column($index, 'publishedAt'), SORT_DESC, $index);
+    $publishedAtColumn = array_column($index, 'publishedAt');
+    array_multisort($publishedAtColumn, SORT_DESC, $index);
+    unset($publishedAtColumn);
     
     file_put_contents(FilePaths::INDEX_JSON, json_encode($index, JSON_UNESCAPED_UNICODE));
     // 次ページは再帰で辿るので、持ったままだと階層ごとに index が積み上がって memory_limit を超える
@@ -703,19 +714,24 @@ function loadAndSortIndex($queryParams, $isMatrix = false) {
                 array_multisort($sort_array, SORT_ASC, $index);
                 break;
             case 'most_view':
-                array_multisort(array_column($index, 'view'), SORT_DESC, $index);
+                $column = array_column($index, 'view');
+                array_multisort($column, SORT_DESC, $index);
                 break;
             case 'worst_view':
-                array_multisort(array_column($index, 'view'), SORT_ASC, $index);
+                $column = array_column($index, 'view');
+                array_multisort($column, SORT_ASC, $index);
                 break;
             case 'most_like':
-                array_multisort(array_column($index, 'like'), SORT_DESC, $index);
+                $column = array_column($index, 'like');
+                array_multisort($column, SORT_DESC, $index);
                 break;
             case 'word':
-                array_multisort(array_column($index, 'title'), SORT_ASC, $index);
+                $column = array_column($index, 'title');
+                array_multisort($column, SORT_ASC, $index);
                 break;
             case 'word_desc':
-                array_multisort(array_column($index, 'title'), SORT_DESC, $index);
+                $column = array_column($index, 'title');
+                array_multisort($column, SORT_DESC, $index);
                 break;
             case 'random':
                 $keys = array_keys($index);
